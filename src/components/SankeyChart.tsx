@@ -184,8 +184,9 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
 
           const valText = fmt(n.value);
           const lblText = n.label.length > MAXCHAR ? n.label.slice(0, MAXCHAR) + '…' : n.label;
-          const lx = isRight ? nW + 8 : -8;
-          const anchor = isRight ? 'start' : 'end';
+          const labelOnRight = n.type === 'debit-leaf' || n.type === 'credit-category' || n.type === 'credit-sub';
+          const lx = labelOnRight ? nW + 8 : -8;
+          const anchor = labelOnRight ? 'start' : 'end';
 
           if (!isLeaf) {
             g.append('text').attr('x', lx).attr('y', Math.max(nH / 2 - 5, 6)).attr('text-anchor', anchor).attr('fill', C.amber).attr('font-family', 'DM Mono, monospace').attr('font-size', '12px').attr('font-weight', '500').text(valText);
