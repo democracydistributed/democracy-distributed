@@ -136,7 +136,7 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
       const svgEl = select(svg);
       const root = svgEl.append('g');
 
-      // Links — no hover highlight.
+      // Links
       const linkG = root.append('g');
       gLinks.forEach((l: any) => {
         const sN = l.source;
@@ -146,13 +146,25 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
         if (['credit-leaf', 'credit-category', 'credit-sub'].includes(sN.type)) colour = sN.colour || CREDIT_COLOURS[0];
         if (['debit-category', 'debit-leaf', 'debit-sub'].includes(tN.type)) colour = tN.colour || DEBIT_COLOURS[0];
         if (['debit-category', 'debit-sub'].includes(sN.type)) colour = sN.colour || DEBIT_COLOURS[0];
-        linkG
+
+        const clickNode: any =
+          ['credit-leaf', 'credit-category', 'credit-sub'].includes(sN.type) ? sN :
+          ['debit-category', 'debit-leaf', 'debit-sub'].includes(tN.type) ? tN :
+          null;
+
+        const path = linkG
           .append('path')
           .attr('class', 'sankey-link')
           .attr('d', sankeyLinkHorizontal()(l) as string)
           .attr('stroke', colour)
           .attr('stroke-width', Math.max(1, l.width))
           .attr('stroke-opacity', 0.38);
+
+        if (clickNode) {
+          path
+            .style('cursor', 'pointer')
+            .on('click', () => onOpenRef.current(clickNode as GraphNode & { value: number }));
+        }
       });
 
       // Nodes.
