@@ -179,6 +179,8 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
               .attr('fill', 'transparent')
               .attr('stroke', 'none')
               .style('cursor', 'pointer')
+              .on('mouseover', () => bar.attr('opacity', 0.72))
+              .on('mouseout', () => bar.attr('opacity', 0.9))
               .on('click', () => onOpenRef.current(n as GraphNode & { value: number }));
           }
 
@@ -226,6 +228,8 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
         if (clickNode) {
           path
             .style('cursor', 'pointer')
+            .on('mouseover', () => path.attr('stroke-opacity', 0.62))
+            .on('mouseout', () => path.attr('stroke-opacity', 0.38))
             .on('click', () => onOpenRef.current(clickNode as GraphNode & { value: number }));
         }
       });
