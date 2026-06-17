@@ -1,0 +1,308 @@
+/* Browse route styles — scoped via CSS Module. Uses the app's global theme
+   tokens (--bg, --bg-card, --amber, …) so it follows the html.light theme. */
+
+/* Full-height column so the footer is pinned to the bottom on tall screens. */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.main {
+  flex: 1 0 auto;
+}
+
+.pageHeader {
+  padding: 120px 48px 48px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.breadcrumb {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--tm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.breadcrumb a { color: var(--amber); text-decoration: none; }
+.breadcrumb span { color: var(--tm); }
+
+.title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 4vw, 56px);
+  font-weight: 900;
+  color: var(--th);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.title em { font-style: italic; color: var(--amber); }
+.lede {
+  font-size: 16px;
+  color: var(--tm);
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+.controlsBar {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 48px 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.searchWrap { position: relative; max-width: 380px; width: 100%; }
+.searchWrap input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 16px 10px 42px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.searchWrap input::placeholder { color: var(--tm); }
+.searchWrap input:focus { border-color: var(--amber); }
+.searchIcon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--tm);
+  pointer-events: none;
+  display: flex;
+}
+
+.mainLayout {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 48px 80px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 40px;
+  align-items: start;
+}
+.resultsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.resultsCount {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--tm);
+}
+.resultsCount strong { color: var(--amber); font-weight: 500; }
+
+.orgGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.orgCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.25s;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.orgCard::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 0;
+  background: var(--amber);
+  transition: height 0.4s ease;
+}
+.orgCard:hover { border-color: rgba(232,160,32,0.25); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.orgCard:hover::before { height: 100%; }
+
+.cardBanner {
+  height: 120px;
+  background: linear-gradient(135deg, var(--bg-up) 0%, var(--bg) 100%);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.cardBannerPattern {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.cardBannerGlow {
+  position: absolute;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(232,160,32,0.1) 0%, transparent 70%);
+  top: -60px; right: -40px;
+}
+.orgTypeBadge {
+  position: absolute;
+  top: 12px; left: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 2px;
+  background: rgba(12,20,40,0.7);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--tm);
+  backdrop-filter: blur(8px);
+}
+.dataBadge {
+  position: absolute;
+  top: 12px; right: 12px;
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 2px;
+  background: rgba(45,212,191,0.15);
+  border: 1px solid rgba(45,212,191,0.25);
+  color: var(--teal);
+  backdrop-filter: blur(8px);
+}
+.dataBadgeDot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--teal);
+  animation: pulseDot 2s infinite;
+}
+@keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.cardBody { padding: 20px 24px 24px; flex: 1; display: flex; flex-direction: column; }
+.orgJurisdiction {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--tm);
+  margin-bottom: 6px;
+}
+.orgName {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--th);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+.orgDesc {
+  font-size: 13px;
+  color: var(--tm);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cardCta { display: flex; align-items: center; justify-content: space-between; }
+.ctaLink {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber);
+  text-decoration: none;
+  transition: gap 0.2s;
+}
+.orgCard:hover .ctaLink { gap: 10px; }
+.ctaLink svg { width: 14px; height: 14px; }
+
+.gridStatus {
+  grid-column: 1 / -1;
+  padding: 56px 24px;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.loadingState { color: var(--tm); animation: statusPulse 1.5s ease infinite; }
+@keyframes statusPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+.errorState { color: var(--red); display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.noResults { color: var(--tm); }
+.retryBtn {
+  padding: 8px 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--tm);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.retryBtn:hover { border-color: var(--bhi); color: var(--text); }
+
+.sidebar { display: flex; flex-direction: column; gap: 24px; position: sticky; top: 96px; }
+.contributeCard {
+  background: linear-gradient(135deg, rgba(232,160,32,0.08) 0%, rgba(45,212,191,0.06) 100%);
+  border: 1px solid rgba(232,160,32,0.15);
+  border-radius: 8px;
+  padding: 32px 28px;
+  text-align: center;
+}
+.contributeCard h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--th);
+  margin-bottom: 12px;
+}
+.contributeCard p { font-size: 13px; color: var(--tm); line-height: 1.7; margin-bottom: 24px; }
+.btnPrimary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%;
+  padding: 10px 24px;
+  background: var(--amber); color: #0c1428;
+  font-weight: 600; font-size: 13px; letter-spacing: 0.05em;
+  border-radius: 4px; text-decoration: none;
+  transition: all 0.2s; border: none; cursor: pointer;
+}
+.btnPrimary:hover { background: var(--amber-l); transform: translateY(-1px); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fadeUp { opacity: 0; animation: fadeUp 0.6s ease forwards; }
+
+@media (max-width: 1100px) {
+  .mainLayout { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+}
+@media (max-width: 720px) {
+  .pageHeader { padding: 100px 20px 32px; }
+  .controlsBar { padding: 0 20px 24px; }
+  .mainLayout { padding: 0 20px 60px; }
+  .orgGrid { grid-template-columns: 1fr; }
+  .searchWrap { max-width: 100%; }
+}
