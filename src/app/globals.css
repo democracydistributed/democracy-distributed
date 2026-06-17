@@ -96,7 +96,7 @@ html.light .page-header::before { opacity:.4; }
 /* ── SANKEY ───────────────────────────────────────────── */
 .sankey-card { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
 .sankey-wrap { padding:28px 12px 12px; overflow-x:auto; }
-#sankey-svg { display:block; min-width:900px; overflow:visible; }
+#sankey-svg { display:block; overflow:visible; }
 #sankey-svg rect { stroke:none; }
 .node-bar { transition:opacity 0.15s; }
 .node-bar-click:hover { opacity:0.82; cursor:pointer; }

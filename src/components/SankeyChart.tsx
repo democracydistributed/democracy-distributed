@@ -53,7 +53,7 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
       const HIT_EXT = 160;
       const MAXCHAR = 32;
 
-      const W = Math.max(wrap.clientWidth - 24, LABEL_ZONE * 2 + numCols * COL_STRIDE);
+      const W = LABEL_ZONE * 2 + numCols * COL_STRIDE;
       const LM = LABEL_ZONE;
 
       const totalLeaves = Math.max(countLeaves(data.revenue_data.children[0]), countLeaves(data.spending_data.children[0]));
