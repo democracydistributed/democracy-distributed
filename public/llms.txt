@@ -1,0 +1,22 @@
+# Democracy Distributed (WikiGov)
+
+> Democracy Distributed is an open, crowdsourced civic-data platform that traces government spending from the vote that authorized it to the invoice that paid it out. WikiGov is the public-facing product: a structured page for every tracked government organization, with finances rendered as an interactive Sankey diagram.
+
+Each organization's data is built from four connected record types: Items (council decisions/motions), Projects (funded work authorized by an item), Ledger entries (individual transactions), and People (officials and members). The chain is: a public suggestion becomes an Item, an Item is authorized by a Vote, a Vote funds a Project, and a Project's spending shows up as Ledger entries you can trace back to the original decision.
+
+## Live data
+
+- [City of Toronto Government](https://democracydistributed.com/org/406019364987666433): The platform's primary live dataset — the City of Toronto's operating budget (revenue and spending by category), hundreds of council items/decisions, and active projects, all linked and traceable to the ledger entries that paid for them.
+- [Browse all organizations](https://democracydistributed.com/browse): The full list of tracked organizations. Most currently have little or no populated data yet; Toronto is the only one with a substantial live dataset as of this writing.
+
+## URL structure
+
+- `/org/{id}` — One organization's page: financial overview (Sankey chart of revenue vs. spending), items, projects, and people.
+- `/item/{id}` — One council decision/motion: subject, date, status, the meeting it was discussed at, and any projects it authorized.
+- `/project/{id}` — One funded project: description, the item that authorized it, and the ledger entries (actual spending) traced to it.
+- [Sitemap](https://democracydistributed.com/sitemap.xml): Machine-readable list of every organization, item, and project URL currently in the system.
+
+## About
+
+- [About Democracy Distributed](https://democracydistributed.com/about): Why the project exists and how the money → decision → outcome model works.
+- [Contribute](https://democracydistributed.com/contribute): How to add or correct a data point.
