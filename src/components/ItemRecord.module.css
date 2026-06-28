@@ -1,0 +1,118 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Account for the fixed 64px nav. */
+.main {
+  flex: 1;
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 96px 20px 80px;
+}
+@media (min-width: 680px) {
+  .main {
+    padding: 104px 40px 100px;
+  }
+}
+
+.headMeta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.itemNum {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--tm);
+}
+.title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(23px, 4vw, 38px);
+  font-weight: 900;
+  color: var(--th);
+  line-height: 1.14;
+  margin-bottom: 12px;
+}
+.subDate {
+  font-size: 13px;
+  color: var(--tm);
+  margin-bottom: 30px;
+}
+
+.section {
+  margin-bottom: 30px;
+}
+.desc {
+  font-size: 15px;
+  color: var(--text);
+  opacity: 0.9;
+  line-height: 1.7;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  transition: border-color 0.2s;
+}
+.card + .card {
+  margin-top: 10px;
+}
+.card:hover {
+  border-color: rgba(232, 160, 32, 0.28);
+}
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+.cardTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--th);
+}
+.cardMeta {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--tm);
+}
+.projFoot {
+  display: flex;
+  gap: 18px;
+  margin-top: 9px;
+  flex-wrap: wrap;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--tm);
+}
+.projFoot b {
+  color: var(--amber);
+  font-weight: 500;
+}
+.emptyNote {
+  font-size: 13px;
+  color: var(--tm);
+  font-style: italic;
+}
+
+.state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--tm);
+}

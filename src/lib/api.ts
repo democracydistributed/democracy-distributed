@@ -3,36 +3,24 @@
 // These are RELATIVE paths that hit our own origin and are proxied to the live
 // gateway by a Next.js rewrite (see next.config.mjs). This sidesteps the gateway's
 // broken CORS headers, which block direct browser fetches.
-import type { ItemsResponse, OrgData, OrgsResponse, ProjectsResponse, SankeyData, TraceData } from './types';
+import type { ItemRecordData, ItemsResponse, OrgsResponse, PeopleResponse, ProjectRecordData, ProjectsResponse, TraceData } from './types';
 
 const BASE = '/api/gateway';
 
-export const SANKEY_ENDPOINT = `${BASE}/sankey`;
 export const TRACE_ENDPOINT = `${BASE}/trace`;
-export const ORG_ENDPOINT = `${BASE}/org`;
 export const ORGS_ENDPOINT = `${BASE}/orgs`;
 export const ITEMS_ENDPOINT = `${BASE}/items`;
+export const ITEM_ENDPOINT = `${BASE}/item`;
 export const PROJECTS_ENDPOINT = `${BASE}/projects`;
+export const PROJECT_ENDPOINT = `${BASE}/project`;
+export const PEOPLE_ENDPOINT = `${BASE}/people`;
 
-export const DEFAULT_ORG_ID = '490999320024186881';
+/** Org-page preview cap on the officials list. The endpoint's counts.officials
+ *  stays the true (pre-cap) total, so we can show "View all N" when it's bigger. */
+export const PEOPLE_PREVIEW_LIMIT = 12;
 
-export async function fetchSankey(orgId: string): Promise<SankeyData> {
-  const res = await fetch(`${SANKEY_ENDPOINT}?orgId=${encodeURIComponent(orgId)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
-  const raw = await res.json();
-  if (raw == null) throw new Error('Server returned empty response');
-  const data: SankeyData = typeof raw.sankeyJSON === 'string' ? JSON.parse(raw.sankeyJSON) : raw;
-  if (!data || !data.revenue_data || !data.spending_data) {
-    throw new Error('Unexpected data shape. Got: ' + JSON.stringify(data).slice(0, 300));
-  }
-  return data;
-}
-
-export async function fetchOrg(orgId: string): Promise<OrgData> {
-  const res = await fetch(`${ORG_ENDPOINT}?orgId=${encodeURIComponent(orgId)}`);
-  if (!res.ok) throw new Error('fetch failed');
-  return res.json();
-}
+/** Toronto is the only org with live data today — used as the demo/default org link. */
+export const TORONTO_ORG_ID = '406019364987666433';
 
 export async function fetchTrace(ledgerId: string): Promise<TraceData> {
   const res = await fetch(`${TRACE_ENDPOINT}?ledgerId=${encodeURIComponent(ledgerId)}`);
@@ -52,6 +40,37 @@ export async function fetchItems(orgId: string): Promise<ItemsResponse> {
   if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
   const data = await res.json();
   if (!data || !Array.isArray(data.items)) throw new Error('Unexpected response shape');
+  return data;
+}
+
+export async function fetchItem(itemId: string): Promise<ItemRecordData> {
+  const res = await fetch(`${ITEM_ENDPOINT}?itemId=${encodeURIComponent(itemId)}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
+  const raw = await res.json();
+  // Gateway may return the assembled record as a JSON string.
+  const data: ItemRecordData = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!data || data.error) throw new Error(data?.error || 'Item not found');
+  return data;
+}
+
+export async function fetchProject(projectId: string): Promise<ProjectRecordData> {
+  const res = await fetch(`${PROJECT_ENDPOINT}?projectId=${encodeURIComponent(projectId)}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
+  const raw = await res.json();
+  const data: ProjectRecordData = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!data || data.error) throw new Error(data?.error || 'Project not found');
+  return data;
+}
+
+export async function fetchPeople(orgId: string, limit: number = PEOPLE_PREVIEW_LIMIT): Promise<PeopleResponse> {
+  const res = await fetch(`${PEOPLE_ENDPOINT}?orgId=${encodeURIComponent(orgId)}&limit=${limit}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
+  const raw = await res.json();
+  // Gateway may hand back the assembled payload as a JSON string.
+  const data: PeopleResponse = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!data || !Array.isArray(data.officials) || !Array.isArray(data.members)) {
+    throw new Error('Unexpected response shape');
+  }
   return data;
 }
 

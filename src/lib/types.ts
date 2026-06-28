@@ -85,6 +85,7 @@ export interface DrawerTraceFrame {
   kind: 'trace';
   entry: RawNode;
   label: string;
+  side: 'credit' | 'debit';
   traceData: TraceData | null;
   traceError: string | null;
 }
@@ -139,6 +140,96 @@ export interface ProjectsResponse {
   projects: Project[];
 }
 
+/** A single item record from the /item gateway endpoint (API_Item Record workflow). */
+export interface ItemRecordProject {
+  projectId?: string;
+  name?: string;
+  phase?: string;
+  endDate?: string;
+  budget?: string | number | null;
+}
+
+export interface ItemRecordMeeting {
+  meetingId?: string;
+  committee?: string;
+  date?: string;
+  meetingNumber?: string;
+}
+
+export interface ItemRecordData {
+  itemId?: string;
+  subject?: string;
+  itemNumber?: string;
+  status?: string;
+  date?: string;
+  plainSummary?: string;
+  projects?: ItemRecordProject[];
+  meetingDiscussedIn?: ItemRecordMeeting[];
+  error?: string;
+}
+
+/** A single project record from the /project gateway endpoint (API_Project Record workflow). */
+export interface ProjectLedgerEntry {
+  ledgerId?: string;
+  amount?: number | null;
+  description?: string;
+  date?: string;
+}
+
+export interface ProjectRecordData {
+  projectId?: string;
+  name?: string;
+  status?: string;
+  priority?: string;
+  dueDate?: string;
+  description?: string;
+  reputationReward?: number | null;
+  authorizingItem?: {
+    itemId?: string;
+    subject?: string;
+    itemNumber?: string;
+    date?: string;
+  } | null;
+  ledgerEntries?: ProjectLedgerEntry[];
+  totalSpent?: number | null;
+  error?: string;
+}
+
+/** People tab — /people gateway endpoint (API_People Endpoint v1). */
+export type OfficialStatus = 'recorded' | 'role_not_recorded' | 'holder_not_recorded';
+
+export interface Official {
+  name: string | null;
+  position: string | null;
+  positionId: string | null;
+  personId: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  status: OfficialStatus;
+}
+
+export interface OrgMember {
+  name: string | null;
+  userId: string | null;
+  role: string | null;
+  startDate: string | null;
+}
+
+export interface PeopleCounts {
+  officials: number;
+  recorded: number;
+  gaps: number;
+  members: number;
+}
+
+export interface PeopleResponse {
+  orgId?: string;
+  officials: Official[];
+  members: OrgMember[];
+  counts: PeopleCounts;
+  nextCursor: string | null;
+}
+
 /** Loosely-typed trace/chain payload from the /trace gateway endpoint. */
 export interface TraceData {
   hasChain?: boolean;
@@ -149,5 +240,6 @@ export interface TraceData {
     suggestion?: { count?: number; previewSubject?: string };
     vote?: { outcome?: string };
     project?: { name?: string; status?: string };
+    legalBasis?: { id?: string; name?: string; type?: string; number?: string; status?: string; link?: string };
   };
 }
