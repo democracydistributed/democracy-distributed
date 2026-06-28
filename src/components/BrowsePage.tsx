@@ -24,7 +24,7 @@ function OrgCard({ org, index }: { org: OrgSummary; index: number }) {
   const badge = [org.type, org.subType].filter(Boolean).join(' · ') || 'Organization';
   const jurisdiction = jurisdictionOf(org);
   return (
-    <Link href={`/?orgId=${encodeURIComponent(id)}`} className={`${styles.orgCard} ${styles.fadeUp}`} style={{ animationDelay: `${(index % 5) * 0.05}s` }}>
+    <Link href={`/org/${encodeURIComponent(id)}`} className={`${styles.orgCard} ${styles.fadeUp}`} style={{ animationDelay: `${(index % 5) * 0.05}s` }}>
       <div className={styles.cardBanner}>
         <div className={styles.cardBannerPattern} />
         <div className={styles.cardBannerGlow} />
@@ -136,7 +136,7 @@ export default function BrowsePage() {
           <div className={styles.contributeCard}>
             <h3>Help build this database</h3>
             <p>Every connection you make between a decision and a dollar is a piece of the accountability chain nobody else has built.</p>
-            <a className={styles.btnPrimary} href="#contribute">
+            <a className={styles.btnPrimary} href="/contribute">
               Start Contributing →
             </a>
           </div>

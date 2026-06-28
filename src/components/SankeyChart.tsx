@@ -37,7 +37,7 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
     const wrap = wrapRef.current;
     if (!svg || !wrap) return;
 
-    function render() {
+    function render(shouldCentre: boolean) {
       if (!svg || !wrap) return;
       const C = palette(theme);
       const MIN_NODE_H = 3;
@@ -178,9 +178,27 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
               .attr('height', Math.max(nH, 20))
               .attr('fill', 'transparent')
               .attr('stroke', 'none')
+              .attr('tabindex', '0')
+              .attr('role', 'button')
+              .attr('aria-label', `${n.label}: ${fmt(n.value)}`)
               .style('cursor', 'pointer')
+              .style('outline', 'none')
               .on('mouseover', () => bar.attr('opacity', 0.72))
               .on('mouseout', () => bar.attr('opacity', 0.9))
+              .on('focus', () => {
+                bar.attr('opacity', 0.72)
+                  .attr('stroke', '#e8a020')
+                  .attr('stroke-width', '2');
+              })
+              .on('blur', () => {
+                bar.attr('opacity', 0.9).attr('stroke', 'none');
+              })
+              .on('keydown', (event: KeyboardEvent) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onOpenRef.current(n as GraphNode & { value: number });
+                }
+              })
               .on('click', () => onOpenRef.current(n as GraphNode & { value: number }));
           }
 
@@ -227,9 +245,21 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
 
         if (clickNode) {
           path
+            .attr('tabindex', '0')
+            .attr('role', 'button')
+            .attr('aria-label', `${clickNode.label}: ${fmt(clickNode.value)}`)
             .style('cursor', 'pointer')
+            .style('outline', 'none')
             .on('mouseover', () => path.attr('stroke-opacity', 0.62))
             .on('mouseout', () => path.attr('stroke-opacity', 0.38))
+            .on('focus', () => path.attr('stroke-opacity', 0.72))
+            .on('blur', () => path.attr('stroke-opacity', 0.38))
+            .on('keydown', (event: KeyboardEvent) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onOpenRef.current(clickNode as GraphNode & { value: number });
+              }
+            })
             .on('click', () => onOpenRef.current(clickNode as GraphNode & { value: number }));
         }
       });
@@ -237,16 +267,25 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
       // Scroll the container so the org-centre bar is horizontally centered in the viewport.
       // The wrap has 12px left padding, so SVG x=0 sits at container offset 12.
       // We want: 12 + orgCentreX == scrollLeft + clientWidth/2
-      {
+      // Only done on first layout / data change — re-centering on every resize would
+      // clobber the user's scroll position whenever the container resizes.
+      if (shouldCentre) {
         const orgBar = graph.nodes.find((n: any) => n.id === 'org-centre');
         const centreX = orgBar ? orgBar.x0 + BAR_W / 2 : W / 2;
         wrap.scrollLeft = Math.max(0, 12 + centreX - wrap.clientWidth / 2);
       }
     }
 
-    const ro = new ResizeObserver(render);
+    render(true);
+    let first = true;
+    let rafId = 0;
+    const ro = new ResizeObserver(() => {
+      if (first) { first = false; return; }
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => render(false));
+    });
     ro.observe(wrap);
-    return () => ro.disconnect();
+    return () => { ro.disconnect(); cancelAnimationFrame(rafId); };
   }, [data, fmt, theme]);
 
   return (

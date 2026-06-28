@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { fetchItems } from '@/lib/api';
 import { fmtItemDate, stripHtml } from '@/lib/text';
@@ -105,7 +106,7 @@ export default function ItemsTab({ orgId }: { orgId: string }) {
             <div className="items-state">
               No items on record yet.
               <br />
-              <a href="#contribute" className="items-state-link">
+              <a href="/contribute" className="items-state-link">
                 Contribute Data →
               </a>
             </div>
@@ -117,9 +118,13 @@ export default function ItemsTab({ orgId }: { orgId: string }) {
               const desc = stripHtml(it.description);
               return (
                 <div className="item-card" key={it.itemId || i}>
-                  <a className="item-subject" href={`#item-${it.itemId || ''}`} onClick={(e) => e.preventDefault()}>
-                    {it.subject || '(Untitled)'}
-                  </a>
+                  {it.itemId ? (
+                    <Link className="item-subject" href={`/item/${encodeURIComponent(it.itemId)}`}>
+                      {it.subject || '(Untitled)'}
+                    </Link>
+                  ) : (
+                    <span className="item-subject">{it.subject || '(Untitled)'}</span>
+                  )}
                   {it.itemNumber || it.type || dateStr ? (
                     <div className="item-meta-row">
                       {it.itemNumber ? <span className="item-chip item-chip-num">{it.itemNumber}</span> : null}

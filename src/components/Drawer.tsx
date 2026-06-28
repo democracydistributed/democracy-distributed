@@ -1,6 +1,7 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import type { Formatter } from '@/lib/format';
 import { countLeaves, sumTreeValue } from '@/lib/sankey';
 import type { DrawerCategoryFrame, DrawerFrame, DrawerTraceFrame, RawNode } from '@/lib/types';
@@ -25,6 +26,21 @@ interface ChainStep {
 export default function Drawer({ stack, isOpen, fmt, onBack, onClose, onDrill, onTrace }: Props) {
   const frame = stack[stack.length - 1];
   const hasBack = stack.length > 1;
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isOpen, onClose]);
+
+  // Move focus to close button when drawer opens
+  useEffect(() => {
+    if (isOpen) closeRef.current?.focus();
+  }, [isOpen]);
+
   const backBtn = hasBack ? (
     <button className="drw-back" onClick={onBack}>
       ← Back
@@ -33,9 +49,14 @@ export default function Drawer({ stack, isOpen, fmt, onBack, onClose, onDrill, o
 
   return (
     <>
-      <div className={`overlay${isOpen ? ' open' : ''}`} onClick={onClose} />
-      <div className={`drw${isOpen ? ' open' : ''}`}>
-        <button className="drw-close" onClick={onClose}>
+      <div className={`overlay${isOpen ? ' open' : ''}`} onClick={onClose} aria-hidden="true" />
+      <div
+        className={`drw${isOpen ? ' open' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Transaction details"
+      >
+        <button className="drw-close" ref={closeRef} onClick={onClose} aria-label="Close details">
           ✕
         </button>
         {frame ? (
@@ -85,7 +106,7 @@ function CategoryPanel({
   onTrace: (idx: number) => void;
 }) {
   const { dataNode, label, amount, eyebrow } = frame;
-  const children: RawNode[] = (dataNode && (dataNode.entries || dataNode.children)) || [];
+  const children: RawNode[] = (dataNode?.entries?.length ? dataNode.entries : dataNode?.children) || [];
 
   return (
     <>
@@ -108,7 +129,14 @@ function CategoryPanel({
               const title = leafTitle(child);
               const date = leafDate(child);
               return (
-                <div className="txn-row" key={i} onClick={() => onTrace(i)}>
+                <div
+                  className="txn-row"
+                  key={i}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onTrace(i)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTrace(i); } }}
+                >
                   <div className="txn-left">
                     <div className="txn-name">{title}</div>
                     {date ? (
@@ -130,7 +158,14 @@ function CategoryPanel({
             if (child.merchant) metaParts.push('Merchant group');
             metaParts.push(`${leafCount} transaction${leafCount !== 1 ? 's' : ''}`);
             return (
-              <div className="txn-row" key={i} onClick={() => onDrill(i)}>
+              <div
+                className="txn-row"
+                key={i}
+                role="button"
+                tabIndex={0}
+                onClick={() => onDrill(i)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDrill(i); } }}
+              >
                 <div className="txn-left">
                   <div className="txn-name">{childLabel}</div>
                   <div className="txn-meta">
@@ -150,10 +185,24 @@ function CategoryPanel({
   );
 }
 
+function eyebrowDate(dateStr: string | undefined): string | null {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
 function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: Formatter; backBtn: React.ReactNode }) {
-  const { entry, label, traceData, traceError } = frame;
-  const meta = [entry.transactionID, entry.ledgerID].filter(Boolean).join(' · ');
-  const eyebrow = <div className="drw-eyebrow">{meta || 'Decision Chain'}</div>;
+  const { entry, label, side, traceData, traceError } = frame;
+  const sideLabel = side === 'debit' ? 'Expense' : 'Revenue';
+  const date = eyebrowDate(entry.date);
+  const meta = [sideLabel, date].filter(Boolean).join(' · ');
+  const idTooltip = [entry.transactionID, entry.ledgerID].filter(Boolean).join(' · ') || undefined;
+  const eyebrow = (
+    <div className="drw-eyebrow" title={idTooltip}>
+      {meta || 'Decision Chain'}
+    </div>
+  );
 
   // Loading
   if (!traceData && !traceError) {
@@ -199,33 +248,12 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
   const chain = data.chain;
   const title = chain?.item?.subject || label;
 
-  const legalBasisPill = data.legalBasis ? (
-    <div
-      style={{
-        marginTop: '10px',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '5px 10px',
-        border: '1px solid rgba(167,139,250,0.25)',
-        borderRadius: '4px',
-        background: 'rgba(167,139,250,0.07)',
-      }}
-    >
-      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#a78bfa' }}>
-        Legal basis
-      </span>
-      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '10px', color: 'var(--tm)' }}>{data.legalBasis}</span>
-    </div>
-  ) : null;
-
   const head = (
     <div className="drw-head">
       {backBtn}
       {eyebrow}
       <div className="drw-title">{title}</div>
       <div className="drw-amount">{fmt(entry.amount)}</div>
-      {legalBasisPill}
     </div>
   );
 
@@ -247,7 +275,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
             No linked decision chain for this transaction.
           </div>
           <div style={{ marginTop: '8px' }}>
-            <a href="#contribute" style={{ fontFamily: "'DM Mono',monospace", fontSize: '10px', color: 'var(--teal)', textDecoration: 'none', letterSpacing: '0.1em' }}>
+            <a href="/contribute" style={{ fontFamily: "'DM Mono',monospace", fontSize: '10px', color: 'var(--teal)', textDecoration: 'none', letterSpacing: '0.1em' }}>
               Help us link this transaction →
             </a>
           </div>
@@ -276,10 +304,10 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
           ) : null}
         </>
       ),
-      link: chain.item ? (
-        <a className="chain-link" href="#" data-record-id={chain.item.id}>
+      link: chain.item?.id ? (
+        <Link className="chain-link" href={`/item/${encodeURIComponent(chain.item.id)}`}>
           View all suggestions →
-        </a>
+        </Link>
       ) : null,
     });
   }
@@ -290,18 +318,36 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
       icon: '📋',
       type: `Item${num ? ' · ' + num : ''}`,
       text: chain.item.subject || '',
-      link: (
-        <a className="chain-link" href="#" data-record-id={chain.item.id}>
+      link: chain.item.id ? (
+        <Link className="chain-link" href={`/item/${encodeURIComponent(chain.item.id)}`}>
           View {num || 'item'} →
-        </a>
-      ),
+        </Link>
+      ) : null,
     });
   }
 
   if (chain?.vote) {
     steps.push({ icon: '🗳️', type: 'Vote', text: chain.vote.outcome || 'Vote recorded' });
-  } else if (data.legalBasis) {
-    steps.push({ icon: '📜', type: 'Authorization', text: `Authorized under legal basis: ${data.legalBasis}` });
+  }
+  if (chain?.legalBasis?.name) {
+    steps.push({
+      icon: '📜',
+      type: 'Authorization',
+      text: (
+        <span
+          title={chain.legalBasis.name}
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          Authorized by {chain.legalBasis.name}
+        </span>
+      ),
+    });
   }
 
   if (chain?.project) {
@@ -320,7 +366,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
 
   steps.push({
     icon: '💸',
-    type: `Transaction${data.transactionId ? ' · ' + data.transactionId : ''}`,
+    type: data.transactionId ? <span title={data.transactionId}>Transaction</span> : 'Transaction',
     text: `${label} — ${fmt(entry.amount)}`,
   });
 

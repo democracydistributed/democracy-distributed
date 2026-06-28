@@ -71,7 +71,7 @@ export function useDrawer() {
       const entry = (frame.dataNode.entries || frame.dataNode.children || [])[idx];
       if (!entry) return;
       const entryLabel = entry.name.split(' → ').pop() as string;
-      const traceFrame: DrawerTraceFrame = { kind: 'trace', entry, label: entryLabel, traceData: null, traceError: null };
+      const traceFrame: DrawerTraceFrame = { kind: 'trace', entry, label: entryLabel, side: frame.side, traceData: null, traceError: null };
       setStack((prev) => [...prev, traceFrame]);
 
       if (!entry.ledgerID) {

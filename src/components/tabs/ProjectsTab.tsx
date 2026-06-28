@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { fetchProjects } from '@/lib/api';
 import type { Formatter } from '@/lib/format';
@@ -55,7 +56,7 @@ export default function ProjectsTab({ orgId, fmt }: { orgId: string; fmt: Format
         <div className="items-state">
           No projects on record yet.
           <br />
-          <a href="#contribute" className="items-state-link">
+          <a href="/contribute" className="items-state-link">
             Contribute Data →
           </a>
         </div>
@@ -78,14 +79,19 @@ export default function ProjectsTab({ orgId, fmt }: { orgId: string; fmt: Format
             <div className="proj-card" key={p.projectId || i}>
               <div className="proj-hd">
                 <div>
-                  <a
-                    className="proj-name"
-                    href={`#project-${p.projectId || ''}`}
-                    onClick={(e) => e.preventDefault()}
-                    style={{ textDecoration: 'none', color: 'inherit' }}
-                  >
-                    {p.name || '(Untitled)'}
-                  </a>
+                  {p.projectId ? (
+                    <Link
+                      className="proj-name"
+                      href={`/project/${encodeURIComponent(p.projectId)}`}
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                      {p.name || '(Untitled)'}
+                    </Link>
+                  ) : (
+                    <span className="proj-name" style={{ color: 'inherit' }}>
+                      {p.name || '(Untitled)'}
+                    </span>
+                  )}
                   {meta ? <div style={{ fontSize: '11px', color: 'var(--tm)', marginTop: '2px' }}>{meta}</div> : null}
                 </div>
                 {p.financialReward != null ? <div className="proj-amt">{fmt(p.financialReward)}</div> : null}
