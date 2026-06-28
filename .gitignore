@@ -1,0 +1,23 @@
+# dependencies
+/node_modules
+
+# next.js build output
+/.next/
+/out/
+
+# production build
+/build
+
+# typescript build cache
+*.tsbuildinfo
+
+# logs
+*.log
+
+# env files (may contain secrets)
+.env
+.env*.local
+
+# misc OS/editor junk
+.DS_Store
+.fuse_hidden*
