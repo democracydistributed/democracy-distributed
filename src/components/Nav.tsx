@@ -10,8 +10,8 @@ export default function Nav() {
       </Link>
       <div className="nav-r">
         <div className="nav-links">
-          <a href="#">About</a>
-          <a href="#">Contribute</a>
+          <Link href="/about">About</Link>
+          <Link href="/contribute">Contribute</Link>
         </div>
         <Link href="/browse" className="nav-cta">
           Explore →
