@@ -19,6 +19,8 @@
   --tm:        #8896b3;
   --border:    rgba(255,255,255,0.07);
   --bhi:       rgba(255,255,255,0.13);
+  --dd-hex:    #e8a020;
+  --dd-gold:   #c49a3c;
 }
 /* Light theme: class applied to <html> by the blocking inline script. */
 html.light {
@@ -26,6 +28,7 @@ html.light {
   --text:    #1F2937; --th:      #111827; --tm:    #4b5563; /* was #6B7280 (~3.99:1) → now ~6.8:1 on --bg */
   --border:  rgba(0,0,0,0.07); --bhi: rgba(0,0,0,0.13); --cdim: rgba(0,0,0,0.03);
   --amber: #e2a046; --amber-l: #eab256;
+  --dd-hex: #0d1d3a;
   /* Amber/teal as text on light surfaces — fills keep using --amber / --teal */
   --amber-text: #7d5300; /* 6.1:1 on --bg, 6.8:1 on --bg-card */
   --teal-text:  #0d7a70; /* 5.1:1 on --bg, 5.6:1 on --bg-card */
@@ -41,9 +44,7 @@ body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif
 /* ── NAV ──────────────────────────────────────────────── */
 nav { position:fixed; inset:0 0 auto; z-index:50; height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(12,20,40,.92); backdrop-filter:blur(18px); border-bottom:1px solid rgba(255,255,255,.06); transition:background .25s; }
 html.light nav { background:rgba(245,242,236,.94); border-bottom-color:rgba(0,0,0,.08); }
-.nav-logo { text-decoration:none; }
-.nav-logo-top { font-family:'Playfair Display',serif; font-size:15px; font-weight:700; color:var(--th); display:block; line-height:1.2; }
-.nav-logo-sub { font-family:'DM Mono',monospace; font-size:8px; letter-spacing:.28em; color:var(--amber-text, var(--amber)); text-transform:uppercase; }
+.nav-logo { text-decoration:none; color:var(--th); }
 .nav-r { display:flex; align-items:center; gap:10px; }
 .nav-links { display:none; align-items:center; gap:22px; }
 .nav-links a { font-size:13px; font-weight:500; color:var(--tm); text-decoration:none; transition:color .2s; }

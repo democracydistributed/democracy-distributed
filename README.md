@@ -6,8 +6,7 @@ trace panel, and light/dark theming.
 
 ## Requirements
 
-- **Node.js 18.18+** (Next.js 14). Not currently installed on this machine —
-  install from <https://nodejs.org> (LTS) or `winget install OpenJS.NodeJS.LTS`.
+- **Node.js 18.18+** (Next.js 14).
 
 ## Run
 

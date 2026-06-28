@@ -24,7 +24,6 @@ src/
       page.tsx
     globals.css
     item-record/
-      layout.tsx
       page.tsx
     layout.tsx
     page.tsx
@@ -60,9 +59,8 @@ src/
 - `src/app/api/gateway/[...path]/route.ts` — Caching reverse-proxy for the gateway.
 - `src/app/browse/page.tsx` — Component/function: Page
 - `src/app/globals.css` — ── TOKENS ─────────────────────────────────────────────
-- `src/app/item-record/layout.tsx` — Component/function: ItemRecordLayout
 - `src/app/item-record/page.tsx` — Component/function: ItemRecordPage
-- `src/app/layout.tsx` — Tailwind CDN — for ItemRecord prototype route only; remove before production build
+- `src/app/layout.tsx` — Root layout: theme script, fonts, metadata
 - `src/app/page.tsx` — Component/function: Page
 - `src/components/Browse.module.css` — Browse route styles — scoped via CSS Module. Uses the app's global theme
 - `src/components/BrowsePage.tsx`
