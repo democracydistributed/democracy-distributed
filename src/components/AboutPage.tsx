@@ -383,14 +383,13 @@ export default function AboutPage() {
                 <em>looking for collaborators.</em>
               </h2>
               <p>
-                For now, Democracy Distributed is mostly one person — me. I&apos;m Ajay, I&apos;m in Toronto, and I&apos;m building
-                this in the open: no org chart, no funding announcement, no press release. Just a working proof of concept in the
-                city it started in, and an honest invitation.
+                Democracy Distributed is a working proof of concept, built in Toronto and released in the open. No org chart, no
+                funding round, no press release — just the thing itself, and an honest invitation.
               </p>
               <p>
-                This is bigger than one person can take where it needs to go. If you&apos;re a developer, a researcher, a
-                journalist, a civic technologist — or just someone who thinks this should exist and wants to help define it —
-                there&apos;s room, and the direction is still being set.
+                This is bigger than what exists today. If you&apos;re a developer, a researcher, a journalist, a civic
+                technologist — or just someone who thinks this should exist and wants to help define it — there&apos;s room, and
+                the direction is still being set.
               </p>
               <div style={{ marginTop: 32 }}>
                 <a
