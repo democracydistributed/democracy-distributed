@@ -413,6 +413,11 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
           {proj.status ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '9px', color: 'var(--tm)' }}> [{proj.status}]</span> : null}
         </>
       ),
+      link: proj.id ? (
+        <Link className="chain-link" href={`/project/${encodeURIComponent(proj.id)}`}>
+          View project →
+        </Link>
+      ) : null,
     });
   }
 
