@@ -257,8 +257,11 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
     </div>
   );
 
-  // No chain
+  // No decision chain. If the gateway still resolved a Project, show the
+  // partial chain (Project → Transaction) rather than a bare empty state —
+  // the gap row doubles as the contribution hook, same pattern as the People tab.
   if (!data.hasChain) {
+    const partialProject = chain?.project;
     return (
       <>
         {head}
@@ -271,14 +274,63 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
               <div style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.5 }}>{data.legalBasis}</div>
             </div>
           ) : null}
-          <div style={{ padding: '12px 0', color: 'var(--tm)', fontSize: '13px', fontFamily: "'DM Mono',monospace", letterSpacing: '0.05em' }}>
-            No linked decision chain for this transaction.
-          </div>
-          <div style={{ marginTop: '8px' }}>
-            <a href="/contribute" style={{ fontFamily: "'DM Mono',monospace", fontSize: '10px', color: 'var(--teal)', textDecoration: 'none', letterSpacing: '0.1em' }}>
-              Help us link this transaction →
-            </a>
-          </div>
+          {partialProject ? (
+            <div className="chain-section">
+              <div className="chain-step">
+                <div className="chain-line-wrap">
+                  <div className="chain-icon" style={{ opacity: 0.45 }}>❓</div>
+                  <div className="chain-connector" />
+                </div>
+                <div className="chain-content">
+                  <div className="chain-type">Decision</div>
+                  <div className="chain-text" style={{ color: 'var(--tm)', fontStyle: 'italic' }}>
+                    Not yet linked to a council item
+                  </div>
+                  <a href="/contribute" className="chain-link">
+                    Help us find the council item →
+                  </a>
+                </div>
+              </div>
+              <div className="chain-step">
+                <div className="chain-line-wrap">
+                  <div className="chain-icon">🏗️</div>
+                  <div className="chain-connector" />
+                </div>
+                <div className="chain-content">
+                  <div className="chain-type">Project</div>
+                  <div className="chain-text">
+                    {partialProject.name || ''}
+                    {partialProject.status ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '9px', color: 'var(--tm)' }}> [{partialProject.status}]</span> : null}
+                  </div>
+                  {partialProject.id ? (
+                    <Link className="chain-link" href={`/project/${encodeURIComponent(partialProject.id)}`}>
+                      View project →
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+              <div className="chain-step">
+                <div className="chain-line-wrap">
+                  <div className="chain-icon">💸</div>
+                </div>
+                <div className="chain-content">
+                  <div className="chain-type">{data.transactionId ? <span title={data.transactionId}>Transaction</span> : 'Transaction'}</div>
+                  <div className="chain-text">{`${label} — ${fmt(entry.amount)}`}</div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div style={{ padding: '12px 0', color: 'var(--tm)', fontSize: '13px', fontFamily: "'DM Mono',monospace", letterSpacing: '0.05em' }}>
+                No linked decision chain for this transaction.
+              </div>
+              <div style={{ marginTop: '8px' }}>
+                <a href="/contribute" style={{ fontFamily: "'DM Mono',monospace", fontSize: '10px', color: 'var(--teal)', textDecoration: 'none', letterSpacing: '0.1em' }}>
+                  Help us link this transaction →
+                </a>
+              </div>
+            </>
+          )}
         </div>
       </>
     );

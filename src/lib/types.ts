@@ -239,7 +239,7 @@ export interface TraceData {
     item?: { id?: string; number?: string; subject?: string };
     suggestion?: { count?: number; previewSubject?: string };
     vote?: { outcome?: string };
-    project?: { name?: string; status?: string };
+    project?: { id?: string; name?: string; status?: string };
     legalBasis?: { id?: string; name?: string; type?: string; number?: string; status?: string; link?: string };
   };
 }
