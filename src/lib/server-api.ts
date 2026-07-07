@@ -5,6 +5,7 @@
 // restrictions the proxy exists to work around. Caching is delegated to
 // Next's fetch Data Cache (revalidate matches the proxy's 5-minute freshness
 // window) so repeat requests for the same record don't hit the gateway every time.
+import { sanitizeSankeyData } from './sankey';
 import type { ItemRecordData, ItemsResponse, OrgData, OrgsResponse, ProjectRecordData, ProjectsResponse, SankeyData } from './types';
 
 const GATEWAY = 'https://app.democracydistributed.com/api/gateway';
@@ -70,5 +71,5 @@ export async function fetchSankeyServer(orgId: string): Promise<SankeyData> {
   if (!data || !data.revenue_data || !data.spending_data) {
     throw new Error('Unexpected data shape. Got: ' + JSON.stringify(data).slice(0, 300));
   }
-  return data;
+  return sanitizeSankeyData(data);
 }

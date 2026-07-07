@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check:sankey": "node scripts/check-sankey-health.mjs"
   },
   "dependencies": {
     "d3-sankey": "^0.12.3",

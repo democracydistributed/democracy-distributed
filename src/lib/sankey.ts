@@ -27,6 +27,32 @@ export function treeDepth(node: RawNode | undefined): number {
   return 1 + Math.max(...node.children.map((c) => treeDepth(c)));
 }
 
+// Placeholder/test records (e.g. a leftover "Test $10" entry) shouldn't reach
+// the production chart. This is a frontend safety net — the durable fix is
+// removing the record at the data source.
+function isTestPlaceholder(name: string): boolean {
+  const seg = (name.split(' → ').pop() || '').trim();
+  return /^test(\s*[$]?\s*10(\.00)?)?$/i.test(seg);
+}
+
+function stripTestPlaceholders(node: RawNode): RawNode {
+  if (!node.children && !node.entries) return node;
+  return {
+    ...node,
+    children: node.children?.filter((c) => !isTestPlaceholder(c.name)).map(stripTestPlaceholders),
+    entries: node.entries?.filter((e) => !isTestPlaceholder(e.name)),
+  };
+}
+
+/** Drops test/placeholder records from the revenue and spending trees before charting. */
+export function sanitizeSankeyData(data: SankeyData): SankeyData {
+  return {
+    ...data,
+    revenue_data: { ...data.revenue_data, children: data.revenue_data.children.map(stripTestPlaceholders) },
+    spending_data: { ...data.spending_data, children: data.spending_data.children.map(stripTestPlaceholders) },
+  };
+}
+
 export function buildGraph(data: SankeyData): { nodes: GraphNode[]; links: GraphLink[] } {
   const nodes: GraphNode[] = [];
   const links: GraphLink[] = [];
@@ -61,8 +87,30 @@ export function buildGraph(data: SankeyData): { nodes: GraphNode[]; links: Graph
     return (node.children || []).reduce((s, c) => s + sumLeaves(c), 0);
   }
 
+  // Merge small flows (below `threshold`) at a given level into a single
+  // synthetic leaf so the deepest column of the chart doesn't render dozens
+  // of overlapping labels for negligible amounts.
+  function collapseSmall(children: RawNode[], threshold: number, otherLabel: string): RawNode[] {
+    if (children.length < 3) return children;
+    const keep: RawNode[] = [];
+    const collapse: RawNode[] = [];
+    children.forEach((c) => (sumLeaves(c) < threshold ? collapse.push(c) : keep.push(c)));
+    if (collapse.length < 2) return children;
+    const parentPrefix = children[0].name.split(' → ').slice(0, -1).join(' → ');
+    const other: RawNode = {
+      name: (parentPrefix ? parentPrefix + ' → ' : '') + otherLabel,
+      amount: collapse.reduce((s, c) => s + sumLeaves(c), 0),
+      entries: collapse,
+    };
+    return [...keep, other];
+  }
+
   function walk(node: RawNode, side: 'credit' | 'debit', parentIdx: number, colour: string, prefix: string, depth: number) {
-    (node.children || []).forEach((child, ci) => {
+    const total = side === 'credit' ? data.revenue : data.spending;
+    const threshold = total * 0.01;
+    const otherLabel = side === 'credit' ? 'Other' : 'Other divisions';
+    const children = collapseSmall(node.children || [], threshold, otherLabel);
+    children.forEach((child, ci) => {
       const label = child.name.split(' → ').pop() as string;
       const id = prefix + '-' + ci;
       const val = sumLeaves(child);

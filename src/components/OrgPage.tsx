@@ -6,8 +6,10 @@ import Nav from './Nav';
 import Footer from './Footer';
 import PageHeader from './PageHeader';
 import Drawer from './Drawer';
+import MobileSankeySummary from './MobileSankeySummary';
 import { useTheme } from '@/context/ThemeContext';
 import { useDrawer } from '@/hooks/useDrawer';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { detectScale, makeFmt } from '@/lib/format';
 import type { OrgData, SankeyData } from '@/lib/types';
 import ItemsTab from './tabs/ItemsTab';
@@ -35,6 +37,8 @@ interface Props {
 export default function OrgPage({ orgId, initialOrg, initialSankey, initialError }: Props) {
   const { theme } = useTheme();
   const drawer = useDrawer();
+  const isMobile = useIsMobile();
+  const [showFullChart, setShowFullChart] = useState(false);
 
   const [activeTab, setActiveTab] = useState<Tab>('finances');
   // Tabs are lazy-loaded: a pane mounts (and fetches) only once visited.
@@ -100,7 +104,16 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
                 <span className="err-tip">Tip: add ?org=toronto to URL to load demo data</span>
               </div>
             ) : data ? (
-              <SankeyChart data={data} fmt={fmt} theme={theme} onOpenNode={drawer.openNode} />
+              isMobile && !showFullChart ? (
+                <MobileSankeySummary
+                  data={data}
+                  fmt={fmt}
+                  onOpenNode={drawer.openNode}
+                  onViewFullChart={() => setShowFullChart(true)}
+                />
+              ) : (
+                <SankeyChart data={data} fmt={fmt} theme={theme} onOpenNode={drawer.openNode} />
+              )
             ) : (
               <div className="sankey-wrap">
                 <div style={{ padding: '40px', fontFamily: "'DM Mono',monospace", fontSize: '12px', color: 'var(--tm)' }}>Loading financial data…</div>

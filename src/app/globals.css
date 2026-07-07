@@ -92,7 +92,7 @@ html.light .page-header::before { opacity:.3; }
 @media(min-width:680px){ .tab-bar{padding:0 40px;} .tab{font-size:11px;padding:16px 22px;} }
 
 /* ── CONTENT ──────────────────────────────────────────── */
-.content { max-width:1100px; margin:0 auto; padding:32px 20px 80px; }
+.content { max-width:1100px; width:100%; min-width:0; margin:0 auto; padding:32px 20px 80px; box-sizing:border-box; }
 @media(min-width:680px){ .content{padding:40px 48px 100px;} }
 .tab-pane { display:none; } .tab-pane.active { display:block; }
 .sec-lbl { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.25em; text-transform:uppercase; color:var(--amber-text, var(--amber)); display:flex; align-items:center; gap:10px; margin-bottom:14px; }
@@ -120,6 +120,26 @@ html.light .page-header::before { opacity:.3; }
 .sankey-link { fill:none; transition:opacity 0.15s; }
 .sankey-hint { font-family:'DM Mono',monospace; font-size:9px; color:var(--tm); padding:8px 20px 14px; letter-spacing:.15em; text-transform:uppercase; }
 
+/* ── MOBILE SANKEY SUMMARY ────────────────────────────── */
+.mob-sankey { padding:20px 16px 8px; }
+.mob-flow-bar { margin-bottom:18px; }
+.mob-flow-lbl { display:flex; justify-content:space-between; align-items:baseline; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.15em; color:var(--tm); margin-bottom:6px; }
+.mob-flow-amt { font-size:13px; font-weight:500; }
+.mob-flow-amt-rev { color:#2dd4bf; }
+.mob-flow-amt-spend { color:var(--amber-text, var(--amber)); }
+.mob-flow-track { display:flex; width:100%; height:28px; border-radius:6px; overflow:hidden; background:var(--cdim); }
+.mob-flow-track-rev { background:#2dd4bf; }
+.mob-flow-seg { height:100%; border:none; padding:0; min-width:4px; cursor:pointer; transition:opacity 0.15s; }
+.mob-flow-seg:hover, .mob-flow-seg:focus-visible { opacity:0.8; outline:none; }
+.mob-cat-list { display:flex; flex-direction:column; margin-top:8px; }
+.mob-cat-row { display:flex; align-items:center; gap:10px; width:100%; min-height:44px; padding:8px 4px; border:none; border-bottom:1px solid var(--border); background:none; cursor:pointer; text-align:left; }
+.mob-cat-row:active { background:var(--amber-dim); }
+.mob-cat-swatch { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.mob-cat-name { flex:1; min-width:0; font-size:13px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mob-cat-amt { font-family:'DM Mono',monospace; font-size:13px; font-weight:500; color:var(--amber-text, var(--amber)); flex-shrink:0; }
+.mob-view-full { display:block; width:100%; margin-top:14px; padding:12px; min-height:44px; font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--amber-text, var(--amber)); background:none; border:1px solid rgba(232,160,32,.3); border-radius:6px; cursor:pointer; }
+.mob-view-full:hover { background:var(--amber-dim); }
+
 /* ── CONTRIBUTE STRIP ─────────────────────────────────── */
 .cs { margin-top:40px; padding:16px 20px; background:var(--amber-dim); border:1px solid rgba(232,160,32,.18); border-radius:8px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
 .cs-txt h4 { font-size:13px; font-weight:600; color:var(--text); margin-bottom:2px; }
@@ -128,10 +148,10 @@ html.light .page-header::before { opacity:.3; }
 .cs-btn:hover { background:var(--amber-l); }
 
 /* ── DRAWER ───────────────────────────────────────────── */
-.overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(3px); opacity:0; pointer-events:none; transition:opacity 0.25s; z-index:55; }
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,0.35); opacity:0; pointer-events:none; transition:opacity 0.25s; z-index:55; }
 .overlay.open { opacity:1; pointer-events:all; }
-.drw { position:fixed; top:0; right:0; bottom:0; width:460px; max-width:95vw; background:var(--bg-card); border-left:3px solid var(--amber); transform:translateX(100%); transition:transform 0.3s cubic-bezier(.16,1,.3,1); z-index:60; display:flex; flex-direction:column; overflow:hidden; }
-.drw.open { transform:translateX(0); }
+.drw { position:fixed; top:0; right:0; bottom:0; width:460px; max-width:95vw; background:var(--bg-card); border-left:3px solid var(--amber); transform:translateX(100%); transition:transform 0.3s cubic-bezier(.16,1,.3,1); z-index:60; display:flex; flex-direction:column; overflow:hidden; pointer-events:none; }
+.drw.open { transform:translateX(0); pointer-events:auto; }
 .drw-head { padding:20px 24px 16px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .drw-eyebrow { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.25em; text-transform:uppercase; color:var(--amber-text, var(--amber)); margin-bottom:6px; }
 .drw-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--th); margin-bottom:2px; }
@@ -162,8 +182,11 @@ html.light .page-header::before { opacity:.3; }
 .vote-pill { font-family:'DM Mono',monospace; font-size:10px; padding:3px 10px; border-radius:20px; background:rgba(74,222,128,0.12); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
 .vote-pill.against { background:rgba(224,82,82,0.12); color:var(--red); border-color:rgba(224,82,82,0.2); }
 @media(max-width:679px){
-  .drw { top:auto; left:0; right:0; bottom:0; width:100%; max-width:100%; max-height:88vh; border-left:none; border-top:3px solid var(--amber); border-radius:14px 14px 0 0; transform:translateY(100%); }
-  .drw.open { transform:translateY(0); }
+  /* A fixed-distance slide (not translateY(100%)) so the animation doesn't
+     depend on this box's own auto/content-driven height, which can change
+     as the sheet's content mounts. */
+  .drw { top:auto; left:0; right:0; bottom:0; width:100%; max-width:100%; max-height:60vh; border-left:none; border-top:3px solid var(--amber); border-radius:14px 14px 0 0; transform:translateY(24px); opacity:0; transition:transform 0.3s cubic-bezier(.16,1,.3,1), opacity 0.2s; }
+  .drw.open { transform:translateY(0); opacity:1; }
 }
 
 /* ── ITEMS ────────────────────────────────────────────── */

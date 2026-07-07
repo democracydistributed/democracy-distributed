@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { sankey, sankeyLinkHorizontal, sankeyLeft } from 'd3-sankey';
 import { select } from 'd3-selection';
-import { buildGraph, countLeaves, treeDepth, CREDIT_COLOURS, DEBIT_COLOURS } from '@/lib/sankey';
+import { buildGraph, treeDepth, CREDIT_COLOURS, DEBIT_COLOURS } from '@/lib/sankey';
 import type { Formatter } from '@/lib/format';
 import type { GraphNode, SankeyData } from '@/lib/types';
 
@@ -56,16 +56,22 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
       const W = LABEL_ZONE * 2 + numCols * COL_STRIDE;
       const LM = LABEL_ZONE;
 
-      const totalLeaves = Math.max(countLeaves(data.revenue_data.children[0]), countLeaves(data.spending_data.children[0]));
-      const nodePad = totalLeaves > 30 ? 6 : totalLeaves > 15 ? 12 : 20;
-      const H = Math.max(480, Math.min(860, window.innerHeight * 0.8));
+      const { nodes, links } = buildGraph(data);
+
+      // Size the chart off the *post-collapse* node counts (not the raw tree's
+      // leaf count), and reserve enough vertical room per node that stacked
+      // value+label text can't collide even in the densest column.
+      const creditSideCount = nodes.filter((n) => n.type.startsWith('credit') && n.type !== 'org').length;
+      const debitSideCount = nodes.filter((n) => n.type.startsWith('debit')).length;
+      const maxSideCount = Math.max(creditSideCount, debitSideCount, 1);
+      const nodePad = maxSideCount > 30 ? 6 : maxSideCount > 15 ? 12 : 20;
+      const MIN_PER_NODE = 26;
+      const H = Math.max(480, Math.min(860, window.innerHeight * 0.8), maxSideCount * MIN_PER_NODE);
       const BAR_W = 24;
 
       svg.setAttribute('width', String(W));
       svg.setAttribute('height', String(H));
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-
-      const { nodes, links } = buildGraph(data);
 
       const sankeyGen = sankey<any, any>()
         .nodeId((d: any) => d.index)
@@ -202,18 +208,27 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
               .on('click', () => onOpenRef.current(n as GraphNode & { value: number }));
           }
 
-          const valText = fmt(n.value);
-          const lblText = n.label.length > MAXCHAR ? n.label.slice(0, MAXCHAR) + '…' : n.label;
-          const labelOnRight = n.type === 'debit-leaf' || n.type === 'credit-category' || n.type === 'credit-sub';
-          const lx = labelOnRight ? nW + 8 : -8;
-          const anchor = labelOnRight ? 'start' : 'end';
+          // A node's *true* (unfloored) layout height — below this, the two
+          // stacked label lines can't fit without bleeding into the next
+          // node's label in the same column. Skip the label (the bar, hit
+          // target and tooltip still work) rather than let text overlap.
+          const rawNH = n.y1 - n.y0;
+          const SHOW_LABEL_MIN = 18;
 
-          if (!isLeaf) {
-            g.append('text').attr('x', lx).attr('y', Math.max(nH / 2 - 5, 6)).attr('text-anchor', anchor).attr('fill', C.amber).attr('font-family', 'DM Mono, monospace').attr('font-size', '12px').attr('font-weight', '500').text(valText);
-            g.append('text').attr('x', lx).attr('y', Math.max(nH / 2 + 10, 20)).attr('text-anchor', anchor).attr('fill', C.muted).attr('font-family', 'DM Mono, monospace').attr('font-size', '10px').text(lblText);
-          } else {
-            g.append('text').attr('x', lx).attr('y', Math.max(nH / 2 - 4, 6)).attr('text-anchor', anchor).attr('fill', C.amber).attr('font-family', 'DM Mono, monospace').attr('font-size', '11px').attr('font-weight', '500').text(valText);
-            g.append('text').attr('x', lx).attr('y', Math.max(nH / 2 + 9, 17)).attr('text-anchor', anchor).attr('fill', C.muted).attr('font-family', 'DM Mono, monospace').attr('font-size', '9px').text(lblText);
+          if (rawNH >= SHOW_LABEL_MIN) {
+            const valText = fmt(n.value);
+            const lblText = n.label.length > MAXCHAR ? n.label.slice(0, MAXCHAR) + '…' : n.label;
+            const labelOnRight = n.type === 'debit-leaf' || n.type === 'credit-category' || n.type === 'credit-sub';
+            const lx = labelOnRight ? nW + 8 : -8;
+            const anchor = labelOnRight ? 'start' : 'end';
+
+            if (!isLeaf) {
+              g.append('text').attr('x', lx).attr('y', Math.max(nH / 2 - 5, 6)).attr('text-anchor', anchor).attr('fill', C.amber).attr('font-family', 'DM Mono, monospace').attr('font-size', '12px').attr('font-weight', '500').text(valText);
+              g.append('text').attr('x', lx).attr('y', Math.max(nH / 2 + 10, 20)).attr('text-anchor', anchor).attr('fill', C.muted).attr('font-family', 'DM Mono, monospace').attr('font-size', '10px').text(lblText);
+            } else {
+              g.append('text').attr('x', lx).attr('y', Math.max(nH / 2 - 4, 6)).attr('text-anchor', anchor).attr('fill', C.amber).attr('font-family', 'DM Mono, monospace').attr('font-size', '11px').attr('font-weight', '500').text(valText);
+              g.append('text').attr('x', lx).attr('y', Math.max(nH / 2 + 9, 17)).attr('text-anchor', anchor).attr('fill', C.muted).attr('font-family', 'DM Mono, monospace').attr('font-size', '9px').text(lblText);
+            }
           }
         }
       });
