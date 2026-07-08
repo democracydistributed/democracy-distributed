@@ -87,30 +87,8 @@ export function buildGraph(data: SankeyData): { nodes: GraphNode[]; links: Graph
     return (node.children || []).reduce((s, c) => s + sumLeaves(c), 0);
   }
 
-  // Merge small flows (below `threshold`) at a given level into a single
-  // synthetic leaf so the deepest column of the chart doesn't render dozens
-  // of overlapping labels for negligible amounts.
-  function collapseSmall(children: RawNode[], threshold: number, otherLabel: string): RawNode[] {
-    if (children.length < 3) return children;
-    const keep: RawNode[] = [];
-    const collapse: RawNode[] = [];
-    children.forEach((c) => (sumLeaves(c) < threshold ? collapse.push(c) : keep.push(c)));
-    if (collapse.length < 2) return children;
-    const parentPrefix = children[0].name.split(' → ').slice(0, -1).join(' → ');
-    const other: RawNode = {
-      name: (parentPrefix ? parentPrefix + ' → ' : '') + otherLabel,
-      amount: collapse.reduce((s, c) => s + sumLeaves(c), 0),
-      entries: collapse,
-    };
-    return [...keep, other];
-  }
-
   function walk(node: RawNode, side: 'credit' | 'debit', parentIdx: number, colour: string, prefix: string, depth: number) {
-    const total = side === 'credit' ? data.revenue : data.spending;
-    const threshold = total * 0.01;
-    const otherLabel = side === 'credit' ? 'Other' : 'Other divisions';
-    const children = collapseSmall(node.children || [], threshold, otherLabel);
-    children.forEach((child, ci) => {
+    (node.children || []).forEach((child, ci) => {
       const label = child.name.split(' → ').pop() as string;
       const id = prefix + '-' + ci;
       const val = sumLeaves(child);
