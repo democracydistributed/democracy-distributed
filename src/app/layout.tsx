@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { ThemeProvider, ThemeScript } from '@/context/ThemeContext';
 import { SITE_URL } from '@/lib/site';
@@ -40,6 +41,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
+        <Script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="961a64c0-6d79-474f-b7ce-d292e9399f2f"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
