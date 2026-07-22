@@ -58,7 +58,18 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
 
       const totalLeaves = Math.max(countLeaves(data.revenue_data.children[0]), countLeaves(data.spending_data.children[0]));
       const nodePad = totalLeaves > 30 ? 6 : totalLeaves > 15 ? 12 : 20;
-      const H = Math.max(480, Math.min(860, window.innerHeight * 0.8));
+      // Two separate heights, on purpose:
+      //  • H is the RENDER height — it still tracks the viewport (0.8×), so the
+      //    chart shrinks to fit small screens and fills big ones.
+      //  • FOLD_REF_H is a FIXED reference the fold decision is measured against.
+      // Deciding folds against a constant height (not the viewport) keeps the
+      // SAME items folded on every screen. Otherwise a short viewport shrinks
+      // every bar, drops more of them under MERGE_H, and buckets far more (e.g.
+      // "24 more" hiding ~$1.5B) than a big screen does ("21 more" hiding
+      // ~$363M) for the identical org. HEIGHT_SCALE is a purely visual knob.
+      const HEIGHT_SCALE = 0.9;
+      const H = Math.round(Math.max(480, Math.min(860, window.innerHeight * 0.8)) * HEIGHT_SCALE);
+      const FOLD_REF_H = Math.round(760 * HEIGHT_SCALE); // ≈684 — the density that yields "21 more" on this data
       const BAR_W = 24;
 
       svg.setAttribute('width', String(W));
@@ -67,21 +78,147 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
 
       const { nodes, links } = buildGraph(data);
 
-      const sankeyGen = sankey<any, any>()
-        .nodeId((d: any) => d.index)
-        .nodeWidth(BAR_W)
-        .nodePadding(nodePad)
-        .extent([
-          [LM, 16],
-          [W - LM, H - 16],
-        ])
-        .nodeAlign(sankeyLeft);
-
       // Typed as `any`: after layout, d3-sankey marks x0/y0/etc as optional,
       // which fights strict-mode arithmetic. We know they're populated here.
-      const graph: any = sankeyGen({
+      const makeSankey = (height: number) =>
+        sankey<any, any>()
+          .nodeId((d: any) => d.index)
+          .nodeWidth(BAR_W)
+          .nodePadding(nodePad)
+          .extent([
+            [LM, 16],
+            [W - LM, height - 16],
+          ])
+          .nodeAlign(sankeyLeft);
+
+      // ── How the chart gets built (3 steps) ───────────────────────────────
+      // Dense orgs have columns with dozens of line items whose labels collide.
+      // Rather than hide labels or shrink text, we fold the unreadable tail into
+      // "N more" bands. That happens in three steps:
+      //   1. MEASURE  — lay the full tree out once at a fixed reference height,
+      //                 purely to learn how tall each node would be.
+      //   2. DECIDE   — any node too short for its label is a fold candidate;
+      //                 group them per parent into one "N more" band each.
+      //   3. RELAYOUT — rebuild a reduced graph (bands replacing their members,
+      //                 folded subtrees removed) and run the layout AGAIN on it.
+      // Step 3 re-running d3 is what keeps this simple: d3 positions the bands
+      // and anchors every ribbon itself, so there's no manual geometry to
+      // maintain. Folding is visual only — no underlying data is merged.
+      //
+      // ---- Pass 1: measure --------------------------------------------------
+      // Lay the full tree out at the FIXED reference height purely to learn each
+      // node's pixel height there, so the fold decision (below) is the same on
+      // every screen regardless of the actual render height.
+      const measured: any = makeSankey(FOLD_REF_H)({
         nodes: nodes.map((n, i) => ({ ...n, index: i })),
         links: links.map((l) => ({ ...l })),
+      });
+
+      // A node shorter than its two-line label is a merge candidate. When a
+      // parent has 2+ such children we fold ALL of them — wherever the layout
+      // happened to scatter them — into ONE "N more" band for that parent (one
+      // band per parent, never one per accidental adjacency). Nothing merges in
+      // the underlying data: the band's dataNode just lists its real children,
+      // so its drawer shows them exactly as they'd appear on their own. A merged
+      // node's own descendants drop out of the chart and are reached by clicking
+      // the band, so they don't orphan-render with no parent bar to hang off.
+      const MERGE_H = 20;
+      // Group thin siblings by parent AND side. org-centre is the shared parent
+      // of both revenue (credit, flowing category→org) and spending (debit,
+      // flowing org→category) top-level nodes; merging across that boundary
+      // would build a band with links pointing both into and out of org — a
+      // cycle d3-sankey rejects ("circular link"). Every non-org parent has
+      // single-side children, so keying by side only ever splits org's group.
+      const sideOf = (n: any) => (typeof n.type === 'string' && n.type.startsWith('credit') ? 'c' : 'd');
+      const thinByParent = new Map<string, any[]>();
+      measured.nodes.forEach((n: any) => {
+        if (n.id === 'org-centre' || n.parent === undefined || n.parent === null) return;
+        if (n.y1 - n.y0 >= MERGE_H) return;
+        const key = n.parent + ':' + sideOf(n);
+        if (!thinByParent.has(key)) thinByParent.set(key, []);
+        thinByParent.get(key)!.push(n);
+      });
+
+      const childrenOf = new Map<number, number[]>();
+      measured.nodes.forEach((n: any) => {
+        if (n.parent === undefined || n.parent === null) return;
+        if (!childrenOf.has(n.parent)) childrenOf.set(n.parent, []);
+        childrenOf.get(n.parent)!.push(n.index);
+      });
+
+      // Everything that gets folded away: each thin node in a 2+ group, plus
+      // its whole subtree. Compute this FIRST — before making any bands — so we
+      // can tell a surviving parent (which needs an "N more" band for its thin
+      // children) from a folded one (whose entire subtree is gone, so its thin
+      // children must NOT spawn their own band and orphan-render).
+      const mergedAwayIdx = new Set<number>();
+      thinByParent.forEach((thin) => {
+        if (thin.length >= 2) thin.forEach((t: any) => mergedAwayIdx.add(t.index));
+      });
+      const excludedIdx = new Set<number>();
+      const collectSubtree = (idx: number) => {
+        excludedIdx.add(idx);
+        (childrenOf.get(idx) || []).forEach(collectSubtree);
+      };
+      mergedAwayIdx.forEach((idx) => collectSubtree(idx));
+
+      const bandForNode = new Map<number, any>(); // original node index -> its band
+      const bandsList: any[] = [];
+      thinByParent.forEach((thin) => {
+        if (thin.length < 2) return;
+        const parentIdx = thin[0].parent; // all siblings in a group share one parent
+        if (excludedIdx.has(parentIdx)) return; // parent is folded too → no band, subtree just drops
+        const first = thin[0];
+        const band: any = {
+          ...first,
+          id: `merged-${first.id}`,
+          label: `${thin.length} more`,
+          dataNode: { name: `${thin.length} more`, children: thin.map((t: any) => t.dataNode) },
+        };
+        thin.forEach((t: any) => bandForNode.set(t.index, band));
+        bandsList.push(band);
+      });
+
+      // ---- Build the reduced graph -----------------------------------------
+      // d3-sankey matches links to nodes by array position, so the surviving
+      // nodes + new bands need fresh positions. `__newIndex` is that position,
+      // stashed on each node just long enough to rewrite the links below.
+      const survivors = measured.nodes.filter((n: any) => !excludedIdx.has(n.index));
+      const reducedNodes = [...survivors, ...bandsList];
+      reducedNodes.forEach((n: any, i: number) => { n.__newIndex = i; });
+
+      // Where an original node ended up: its band if it was folded, null if it
+      // vanished with a folded ancestor, otherwise the node itself.
+      const resolve = (oldIdx: number): any | null => {
+        const band = bandForNode.get(oldIdx);
+        if (band) return band;
+        if (excludedIdx.has(oldIdx)) return null;
+        return measured.nodes[oldIdx];
+      };
+
+      const reducedLinkByKey = new Map<string, any>();
+      const reducedLinks: any[] = [];
+      links.forEach((l: any) => {
+        const s = resolve(l.source);
+        const t = resolve(l.target);
+        if (!s || !t || s === t) return;
+        const key = `${s.__newIndex}->${t.__newIndex}`;
+        let acc = reducedLinkByKey.get(key);
+        if (!acc) {
+          acc = { source: s.__newIndex, target: t.__newIndex, value: 0 };
+          reducedLinkByKey.set(key, acc);
+          reducedLinks.push(acc);
+        }
+        acc.value += l.value || 0;
+      });
+
+      // ---- Pass 2: final layout --------------------------------------------
+      // Re-run the layout on the reduced graph at the actual (viewport-tracking)
+      // render height. The fold set is already fixed from pass 1, so this only
+      // affects how tall the same nodes/bands are drawn — not which ones exist.
+      const graph: any = makeSankey(H)({
+        nodes: reducedNodes,
+        links: reducedLinks,
       });
 
       // Force org-centre to visual center; scale each side proportionally into its half.
@@ -230,6 +367,9 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
         if (['debit-category', 'debit-leaf', 'debit-sub'].includes(tN.type)) colour = tN.colour || DEBIT_COLOURS[0];
         if (['debit-category', 'debit-sub'].includes(sN.type)) colour = sN.colour || DEBIT_COLOURS[0];
 
+        // A merged band is a normal node in the reduced graph, so its single
+        // combined ribbon lands here like any other — clicking it opens the
+        // same drawer the band's bar does.
         const clickNode: any =
           ['credit-leaf', 'credit-category', 'credit-sub'].includes(sN.type) ? sN :
           ['debit-category', 'debit-leaf', 'debit-sub'].includes(tN.type) ? tN :

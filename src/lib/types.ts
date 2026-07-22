@@ -48,6 +48,8 @@ export interface GraphNode {
   hasChain: boolean;
   dataNode: RawNode | null;
   index?: number;
+  /** Index (into the nodes array) of this node's parent in the tree. Undefined for org-centre. */
+  parent?: number;
 }
 
 export interface GraphLink {

@@ -65,6 +65,7 @@ export function buildGraph(data: SankeyData): { nodes: GraphNode[]; links: Graph
     colour: string,
     planned?: number,
     dataNode?: RawNode | null,
+    parent?: number,
   ): number {
     if (nodeIndex[id] === undefined) {
       nodeIndex[id] = nodes.length;
@@ -77,6 +78,7 @@ export function buildGraph(data: SankeyData): { nodes: GraphNode[]; links: Graph
         legalBasis: '',
         hasChain: false,
         dataNode: dataNode || null,
+        parent,
       });
     }
     return nodeIndex[id];
@@ -95,7 +97,7 @@ export function buildGraph(data: SankeyData): { nodes: GraphNode[]; links: Graph
       if (!child.children) {
         const leafType = side === 'credit' ? 'credit-leaf' : 'debit-leaf';
         const leafColour = side === 'credit' ? LEAF_CREDIT : LEAF_DEBIT;
-        const idx = getOrAdd(id, label, leafType, leafColour);
+        const idx = getOrAdd(id, label, leafType, leafColour, undefined, undefined, parentIdx);
         nodes[idx].legalBasis = child.legalBasis || '';
         nodes[idx].hasChain = child.hasChain || false;
         nodes[idx].dataNode = child;
@@ -107,7 +109,7 @@ export function buildGraph(data: SankeyData): { nodes: GraphNode[]; links: Graph
       } else {
         const nodeType =
           side === 'credit' ? (depth === 0 ? 'credit-category' : 'credit-sub') : depth === 0 ? 'debit-category' : 'debit-sub';
-        const idx = getOrAdd(id, label, nodeType, colour, 0, child);
+        const idx = getOrAdd(id, label, nodeType, colour, 0, child, parentIdx);
         links.push(side === 'credit' ? { source: idx, target: parentIdx, value: val } : { source: parentIdx, target: idx, value: val });
         walk(child, side, idx, colour, id, depth + 1);
       }
@@ -121,7 +123,7 @@ export function buildGraph(data: SankeyData): { nodes: GraphNode[]; links: Graph
     const catId = 'bc-credit-' + ci;
     const colour = CREDIT_COLOURS[ci % CREDIT_COLOURS.length];
     const val = sumLeaves(cat);
-    const idx = getOrAdd(catId, label, 'credit-category', colour, 0, cat);
+    const idx = getOrAdd(catId, label, 'credit-category', colour, 0, cat, nodeIndex['org-centre']);
     links.push({ source: idx, target: nodeIndex['org-centre'], value: val });
     walk(cat, 'credit', idx, colour, catId, 0);
   });
@@ -131,7 +133,7 @@ export function buildGraph(data: SankeyData): { nodes: GraphNode[]; links: Graph
     const catId = 'bc-debit-' + ci;
     const colour = DEBIT_COLOURS[ci % DEBIT_COLOURS.length];
     const val = sumLeaves(cat);
-    const idx = getOrAdd(catId, label, 'debit-category', colour, cat.planned || 0, cat);
+    const idx = getOrAdd(catId, label, 'debit-category', colour, cat.planned || 0, cat, nodeIndex['org-centre']);
     links.push({ source: nodeIndex['org-centre'], target: idx, value: val });
     walk(cat, 'debit', idx, colour, catId, 0);
   });
