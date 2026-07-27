@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { cache, type Entry } from '@/lib/gateway-proxy-cache';
 
 // Caching reverse-proxy for the gateway.
 //
@@ -19,17 +20,6 @@ const GATEWAY = 'https://app.democracydistributed.com/api/gateway';
 const FRESH_MS = 5 * 60 * 1000; // serve from cache, no upstream call
 const STALE_MS = 60 * 60 * 1000; // serve stale + refresh in background
 const CACHE_CONTROL = 'public, s-maxage=300, stale-while-revalidate=3600';
-
-interface Entry {
-  body: string;
-  status: number;
-  contentType: string;
-  ts: number;
-  revalidating?: boolean;
-}
-
-// Module-level cache: persists across requests in the same server process.
-const cache = new Map<string, Entry>();
 
 interface Upstream {
   ok: boolean;

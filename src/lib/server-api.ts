@@ -11,8 +11,10 @@ import type { ItemRecordData, ItemsResponse, OrgData, OrgsResponse, ProjectRecor
 const GATEWAY = 'https://app.democracydistributed.com/api/gateway';
 const REVALIDATE_SECONDS = 300;
 
+const CACHE_TAG = 'gateway-data';
+
 function get(url: string) {
-  return fetch(url, { next: { revalidate: REVALIDATE_SECONDS } });
+  return fetch(url, { next: { revalidate: REVALIDATE_SECONDS, tags: [CACHE_TAG] } });
 }
 
 export async function fetchItemServer(itemId: string): Promise<ItemRecordData> {

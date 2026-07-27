@@ -16,7 +16,8 @@
 
 # env files (may contain secrets)
 .env
-.env*.local
+.env.*
+!.env.example
 
 # misc OS/editor junk
 .DS_Store
