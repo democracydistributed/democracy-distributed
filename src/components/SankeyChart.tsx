@@ -80,7 +80,7 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
 
       // Typed as `any`: after layout, d3-sankey marks x0/y0/etc as optional,
       // which fights strict-mode arithmetic. We know they're populated here.
-      const makeSankey = (height: number) =>
+      const makeSankey = (height: number, align: (node: any, n: number) => number = sankeyLeft) =>
         sankey<any, any>()
           .nodeId((d: any) => d.index)
           .nodeWidth(BAR_W)
@@ -89,7 +89,7 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
             [LM, 16],
             [W - LM, height - 16],
           ])
-          .nodeAlign(sankeyLeft);
+          .nodeAlign(align);
 
       // ── How the chart gets built (3 steps) ───────────────────────────────
       // Dense orgs have columns with dozens of line items whose labels collide.
@@ -216,10 +216,69 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
       // Re-run the layout on the reduced graph at the actual (viewport-tracking)
       // render height. The fold set is already fixed from pass 1, so this only
       // affects how tall the same nodes/bands are drawn — not which ones exist.
-      const graph: any = makeSankey(H)({
-        nodes: reducedNodes,
-        links: reducedLinks,
+      //
+      // Revenue categories don't all sit at the same natural depth: one whose
+      // children are all leaves (Property Tax) is a level shallower than one
+      // with a sub-category tier (Government transfers → Ontario Conditional
+      // Grants → leaf). They still have to line up in a single column.
+      //
+      // So pin the WHOLE revenue side relative to that column: each node sits
+      // `d` columns to its left, where `d` is the node's distance below its
+      // top-level category. Pinning only the categories is not enough — that
+      // strands their children at their natural depth, so a shallow category's
+      // leaves have to fly over an intervening column to reach their parent
+      // (Property Tax's leaves sailing over the sub-category column, twice as
+      // long as every other ribbon). Pinning the whole side keeps every revenue
+      // ribbon exactly one column long.
+      //
+      // Expressing this as a nodeAlign — i.e. BEFORE layout — is what lets d3
+      // own all spacing and collision handling per column. An earlier version
+      // moved bars sideways *after* layout instead, which dropped them on top
+      // of whatever already occupied the destination column.
+      const distCache = new Map<number, number>();
+      const distFromIdx = (idx: number): number => {
+        const hit = distCache.get(idx);
+        if (hit !== undefined) return hit;
+        const n: any = nodes[idx];
+        const d =
+          !n || n.type === 'credit-category' || n.parent === undefined || n.parent === null
+            ? 0
+            : 1 + distFromIdx(n.parent);
+        distCache.set(idx, d);
+        return d;
+      };
+      // A band is spread from one of its members, so it inherits that member's
+      // parent and lands in the column its members would have occupied.
+      const distBelowCategory = (n: any): number =>
+        n.type === 'credit-category' || n.parent === undefined || n.parent === null
+          ? 0
+          : 1 + distFromIdx(n.parent);
+
+      const isCredit = (n: any) => typeof n.type === 'string' && n.type.startsWith('credit');
+      let categoryCol = 0;
+      reducedNodes.forEach((n: any) => {
+        if (isCredit(n)) categoryCol = Math.max(categoryCol, distBelowCategory(n));
       });
+      const align = (node: any, n: number) =>
+        isCredit(node) ? categoryCol - distBelowCategory(node) : sankeyLeft(node, n);
+
+      // d3 mutates whatever it's handed (links get their source/target rewritten
+      // from indices to node objects), so hand it a fresh copy each attempt.
+      const layoutOn = (alignFn?: (node: any, n: number) => number) =>
+        makeSankey(H, alignFn)({
+          nodes: reducedNodes.map((n: any) => ({ ...n })),
+          links: reducedLinks.map((l: any) => ({ ...l })),
+        });
+
+      // Fall back to d3's own alignment if the pinned layout turns out unusable
+      // — e.g. folding emptied a whole level, leaving a column with no nodes,
+      // which d3 can't scale. A slightly misaligned chart beats a white screen.
+      let graph: any;
+      try {
+        graph = layoutOn(align);
+      } catch {
+        graph = layoutOn();
+      }
 
       // Force org-centre to visual center; scale each side proportionally into its half.
       {
@@ -247,21 +306,6 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
               const srcRange = (W - LM) - srcCX1;
               n.x0 = srcRange > 0 ? newLeft + (n.x0 - srcCX1) * ((W - LM) - newLeft) / srcRange : newLeft;
               n.x1 = n.x0 + nW;
-            }
-          });
-        }
-      }
-
-      // Align revenue root categories to the same column.
-      {
-        const creditCats = graph.nodes.filter((n: any) => n.type === 'credit-category');
-        if (creditCats.length > 1) {
-          const maxX0 = Math.max(...creditCats.map((n: any) => n.x0));
-          const barW = creditCats[0].x1 - creditCats[0].x0;
-          creditCats.forEach((n: any) => {
-            if (n.x0 < maxX0) {
-              n.x0 = maxX0;
-              n.x1 = maxX0 + barW;
             }
           });
         }
