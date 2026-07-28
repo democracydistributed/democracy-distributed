@@ -107,8 +107,10 @@ export function buildGraph(data: SankeyData): { nodes: GraphNode[]; links: Graph
             : { source: parentIdx, target: idx, value: val, ledgerID: child.ledgerID, txnID: child.transactionID, hasChain: child.hasChain, legalBasis: child.legalBasis || '' },
         );
       } else {
-        const nodeType =
-          side === 'credit' ? (depth === 0 ? 'credit-category' : 'credit-sub') : depth === 0 ? 'debit-category' : 'debit-sub';
+        // Always a sub-category here: the true top-level category node is
+        // created by the caller before walk() is ever invoked, so anything
+        // walk() encounters — no matter how shallow — is one level below it.
+        const nodeType = side === 'credit' ? 'credit-sub' : 'debit-sub';
         const idx = getOrAdd(id, label, nodeType, colour, 0, child, parentIdx);
         links.push(side === 'credit' ? { source: idx, target: parentIdx, value: val } : { source: parentIdx, target: idx, value: val });
         walk(child, side, idx, colour, id, depth + 1);
