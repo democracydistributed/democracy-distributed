@@ -16,6 +16,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
+const CORTEZA_ITEM_RECORD_URL = 'https://app.democracydistributed.com/compose/ns/DD/pages/404424858932477953/record';
+
 export default async function ItemPage({ params }: { params: { id: string } }) {
   // The gateway returns the same HTTP 500 for "doesn't exist" and "transient
   // error" — it can't tell them apart — so we show a retry-able message
@@ -122,6 +124,19 @@ export default async function ItemPage({ params }: { params: { id: string } }) {
             <p className={styles.emptyNote}>No projects traced to this item yet.</p>
           )}
         </div>
+
+        {data.itemId ? (
+          <div className={styles.section}>
+            <a
+              className={styles.cortezaLink}
+              href={`${CORTEZA_ITEM_RECORD_URL}/${encodeURIComponent(data.itemId)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View in Corteza ↗
+            </a>
+          </div>
+        ) : null}
       </div>
       <Footer />
     </div>

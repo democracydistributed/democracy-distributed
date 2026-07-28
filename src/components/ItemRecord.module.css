@@ -31,6 +31,24 @@
   letter-spacing: 0.08em;
   color: var(--tm);
 }
+.cortezaLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--tm);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 9px;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+.cortezaLink:hover {
+  border-color: rgba(232, 160, 32, 0.4);
+  color: var(--amber);
+}
 .title {
   font-family: 'Playfair Display', serif;
   font-size: clamp(23px, 4vw, 38px);
