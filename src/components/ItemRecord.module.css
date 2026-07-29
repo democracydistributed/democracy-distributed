@@ -31,23 +31,29 @@
   letter-spacing: 0.08em;
   color: var(--tm);
 }
+/* Doc-spec preview: bold/uppercase typography from the "Inline text link"
+   (.pillar-link) pattern, bordered pill from the doc's "Eyebrow badge" pattern —
+   design-ref-websites_v6.md Buttons + Tags & Badges sections. */
 .cortezaLink {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--tm);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 4px 9px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amber);
+  border: 1px solid rgba(232, 160, 32, 0.3);
+  border-radius: 4px;
+  padding: 8px 14px;
   text-decoration: none;
-  transition: border-color 0.2s, color 0.2s;
+  transition: border-color 0.2s, background 0.2s, gap 0.2s;
 }
 .cortezaLink:hover {
-  border-color: rgba(232, 160, 32, 0.4);
-  color: var(--amber);
+  border-color: var(--amber);
+  background: var(--amber-dim, rgba(232, 160, 32, 0.06));
+  gap: 10px;
 }
 .title {
   font-family: 'Playfair Display', serif;
