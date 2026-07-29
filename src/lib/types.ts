@@ -197,6 +197,21 @@ export interface ProjectRecordData {
   error?: string;
 }
 
+/** A single constitution/legal-basis record from the /constitution gateway endpoint (API_Constitution Record workflow). */
+export interface ConstitutionRecordData {
+  id?: string;
+  name?: string;
+  subTitle?: string;
+  type?: string;
+  number?: string;
+  status?: string;
+  enacted?: string;
+  category?: string;
+  description?: string;
+  link?: string;
+  error?: string;
+}
+
 /** People tab — /people gateway endpoint (API_People Endpoint v1). */
 export type OfficialStatus = 'recorded' | 'role_not_recorded' | 'holder_not_recorded';
 

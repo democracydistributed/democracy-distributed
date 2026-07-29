@@ -6,7 +6,7 @@
 // Next's fetch Data Cache (revalidate matches the proxy's 5-minute freshness
 // window) so repeat requests for the same record don't hit the gateway every time.
 import { sanitizeSankeyData } from './sankey';
-import type { ItemRecordData, ItemsResponse, OrgData, OrgsResponse, ProjectRecordData, ProjectsResponse, SankeyData } from './types';
+import type { ConstitutionRecordData, ItemRecordData, ItemsResponse, OrgData, OrgsResponse, ProjectRecordData, ProjectsResponse, SankeyData } from './types';
 
 const GATEWAY = 'https://app.democracydistributed.com/api/gateway';
 const REVALIDATE_SECONDS = 300;
@@ -32,6 +32,15 @@ export async function fetchProjectServer(projectId: string): Promise<ProjectReco
   const raw = await res.json();
   const data: ProjectRecordData = typeof raw === 'string' ? JSON.parse(raw) : raw;
   if (!data || data.error) throw new Error(data?.error || 'Project not found');
+  return data;
+}
+
+export async function fetchConstitutionServer(constitutionId: string): Promise<ConstitutionRecordData> {
+  const res = await get(`${GATEWAY}/constitution?id=${encodeURIComponent(constitutionId)}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
+  const raw = await res.json();
+  const data: ConstitutionRecordData = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!data || data.error) throw new Error(data?.error || 'Constitution record not found');
   return data;
 }
 
