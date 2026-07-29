@@ -303,7 +303,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
                     {partialProject.status ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '9px', color: 'var(--tm)' }}> [{partialProject.status}]</span> : null}
                   </div>
                   {partialProject.id ? (
-                    <Link className="chain-link" href={`/project/${encodeURIComponent(partialProject.id)}`}>
+                    <Link className="chain-link" href={`/project/${encodeURIComponent(partialProject.id)}`} target="_blank" rel="noopener noreferrer">
                       View project →
                     </Link>
                   ) : null}
@@ -357,7 +357,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
         </>
       ),
       link: chain.item?.id ? (
-        <Link className="chain-link" href={`/item/${encodeURIComponent(chain.item.id)}`}>
+        <Link className="chain-link" href={`/item/${encodeURIComponent(chain.item.id)}`} target="_blank" rel="noopener noreferrer">
           View all suggestions →
         </Link>
       ) : null,
@@ -371,7 +371,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
       type: `Item${num ? ' · ' + num : ''}`,
       text: chain.item.subject || '',
       link: chain.item.id ? (
-        <Link className="chain-link" href={`/item/${encodeURIComponent(chain.item.id)}`}>
+        <Link className="chain-link" href={`/item/${encodeURIComponent(chain.item.id)}`} target="_blank" rel="noopener noreferrer">
           View {num || 'item'} →
         </Link>
       ) : null,
@@ -399,6 +399,11 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
           Authorized by {chain.legalBasis.name}
         </span>
       ),
+      link: chain.legalBasis.id ? (
+        <Link className="chain-link" href={`/constitution/${encodeURIComponent(chain.legalBasis.id)}`} target="_blank" rel="noopener noreferrer">
+          View {chain.legalBasis.number || 'authorization'} →
+        </Link>
+      ) : null,
     });
   }
 
@@ -414,7 +419,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
         </>
       ),
       link: proj.id ? (
-        <Link className="chain-link" href={`/project/${encodeURIComponent(proj.id)}`}>
+        <Link className="chain-link" href={`/project/${encodeURIComponent(proj.id)}`} target="_blank" rel="noopener noreferrer">
           View project →
         </Link>
       ) : null,
