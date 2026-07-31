@@ -6,6 +6,8 @@ import { fetchProjectServer } from '@/lib/server-api';
 import { fmtItemDate, stripHtml } from '@/lib/text';
 import styles from '@/components/ItemRecord.module.css';
 
+const CORTEZA_PROJECT_RECORD_URL = 'https://app.democracydistributed.com/compose/ns/DD/pages/400783829088927745/record';
+
 function money(n: number | null | undefined): string {
   if (n == null || isNaN(n)) return '';
   return '$' + n.toLocaleString('en-CA');
@@ -105,6 +107,19 @@ export default async function ProjectPage({ params }: { params: { id: string } }
             <p className={styles.emptyNote}>No money traced to this project yet.</p>
           )}
         </div>
+
+        {data.projectId ? (
+          <div className={styles.section}>
+            <a
+              className={styles.cortezaLink}
+              href={`${CORTEZA_PROJECT_RECORD_URL}/${encodeURIComponent(data.projectId)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View in Corteza ↗
+            </a>
+          </div>
+        ) : null}
       </div>
       <Footer />
     </div>
