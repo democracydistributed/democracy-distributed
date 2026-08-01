@@ -246,7 +246,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
 
   const data = traceData!;
   const chain = data.chain;
-  const title = chain?.item?.subject || label;
+  const title = label;
 
   const head = (
     <div className="drw-head">
