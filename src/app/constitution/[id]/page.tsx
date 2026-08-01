@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import { fetchConstitutionServer } from '@/lib/server-api';
@@ -34,6 +35,7 @@ export default async function ConstitutionPage({ params }: { params: { id: strin
 
   const summary = stripHtml(data.description);
   const enacted = fmtItemDate(data.enacted);
+  const authorizedItems = data.authorizedItems || [];
 
   return (
     <div className={styles.page}>
@@ -56,35 +58,66 @@ export default async function ConstitutionPage({ params }: { params: { id: strin
           </div>
         ) : null}
 
-        {/* Source document — Constitution.Link (external) */}
-        {data.link ? (
-          <div className={styles.section}>
-            <div className="sec-lbl">Source document</div>
-            <a
-              className={styles.card}
-              href={data.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
-            >
-              <div className={styles.cardTop}>
-                <span className={styles.cardTitle}>{data.number || data.type || 'View source document'}</span>
-                <span style={{ color: 'var(--amber)' }}>→</span>
+        {/* Traces From — the originating Item, via Passed Amendments referencing this Constitution */}
+        <div className={styles.section}>
+          <div className="sec-lbl">Traces From</div>
+          {authorizedItems.length > 0 ? (
+            authorizedItems.map((item, i) =>
+              item.itemId ? (
+                <Link
+                  className={styles.card}
+                  key={item.itemId}
+                  href={`/item/${encodeURIComponent(item.itemId)}`}
+                  style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+                >
+                  <div className={styles.cardTop}>
+                    <span className={styles.cardTitle}>{item.subject || 'Item'}</span>
+                    <span style={{ color: 'var(--amber)' }}>→</span>
+                  </div>
+                  {item.itemNumber || item.date ? (
+                    <div className={styles.cardMeta}>
+                      {[item.itemNumber, fmtItemDate(item.date)].filter(Boolean).join(' · ')}
+                    </div>
+                  ) : null}
+                </Link>
+              ) : (
+                <div className={styles.card} key={i}>
+                  <div className={styles.cardTop}>
+                    <span className={styles.cardTitle}>{item.subject || 'Item'}</span>
+                  </div>
+                </div>
+              )
+            )
+          ) : (
+            <>
+              <p className={styles.emptyNote}>We don&apos;t yet know what decision led to this record.</p>
+              <div style={{ marginTop: '8px' }}>
+                <a className={styles.contributeLink} href="/contribute">
+                  Help us link this record →
+                </a>
               </div>
-            </a>
-          </div>
-        ) : null}
+            </>
+          )}
+        </div>
 
-        {data.id ? (
-          <div className={styles.section}>
-            <a
-              className={styles.cortezaLink}
-              href={`${CORTEZA_CONSTITUTION_RECORD_URL}/${encodeURIComponent(data.id)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View in Corteza ↗
-            </a>
+        {/* Utility links — Source document (Constitution.Link) + Corteza record, side by side */}
+        {data.link || data.id ? (
+          <div className={styles.section} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            {data.link ? (
+              <a className={styles.cortezaLink} href={data.link} target="_blank" rel="noopener noreferrer">
+                View source document ↗
+              </a>
+            ) : null}
+            {data.id ? (
+              <a
+                className={styles.cortezaLink}
+                href={`${CORTEZA_CONSTITUTION_RECORD_URL}/${encodeURIComponent(data.id)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View in Corteza ↗
+              </a>
+            ) : null}
           </div>
         ) : null}
       </div>

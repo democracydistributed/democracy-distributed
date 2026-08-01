@@ -418,7 +418,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
       ),
       link: chain.legalBasis.id ? (
         <Link className="chain-link" href={`/constitution/${encodeURIComponent(chain.legalBasis.id)}`} target="_blank" rel="noopener noreferrer">
-          View {chain.legalBasis.number || 'authorization'} →
+          View {chain.legalBasis.number && chain.legalBasis.number !== '0' ? chain.legalBasis.number : 'authorization'} →
         </Link>
       ) : null,
     });

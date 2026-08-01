@@ -197,6 +197,15 @@ export interface ProjectRecordData {
   error?: string;
 }
 
+/** An Item authorized by this Constitution via a Passed Amendment. */
+export interface ConstitutionAuthorizedItem {
+  itemId?: string;
+  subject?: string;
+  itemNumber?: string;
+  date?: string;
+  status?: string;
+}
+
 /** A single constitution/legal-basis record from the /constitution gateway endpoint (API_Constitution Record workflow). */
 export interface ConstitutionRecordData {
   id?: string;
@@ -209,6 +218,7 @@ export interface ConstitutionRecordData {
   category?: string;
   description?: string;
   link?: string;
+  authorizedItems?: ConstitutionAuthorizedItem[];
   error?: string;
 }
 
