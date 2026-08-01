@@ -247,6 +247,42 @@ export interface PeopleResponse {
   nextCursor: string | null;
 }
 
+/** A single ledger entry record from the /ledger gateway endpoint (API_Ledger Record v1 workflow). */
+export interface TreasuryAccountSummary {
+  accountNumber?: string | null;
+  nickname?: string | null;
+}
+
+export interface BudgetCategorySummary {
+  name?: string | null;
+  number?: string | null;
+}
+
+export interface LedgerTransactionSummary {
+  transactionNumber?: string | null;
+  from?: TreasuryAccountSummary | null;
+  to?: TreasuryAccountSummary | null;
+}
+
+export interface LedgerDetailData {
+  ledgerId?: string;
+  amount?: number | string | null;
+  date?: string | null;
+  type?: string | null;
+  merchant?: string | null;
+  description?: string | null;
+  referenceNumber?: string | null;
+  currency?: string | null;
+  budgetCategory?: BudgetCategorySummary | null;
+  transaction?: LedgerTransactionSummary | null;
+  /** Whether Item/Legal_Basis/Project are set DIRECTLY on this Ledger record,
+   *  as opposed to resolved indirectly by /trace (e.g. Legal Basis -> Amendment -> Item). */
+  hasDirectItem?: boolean;
+  hasDirectLegalBasis?: boolean;
+  hasDirectProject?: boolean;
+  error?: string;
+}
+
 /** Loosely-typed trace/chain payload from the /trace gateway endpoint. */
 export interface TraceData {
   hasChain?: boolean;

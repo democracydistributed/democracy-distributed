@@ -43,10 +43,10 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--amber);
-  border: 1px solid rgba(232, 160, 32, 0.3);
-  border-radius: 4px;
-  padding: 8px 14px;
+  color: var(--amber-text, var(--amber));
+  border: 1px solid rgba(232, 160, 32, 0.35);
+  border-radius: 20px;
+  padding: 9px 18px;
   text-decoration: none;
   transition: border-color 0.2s, background 0.2s, gap 0.2s;
 }
@@ -139,4 +139,173 @@
   font-size: 12px;
   letter-spacing: 0.1em;
   color: var(--tm);
+}
+
+/* Transaction record page — Money Flow section */
+.moneyFlowCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.moneyFlowSide {
+  flex: 1;
+  min-width: 180px;
+}
+.moneyFlowLabel {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--tm);
+  margin-bottom: 6px;
+}
+.moneyFlowName {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+.moneyFlowRef {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--tm);
+}
+.moneyFlowArrow {
+  font-size: 20px;
+  color: var(--tm);
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+
+/* Transaction record page — Transaction Details rows */
+.detailList {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.detailRow:last-child {
+  border-bottom: none;
+}
+.detailLabel {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tm);
+  flex-shrink: 0;
+}
+.detailValue {
+  font-size: 13px;
+  color: var(--text);
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Transaction record page — Linked Records (Item / Legal Basis / Project) */
+.linkList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.linkCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+.linkCard:hover {
+  border-color: rgba(232, 160, 32, 0.35);
+}
+.linkIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-up);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.linkType {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber-text, var(--amber));
+  margin-bottom: 4px;
+}
+.linkText {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.4;
+}
+.linkArrow {
+  font-size: 18px;
+  color: var(--tm);
+  flex-shrink: 0;
+}
+.linkCardUnavailable {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+.linkIconUnavailable {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.linkTypeUnavailable {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--tm);
+  margin-bottom: 4px;
+}
+.linkUnavailableText {
+  font-size: 13px;
+  color: var(--tm);
+  font-style: italic;
+  margin-bottom: 4px;
+}
+.contributeLink {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--teal-text, var(--teal));
+  text-decoration: none;
+  letter-spacing: 0.05em;
+}
+.contributeLink:hover {
+  text-decoration: underline;
 }

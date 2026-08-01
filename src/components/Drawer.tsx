@@ -316,6 +316,11 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
                 <div className="chain-content">
                   <div className="chain-type">{data.transactionId ? <span title={data.transactionId}>Transaction</span> : 'Transaction'}</div>
                   <div className="chain-text">{`${label} — ${fmt(entry.amount)}`}</div>
+                  {entry.ledgerID ? (
+                    <Link className="chain-link" href={`/transaction/${encodeURIComponent(entry.ledgerID)}`} target="_blank" rel="noopener noreferrer">
+                      View transaction →
+                    </Link>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -329,6 +334,18 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
                   Help us link this transaction →
                 </a>
               </div>
+              {entry.ledgerID ? (
+                <div style={{ marginTop: '8px' }}>
+                  <Link
+                    href={`/transaction/${encodeURIComponent(entry.ledgerID)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontFamily: "'DM Mono',monospace", fontSize: '10px', color: 'var(--teal)', textDecoration: 'none', letterSpacing: '0.1em' }}
+                  >
+                    View transaction →
+                  </Link>
+                </div>
+              ) : null}
             </>
           )}
         </div>
@@ -430,6 +447,11 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
     icon: '💸',
     type: data.transactionId ? <span title={data.transactionId}>Transaction</span> : 'Transaction',
     text: `${label} — ${fmt(entry.amount)}`,
+    link: entry.ledgerID ? (
+      <Link className="chain-link" href={`/transaction/${encodeURIComponent(entry.ledgerID)}`} target="_blank" rel="noopener noreferrer">
+        View transaction →
+      </Link>
+    ) : null,
   });
 
   return (

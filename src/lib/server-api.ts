@@ -6,7 +6,7 @@
 // Next's fetch Data Cache (revalidate matches the proxy's 5-minute freshness
 // window) so repeat requests for the same record don't hit the gateway every time.
 import { sanitizeSankeyData } from './sankey';
-import type { ConstitutionRecordData, ItemRecordData, ItemsResponse, OrgData, OrgsResponse, ProjectRecordData, ProjectsResponse, SankeyData } from './types';
+import type { ConstitutionRecordData, ItemRecordData, ItemsResponse, LedgerDetailData, OrgData, OrgsResponse, ProjectRecordData, ProjectsResponse, SankeyData, TraceData } from './types';
 
 const GATEWAY = 'https://app.democracydistributed.com/api/gateway';
 const REVALIDATE_SECONDS = 300;
@@ -42,6 +42,22 @@ export async function fetchConstitutionServer(constitutionId: string): Promise<C
   const data: ConstitutionRecordData = typeof raw === 'string' ? JSON.parse(raw) : raw;
   if (!data || data.error) throw new Error(data?.error || 'Constitution record not found');
   return data;
+}
+
+export async function fetchLedgerServer(ledgerId: string): Promise<LedgerDetailData> {
+  const res = await get(`${GATEWAY}/ledger?ledgerId=${encodeURIComponent(ledgerId)}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
+  const raw = await res.json();
+  const data: LedgerDetailData = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!data || data.error) throw new Error(data?.error || 'Ledger entry not found');
+  return data;
+}
+
+export async function fetchTraceServer(ledgerId: string): Promise<TraceData> {
+  const res = await get(`${GATEWAY}/trace?ledgerId=${encodeURIComponent(ledgerId)}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
+  const raw = await res.json();
+  return typeof raw === 'string' ? JSON.parse(raw) : raw;
 }
 
 export async function fetchOrgServer(orgId: string): Promise<OrgData> {
