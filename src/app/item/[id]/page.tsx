@@ -36,6 +36,77 @@ export default async function ItemPage({ params }: { params: { id: string } }) {
   const summary = stripHtml(data.plainSummary);
   const meetings = data.meetingDiscussedIn || [];
   const projects = data.projects || [];
+  const transactions = data.transactions || [];
+
+  type TraceStep = {
+    key: string;
+    icon: string;
+    type: string;
+    text: string;
+    sub: string | null;
+    viewAllHref: string | null;
+    viewAllLabel: string | null;
+  };
+
+  const tracesFromStepsRaw: (TraceStep | null)[] = [
+    data.suggestion
+      ? {
+          key: 'suggestion',
+          icon: '💡',
+          type: 'Suggestion',
+          text: data.suggestion.subject || 'Suggestion',
+          sub: (data.suggestion.count ?? 0) > 1 ? `+${(data.suggestion.count ?? 1) - 1} more` : null,
+          viewAllHref:
+            (data.suggestion.count ?? 0) > 1 && data.itemId
+              ? `${CORTEZA_ITEM_RECORD_URL}/${encodeURIComponent(data.itemId)}`
+              : null,
+          viewAllLabel: 'View all suggestions →',
+        }
+      : null,
+    data.vote
+      ? {
+          key: 'vote',
+          icon: '🗳️',
+          type: 'Vote',
+          text: [
+            data.vote.outcome,
+            data.vote.yes != null || data.vote.no != null ? `${data.vote.yes ?? 0}–${data.vote.no ?? 0}` : '',
+          ]
+            .filter(Boolean)
+            .join(' · '),
+          sub: null,
+          viewAllHref: null,
+          viewAllLabel: null,
+        }
+      : null,
+  ];
+  const tracesFromSteps = tracesFromStepsRaw.filter((s): s is TraceStep => s !== null);
+
+  const leadsToSteps = [
+    data.authorizedConstitution
+      ? {
+          key: 'constitution',
+          icon: '📜',
+          type: 'Constitution',
+          text: data.authorizedConstitution.name || 'Constitution',
+          href: data.authorizedConstitution.id ? `/constitution/${encodeURIComponent(data.authorizedConstitution.id)}` : null,
+        }
+      : null,
+    ...projects.map((p) => ({
+      key: `project-${p.projectId}`,
+      icon: '🏗️',
+      type: 'Project',
+      text: [p.name || 'Project', p.phase ? `[${p.phase}]` : ''].filter(Boolean).join(' '),
+      href: p.projectId ? `/project/${encodeURIComponent(p.projectId)}` : null,
+    })),
+    ...transactions.map((t) => ({
+      key: `transaction-${t.transactionId}`,
+      icon: '💵',
+      type: 'Transaction',
+      text: t.description || 'Transaction',
+      href: t.transactionId ? `/transaction/${encodeURIComponent(t.transactionId)}` : null,
+    })),
+  ].filter((s): s is { key: string; icon: string; type: string; text: string; href: string | null } => s !== null);
 
   return (
     <div className={styles.page}>
@@ -77,64 +148,92 @@ export default async function ItemPage({ params }: { params: { id: string } }) {
           </div>
         ) : null}
 
-        {/* What it became — Project record(s) */}
+        {/* Traces From — Suggestion/Vote */}
         <div className={styles.section}>
-          <div className="sec-lbl">What it became — Projects</div>
-          {projects.length > 0 ? (
-            projects.map((p, i) => {
-              const due = fmtItemDate(p.endDate);
-              const inner = (
-                <>
-                  <div className={styles.cardTop}>
-                    <span className={styles.cardTitle}>{p.name || 'Project'}</span>
-                    {p.phase ? <span className="tag tag-amber">{p.phase}</span> : null}
+          <div className="sec-lbl">Traces From</div>
+          {tracesFromSteps.length > 0 ? (
+            <div className={styles.linkList}>
+              {tracesFromSteps.map((step) => (
+                <div key={step.key}>
+                  <div className={styles.linkCardUnavailable}>
+                    <div className={styles.linkIconUnavailable}>{step.icon}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className={styles.linkTypeUnavailable}>{step.type}</div>
+                      <div className={styles.linkText}>{step.text}</div>
+                      {step.sub ? <div className={styles.cardMeta} style={{ marginTop: '4px' }}>{step.sub}</div> : null}
+                    </div>
                   </div>
-                  {due || p.budget ? (
-                    <div className={styles.projFoot}>
-                      {due ? (
-                        <span>
-                          Due <b>{due}</b>
-                        </span>
-                      ) : null}
-                      {p.budget ? (
-                        <span>
-                          Budget <b>{p.budget}</b>
-                        </span>
-                      ) : null}
+                  {step.viewAllHref ? (
+                    <div style={{ marginTop: '8px' }}>
+                      <a className={styles.contributeLink} href={step.viewAllHref} target="_blank" rel="noopener noreferrer">
+                        {step.viewAllLabel}
+                      </a>
                     </div>
                   ) : null}
-                </>
-              );
-              return p.projectId ? (
-                <Link
-                  className={styles.card}
-                  key={p.projectId}
-                  href={`/project/${encodeURIComponent(p.projectId)}`}
-                  style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
-                >
-                  {inner}
-                </Link>
-              ) : (
-                <div className={styles.card} key={i}>
-                  {inner}
                 </div>
-              );
-            })
+              ))}
+            </div>
           ) : (
-            <p className={styles.emptyNote}>No projects traced to this item yet.</p>
+            <p className={styles.emptyNote}>We don&apos;t yet know what suggestion or vote led to this decision.</p>
           )}
         </div>
 
-        {data.itemId ? (
-          <div className={styles.section}>
-            <a
-              className={styles.cortezaLink}
-              href={`${CORTEZA_ITEM_RECORD_URL}/${encodeURIComponent(data.itemId)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View in Corteza ↗
-            </a>
+        {/* Leads To — Constitution + Project + Transactions */}
+        <div className={styles.section}>
+          <div className="sec-lbl">Leads To</div>
+          {leadsToSteps.length > 0 ? (
+            <div className={styles.linkList}>
+              {leadsToSteps.map((step) =>
+                step.href ? (
+                  <Link className={styles.linkCard} href={step.href} key={step.key}>
+                    <div className={styles.linkIcon}>{step.icon}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className={styles.linkType}>{step.type}</div>
+                      <div className={styles.linkText}>{step.text}</div>
+                    </div>
+                    <div className={styles.linkArrow}>→</div>
+                  </Link>
+                ) : (
+                  <div className={styles.linkCardUnavailable} key={step.key}>
+                    <div className={styles.linkIconUnavailable}>{step.icon}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className={styles.linkTypeUnavailable}>{step.type}</div>
+                      <div className={styles.linkText}>{step.text}</div>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          ) : (
+            <>
+              <p className={styles.emptyNote}>We don&apos;t yet know what this item led to.</p>
+              <div style={{ marginTop: '8px' }}>
+                <a className={styles.contributeLink} href="/contribute">
+                  Help us link this record →
+                </a>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Utility links — Source document (Item.Link) + Corteza record, side by side */}
+        {data.link || data.itemId ? (
+          <div className={styles.section} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            {data.link ? (
+              <a className={styles.cortezaLink} href={data.link} target="_blank" rel="noopener noreferrer">
+                View source document ↗
+              </a>
+            ) : null}
+            {data.itemId ? (
+              <a
+                className={styles.cortezaLink}
+                href={`${CORTEZA_ITEM_RECORD_URL}/${encodeURIComponent(data.itemId)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View in Corteza ↗
+              </a>
+            ) : null}
           </div>
         ) : null}
       </div>

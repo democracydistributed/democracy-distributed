@@ -158,6 +158,36 @@ export interface ItemRecordMeeting {
   meetingNumber?: string;
 }
 
+/** The Suggestion that led to this Item, if any — Traces From. Only the first
+ *  linked Suggestion is resolved; `count` carries the true total so the UI can
+ *  show "+N more" and point to the full list in Corteza. */
+export interface ItemRecordSuggestion {
+  suggestionId?: string;
+  subject?: string;
+  count?: number;
+}
+
+/** The Voting Result that decided this Item, if any — Traces From. */
+export interface ItemRecordVote {
+  outcome?: string;
+  yes?: number;
+  no?: number;
+}
+
+/** The Constitution/Legal Basis record this Item authorized, if any — Leads To. */
+export interface ItemRecordConstitution {
+  id?: string;
+  name?: string;
+}
+
+/** A Transaction/Ledger entry authorized by this Item — Leads To. */
+export interface ItemRecordTransaction {
+  transactionId?: string;
+  description?: string;
+  amount?: number | string | null;
+  date?: string;
+}
+
 export interface ItemRecordData {
   itemId?: string;
   subject?: string;
@@ -165,7 +195,12 @@ export interface ItemRecordData {
   status?: string;
   date?: string;
   plainSummary?: string;
+  link?: string;
+  suggestion?: ItemRecordSuggestion | null;
+  vote?: ItemRecordVote | null;
+  authorizedConstitution?: ItemRecordConstitution | null;
   projects?: ItemRecordProject[];
+  transactions?: ItemRecordTransaction[];
   meetingDiscussedIn?: ItemRecordMeeting[];
   error?: string;
 }
