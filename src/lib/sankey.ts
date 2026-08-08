@@ -10,6 +10,16 @@ export function shortName(fullName: string): string {
   return fullName.split(' → ').pop() as string;
 }
 
+/** Display title for a leaf entry: merchant > description (unless purely numeric) > reference > ledgerID > path-tail. */
+export function leafTitle(node: RawNode): string {
+  if (node.merchant) return node.merchant;
+  const desc = node.description;
+  if (desc && !/^\d+$/.test(desc)) return desc;
+  if (node.reference) return node.reference;
+  if (node.ledgerID) return `LDG-${node.ledgerID}`;
+  return node.name.split(' → ').pop() as string;
+}
+
 /** Recursively sums leaf amounts in the nested tree. */
 export function sumTreeValue(node: RawNode | null | undefined): number {
   if (node == null) return 0;

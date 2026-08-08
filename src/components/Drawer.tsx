@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import type { Formatter } from '@/lib/format';
-import { countLeaves, sumTreeValue } from '@/lib/sankey';
+import { countLeaves, leafTitle, sumTreeValue } from '@/lib/sankey';
 import type { DrawerCategoryFrame, DrawerFrame, DrawerTraceFrame, RawNode } from '@/lib/types';
 
 interface Props {
@@ -74,15 +74,6 @@ export default function Drawer({ stack, isOpen, fmt, onBack, onClose, onDrill, o
       </div>
     </>
   );
-}
-
-function leafTitle(child: RawNode): string {
-  if (child.merchant) return child.merchant;
-  const desc = child.description;
-  if (desc && !/^\d+$/.test(desc)) return desc;
-  if (child.reference) return child.reference;
-  if (child.ledgerID) return `LDG-${child.ledgerID}`;
-  return child.name.split(' → ').pop() as string;
 }
 
 function leafDate(child: RawNode): string | null {

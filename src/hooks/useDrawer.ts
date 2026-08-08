@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchTrace } from '@/lib/api';
-import { sumTreeValue } from '@/lib/sankey';
+import { leafTitle, sumTreeValue } from '@/lib/sankey';
 import type { DrawerFrame, DrawerTraceFrame, GraphNode } from '@/lib/types';
 
 type Seed = GraphNode & { value: number };
@@ -70,7 +70,7 @@ export function useDrawer() {
       if (!frame || frame.kind !== 'category') return;
       const entry = (frame.dataNode.entries || frame.dataNode.children || [])[idx];
       if (!entry) return;
-      const entryLabel = entry.name.split(' → ').pop() as string;
+      const entryLabel = leafTitle(entry);
       const traceFrame: DrawerTraceFrame = { kind: 'trace', entry, label: entryLabel, side: frame.side, traceData: null, traceError: null };
       setStack((prev) => [...prev, traceFrame]);
 
