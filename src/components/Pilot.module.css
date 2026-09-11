@@ -3,7 +3,7 @@
    container uses this same value + margin:0 auto, so their edges line up
    at every viewport size instead of each section drifting to its own
    independently-tuned max-width. */
-.page { min-height: 100vh; display: flex; flex-direction: column; --content-w: 1200px; }
+.page { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; --content-w: 1200px; }
 
 /* ── HERO (shared shape with Contribute.module.css) ──────── */
 .hero { position: relative; overflow: hidden; padding: 100px 20px 48px; z-index: 1; }
@@ -16,6 +16,13 @@
     linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
+}
+/* Matches the light-mode override already used for this exact pattern in
+   Landing.module.css — white grid lines are invisible on the cream ground. */
+:global(html.light) .gridOverlay {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
 }
 .flowBg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
 
@@ -37,15 +44,21 @@
   color: var(--th); line-height: 1.08; letter-spacing: -0.02em; margin-bottom: 26px;
 }
 
+/* Plain CSS keyframe animations, not a JS-toggled class — the previous
+   version defaulted every one of these to opacity:0 / fully clipped and
+   only revealed them once a `ready` state landed from a useEffect. If that
+   JS never ran (a hydration hiccup, a script blocked), the hero permanently
+   rendered as blank content. These now animate in on their own regardless
+   of JS. */
+@keyframes dd-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes dd-line { from { width: 0; } to { width: 32px; } }
+@keyframes dd-fade { from { opacity: 0; } to { opacity: 1; } }
+
 @media (prefers-reduced-motion: no-preference) {
-  .heroH1 { clip-path: inset(0 100% 0 0); transition: clip-path 1.1s cubic-bezier(.65,0,.15,1); }
-  .heroPlay .heroH1 { clip-path: inset(0 0% 0 0); }
-  .eyebrowLine { transition: width 0.5s ease 0.9s; }
-  .heroPlay .eyebrowLine { width: 32px; }
-  .eyebrowText { transition: opacity 0.4s ease 1.1s; }
-  .heroPlay .eyebrowText { opacity: 1; }
-  .heroFade { opacity: 0; transition: opacity 0.5s ease 1.3s; }
-  .heroPlay .heroFade { opacity: 1; }
+  .heroH1 { clip-path: inset(0 100% 0 0); animation: dd-wipe 1.1s cubic-bezier(.65,0,.15,1) both; }
+  .eyebrowLine { width: 0; animation: dd-line 0.5s ease 0.9s both; }
+  .eyebrowText { opacity: 0; animation: dd-fade 0.4s ease 1.1s both; }
+  .heroFade { opacity: 0; animation: dd-fade 0.5s ease 1.3s both; }
 }
 @media (prefers-reduced-motion: reduce) {
   .heroH1 { clip-path: none; }
@@ -55,9 +68,11 @@
 }
 
 .heroDesc { font-size: clamp(20px, 3.2vw, 34px); font-weight: 300; color: var(--text); line-height: 1.32; max-width: 1020px; margin-bottom: 18px; }
+/* Plain paragraph, matching the original poster comp — no border-left accent.
+   (An earlier pass copied Contribute.module.css's accent-border treatment,
+   which isn't in this page's design.) */
 .heroSubdesc {
   font-size: clamp(15px, 1.6vw, 18px); color: var(--tm); line-height: 1.65; max-width: 760px; margin-top: 14px;
-  padding-left: 16px; border-left: 2px solid rgba(232,160,32,0.3);
 }
 
 /* ── TRACK CARDS ──────────────────────────────────────── */
@@ -109,6 +124,9 @@
   font-size: 15px; letter-spacing: 0.03em; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s;
 }
 .trackBtn:hover { background: var(--amber-l); transform: translateY(-1px); }
+/* Full-width below 680px — at 375px the label plus padding leaves only a
+   few px of margin either side; full-width is a safer, easier target. */
+@media (max-width: 679px) { .trackBtn { align-self: stretch; width: 100%; text-align: center; } }
 
 /* ── THRESHOLD ────────────────────────────────────────── */
 /* Plain --bg, not --bg-card — the track cards directly above already use
@@ -153,7 +171,7 @@
 @keyframes dd-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
 .modalClose {
-  position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 50%;
+  position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; border-radius: 50%;
   background: transparent; border: 1px solid var(--border); color: var(--tm); font-size: 15px; line-height: 1; cursor: pointer;
 }
 .modalClose:hover { color: var(--text); border-color: var(--bhi); }
@@ -181,19 +199,24 @@
   color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s, background 0.2s;
 }
 .input:focus, .textarea:focus { border-color: rgba(232,160,32,0.5); background: var(--bg-up); }
+:global(html.light) .input:focus, :global(html.light) .textarea:focus { border-color: rgba(226,160,70,0.5); }
 .textarea { line-height: 1.6; resize: vertical; }
 
 .checkRow { display: flex; gap: 11px; align-items: flex-start; cursor: pointer; font-size: 13px; font-weight: 300; line-height: 1.6; color: var(--text); }
 .checkbox { margin: 2px 0 0; width: 16px; height: 16px; accent-color: var(--amber); flex: none; }
 .mutedInline { color: var(--tm); }
 
-.causeWrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.causeWrap { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+/* min-height 44px meets the touch-target minimum — the previous 8px/12px
+   padding+text landed around 30px tall, and there are eight of these. */
 .causePill {
-  display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border: 1px solid var(--border);
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; min-height: 44px;
+  box-sizing: border-box; border: 1px solid var(--border);
   border-radius: 99px; background: var(--cdim); cursor: pointer; font-size: 12px; font-weight: 400; color: var(--text);
   transition: border-color 0.15s;
 }
 .causePill:hover { border-color: rgba(45,212,191,0.45); }
+:global(html.light) .causePill:hover { border-color: rgba(14,143,128,0.45); }
 
 .errorText { font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.6; color: var(--red); }
 

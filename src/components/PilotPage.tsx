@@ -6,8 +6,8 @@ import Footer from './Footer';
 import styles from './Pilot.module.css';
 import { PILOT_SIGNUP_ENDPOINT, fetchPilotCounts } from '@/lib/api';
 
-const ORG_GOAL = 50;
-const VOLUNTEER_GOAL = 500;
+const ORG_GOAL = 100;
+const VOLUNTEER_GOAL = 100;
 
 const CAUSES = [
   'Food security',
@@ -23,7 +23,6 @@ const CAUSES = [
 type Track = 'org' | 'volunteer';
 
 export default function PilotPage() {
-  const [ready, setReady] = useState(false);
   const flowRef = useRef<SVGSVGElement>(null);
 
   const [orgs, setOrgs] = useState(0);
@@ -34,7 +33,13 @@ export default function PilotPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
+  // Decorative flow-line reveal only — the hero's actual content (heading,
+  // eyebrow, paragraphs) animates in via plain CSS now, not this effect, so
+  // nothing about the hero's visibility depends on this JS running.
   useEffect(() => {
     if (flowRef.current) {
       flowRef.current.querySelectorAll('path').forEach((p) => {
@@ -44,7 +49,6 @@ export default function PilotPage() {
       });
     }
     const t = setTimeout(() => {
-      setReady(true);
       if (flowRef.current) {
         flowRef.current.querySelectorAll('path').forEach((p) => {
           p.style.transition = 'stroke-dashoffset 1.8s cubic-bezier(.16,1,.3,1)';
@@ -59,10 +63,62 @@ export default function PilotPage() {
     fetchCounts();
   }, []);
 
+  // Body scroll lock (the iOS-safe way — plain `overflow:hidden` on body
+  // isn't enough on iOS Safari, which still lets background touch-scroll
+  // leak through a fixed overlay). Pins the body in place and restores the
+  // exact scroll position on close.
   useEffect(() => {
     if (!modal) return;
+    const scrollY = window.scrollY;
+    const body = document.body;
+    const prev = { position: body.style.position, top: body.style.top, left: body.style.left, right: body.style.right, overflow: body.style.overflow };
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.overflow = 'hidden';
+    return () => {
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.left = prev.left;
+      body.style.right = prev.right;
+      body.style.overflow = prev.overflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, [modal]);
+
+  // Move focus into the dialog on open, and trap Tab/Shift+Tab within it —
+  // without this, keyboard users tab straight through into the page behind
+  // the overlay.
+  useEffect(() => {
+    if (!modal) return;
+    // Called directly (not deferred via rAF/setTimeout) — the button is
+    // already mounted by the time this effect runs post-commit, and rAF
+    // deferral turned out to be unreliable in some automated/backgrounded
+    // browser contexts.
+    closeBtnRef.current?.focus();
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
+      if (e.key === 'Escape') {
+        close();
+        return;
+      }
+      if (e.key === 'Tab' && panelRef.current) {
+        const focusables = panelRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusables.length === 0) return;
+        const list = Array.from(focusables);
+        const first = list[0];
+        const last = list[list.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -79,7 +135,8 @@ export default function PilotPage() {
       });
   }
 
-  function open(track: Track) {
+  function open(track: Track, e: React.MouseEvent<HTMLButtonElement>) {
+    triggerRef.current = e.currentTarget;
     setModal(track);
     setSent(false);
     setError('');
@@ -90,6 +147,7 @@ export default function PilotPage() {
     setSent(false);
     setError('');
     setSending(false);
+    triggerRef.current?.focus();
   }
 
   function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -128,7 +186,6 @@ export default function PilotPage() {
       });
   }
 
-  const heroClass = `${styles.hero} ${ready ? styles.heroPlay : ''}`;
   const isOrg = modal === 'org';
   const orgLeft = Math.max(0, ORG_GOAL - orgs);
   const volLeft = Math.max(0, VOLUNTEER_GOAL - vols);
@@ -140,7 +197,7 @@ export default function PilotPage() {
       <Nav />
 
       {/* ── HERO ── */}
-      <div className={heroClass}>
+      <div className={styles.hero}>
         <div className={styles.gridOverlay} aria-hidden="true" />
         <svg ref={flowRef} viewBox="0 0 1100 480" preserveAspectRatio="none" className={styles.flowBg} aria-hidden="true">
           <path d="M -50,90 C 250,90 300,200 600,200 C 850,200 900,60 1150,60" fill="none" stroke="var(--amber)" strokeOpacity="0.18" strokeWidth="1.5" />
@@ -184,7 +241,7 @@ export default function PilotPage() {
           </div>
           <h2 className={styles.trackH2}>Organizations</h2>
           <p className={styles.trackDesc}>Volunteer organizations in Toronto willing to post their work as microtasks.</p>
-          <div className={styles.trackCount}>
+          <div className={styles.trackCount} aria-live="polite" aria-atomic="true">
             <span className={styles.trackNum} style={{ color: 'var(--amber-text, var(--amber))' }}>
               {orgs}
             </span>
@@ -196,7 +253,7 @@ export default function PilotPage() {
             </div>
             <p className={styles.trackRemaining}>{orgLeft === 0 ? 'Goal reached' : `${orgLeft} more to reach the goal`}</p>
           </div>
-          <button type="button" className={styles.trackBtn} onClick={() => open('org')}>
+          <button type="button" className={styles.trackBtn} onClick={(e) => open('org', e)}>
             Sign the letter of interest
           </button>
         </div>
@@ -214,7 +271,7 @@ export default function PilotPage() {
           </div>
           <h2 className={styles.trackH2}>Volunteers</h2>
           <p className={styles.trackDesc}>People who would pick up a microtask when one matches what they care about.</p>
-          <div className={styles.trackCount}>
+          <div className={styles.trackCount} aria-live="polite" aria-atomic="true">
             <span className={styles.trackNum} style={{ color: 'var(--teal-text, var(--teal))' }}>
               {vols}
             </span>
@@ -226,7 +283,7 @@ export default function PilotPage() {
             </div>
             <p className={styles.trackRemaining}>{volLeft === 0 ? 'Goal reached' : `${volLeft} more to reach the goal`}</p>
           </div>
-          <button type="button" className={styles.trackBtn} onClick={() => open('volunteer')}>
+          <button type="button" className={styles.trackBtn} onClick={(e) => open('volunteer', e)}>
             Add my name
           </button>
         </div>
@@ -264,8 +321,8 @@ export default function PilotPage() {
             if (e.target === e.currentTarget) close();
           }}
         >
-          <div className={styles.modalPanel} style={{ borderTopColor: isOrg ? 'var(--amber)' : 'var(--teal)' }}>
-            <button type="button" className={styles.modalClose} aria-label="Close" onClick={close}>
+          <div ref={panelRef} className={styles.modalPanel} style={{ borderTopColor: isOrg ? 'var(--amber)' : 'var(--teal)' }}>
+            <button ref={closeBtnRef} type="button" className={styles.modalClose} aria-label="Close" onClick={close}>
               ✕
             </button>
 
