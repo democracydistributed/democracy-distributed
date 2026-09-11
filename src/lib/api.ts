@@ -14,6 +14,8 @@ export const ITEM_ENDPOINT = `${BASE}/item`;
 export const PROJECTS_ENDPOINT = `${BASE}/projects`;
 export const PROJECT_ENDPOINT = `${BASE}/project`;
 export const PEOPLE_ENDPOINT = `${BASE}/people`;
+export const PILOT_COUNTS_ENDPOINT = `${BASE}/pilot/counts`;
+export const PILOT_SIGNUP_ENDPOINT = `${BASE}/pilot/signup`;
 
 /** Org-page preview cap on the officials list. The endpoint's counts.officials
  *  stays the true (pre-cap) total, so we can show "View all N" when it's bigger. */
@@ -72,6 +74,26 @@ export async function fetchPeople(orgId: string, limit: number = PEOPLE_PREVIEW_
     throw new Error('Unexpected response shape');
   }
   return data;
+}
+
+export interface PilotCounts {
+  orgs: number;
+  volunteers: number;
+}
+
+/** `fresh: true` bypasses the proxy's in-process cache (see route.ts) — use it
+ *  right after a pledge submission so the submitter sees their own count land,
+ *  instead of the cached value from before they submitted. Regular page loads
+ *  should omit it so the cache keeps doing its job for everyone else. */
+export async function fetchPilotCounts(fresh = false): Promise<PilotCounts> {
+  const url = fresh ? `${PILOT_COUNTS_ENDPOINT}?_fresh=1` : PILOT_COUNTS_ENDPOINT;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const raw = await res.json();
+  const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  const orgs = Number(data?.orgs ?? data?.organizations) || 0;
+  const volunteers = Number(data?.volunteers ?? data?.vols) || 0;
+  return { orgs: Math.max(0, Math.floor(orgs)), volunteers: Math.max(0, Math.floor(volunteers)) };
 }
 
 export async function fetchProjects(orgId: string): Promise<ProjectsResponse> {

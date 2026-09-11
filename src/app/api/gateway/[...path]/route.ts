@@ -75,21 +75,58 @@ function noStore(body: string, status: number, contentType: string, hit: string)
   });
 }
 
+// Pledge submissions (and any other writes) must never be cached or retried
+// silently — a retry could double-submit a form. Straight pass-through.
+export async function POST(req: NextRequest, { params }: { params: { path: string[] } }) {
+  const path = (params.path || []).join('/');
+  const search = req.nextUrl.search;
+  const url = `${GATEWAY}/${path}${search}`;
+  const body = await req.text();
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': req.headers.get('content-type') || 'application/json' },
+      body,
+      cache: 'no-store',
+    });
+    const text = await res.text();
+    return new Response(text, {
+      status: res.status,
+      headers: {
+        'content-type': res.headers.get('content-type') || 'application/json',
+        'cache-control': 'no-store',
+      },
+    });
+  } catch {
+    return new Response(JSON.stringify({ error: 'gateway unreachable' }), {
+      status: 502,
+      headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
+    });
+  }
+}
+
 export async function GET(req: NextRequest, { params }: { params: { path: string[] } }) {
   const path = (params.path || []).join('/');
-  const search = req.nextUrl.search; // includes leading '?'
+  const reqUrl = new URL(req.url);
+  // `_fresh=1` is a proxy-only signal, stripped before it reaches the cache
+  // key or the upstream gateway — used right after a write (e.g. a pledge
+  // submission) so the submitter's own refetch isn't served a stale count.
+  const bypassCache = reqUrl.searchParams.get('_fresh') === '1';
+  reqUrl.searchParams.delete('_fresh');
+  const search = reqUrl.search; // includes leading '?', or '' if now empty
   const key = path + search;
   const url = `${GATEWAY}/${path}${search}`;
   const now = Date.now();
   const cached = cache.get(key);
 
   // Fresh hit.
-  if (cached && now - cached.ts < FRESH_MS) {
+  if (!bypassCache && cached && now - cached.ts < FRESH_MS) {
     return respond(cached, 'HIT');
   }
 
   // Stale hit: serve immediately, refresh in the background (once).
-  if (cached && now - cached.ts < STALE_MS) {
+  if (!bypassCache && cached && now - cached.ts < STALE_MS) {
     if (!cached.revalidating) {
       cached.revalidating = true;
       fetchUpstream(url)
