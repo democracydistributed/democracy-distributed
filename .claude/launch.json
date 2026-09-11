@@ -7,6 +7,13 @@
       "runtimeArgs": ["run", "dev"],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "dd-next-verify",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3010,
+      "autoPort": true
     }
   ]
 }

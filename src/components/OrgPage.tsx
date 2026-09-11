@@ -19,11 +19,23 @@ import PeopleTab from './tabs/PeopleTab';
 // D3 reads window during render, so keep the chart client-only.
 const SankeyChart = dynamic(() => import('./SankeyChart'), { ssr: false });
 
-type Tab = 'finances' | 'items' | 'projects' | 'people';
-const TABS: { id: Tab; label: string }[] = [
+type Tab = 'finances' | 'suggestions' | 'items' | 'rules' | 'projects' | 'people';
+
+const GOV_TABS: { id: Tab; label: string }[] = [
   { id: 'finances', label: 'Finances' },
   { id: 'items', label: 'Items' },
   { id: 'projects', label: 'Projects' },
+  { id: 'people', label: 'People' },
+];
+
+// Community Group orgs get two extra tabs (Suggestions, Rules) in a
+// different order — see Org Page.dc.html in the mockup folder.
+const COMMUNITY_TABS: { id: Tab; label: string }[] = [
+  { id: 'suggestions', label: 'Suggestions' },
+  { id: 'items', label: 'Items' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'finances', label: 'Finances' },
+  { id: 'rules', label: 'Rules' },
   { id: 'people', label: 'People' },
 ];
 
@@ -47,6 +59,14 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
   const [data] = useState<SankeyData | null>(initialSankey);
   const [error] = useState<string | null>(initialError);
 
+  // 'DD Government' covers Democracy Distributed's own internal/POD-governed
+  // bodies (e.g. DD Central Government) — those get the community layout
+  // too, same as an actual Community Group org. Everything else (the real
+  // government orgs being tracked, e.g. "Local Government") keeps the
+  // original finance-transparency layout.
+  const isCommunity = org?.type === 'Community Group' || org?.type === 'DD Government';
+  const TABS = isCommunity ? COMMUNITY_TABS : GOV_TABS;
+
   // Org/sankey data is fetched server-side and handed in as props — this is
   // what makes the page's real content (not a "Loading…" shell) visible to
   // crawlers that don't execute JS. Only the document title is a client effect.
@@ -63,7 +83,7 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
 
   return (
     <>
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <div data-org-type={isCommunity ? 'community' : 'gov'} style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Nav />
       <PageHeader org={org} />
 
@@ -131,8 +151,24 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
           </div>
         </div>
 
+        {/* SUGGESTIONS (Community Group orgs only) */}
+        {isCommunity ? (
+          <div className={`tab-pane${activeTab === 'suggestions' ? ' active' : ''}`} role="tabpanel" id="panel-suggestions" aria-labelledby="tab-suggestions">
+            <div className="sec-lbl">Suggestions</div>
+            <div className="items-state">Suggestions are on their way to this page.</div>
+          </div>
+        ) : null}
+
         {/* ITEMS */}
         <div className={`tab-pane${activeTab === 'items' ? ' active' : ''}`} role="tabpanel" id="panel-items" aria-labelledby="tab-items">{visited.has('items') ? <ItemsTab orgId={orgId} /> : null}</div>
+
+        {/* RULES (Community Group orgs only) */}
+        {isCommunity ? (
+          <div className={`tab-pane${activeTab === 'rules' ? ' active' : ''}`} role="tabpanel" id="panel-rules" aria-labelledby="tab-rules">
+            <div className="sec-lbl">Rules</div>
+            <div className="items-state">Rules are on their way to this page.</div>
+          </div>
+        ) : null}
 
         {/* PROJECTS */}
         <div className={`tab-pane${activeTab === 'projects' ? ' active' : ''}`} role="tabpanel" id="panel-projects" aria-labelledby="tab-projects">{visited.has('projects') ? <ProjectsTab orgId={orgId} fmt={fmt} /> : null}</div>
