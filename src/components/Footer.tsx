@@ -10,8 +10,9 @@ export default function Footer() {
         <a href="https://www.linkedin.com/company/democracydistributed/" target="_blank" rel="noopener noreferrer">
           LinkedIn
         </a>
+        <Link href="/account">Log in</Link>
       </div>
-      <div className="f-copy">© 2024 Democracy Distributed</div>
+      <div className="f-copy">© {new Date().getFullYear()} Democracy Distributed</div>
     </footer>
   );
 }

@@ -1,0 +1,141 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+}
+
+.hero {
+  padding: 108px 20px 48px;
+  border-bottom: 1px solid var(--border);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--amber-text, var(--amber));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.eyebrow::before {
+  content: '';
+  width: 32px;
+  height: 1px;
+  background: var(--amber);
+}
+
+.title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 900;
+  color: var(--th);
+  margin-bottom: 14px;
+}
+.title em {
+  font-style: italic;
+  color: var(--amber-text, var(--amber));
+}
+
+.sub {
+  font-size: 14px;
+  color: var(--tm);
+  margin-bottom: 18px;
+}
+
+.meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--tm);
+  margin-bottom: 26px;
+}
+
+.signOut {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tm);
+  background: none;
+  border: 1px solid var(--border);
+  padding: 9px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.signOut:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+.placeholder {
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 48px 32px;
+  text-align: center;
+}
+.placeholderLabel {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--tm);
+  margin-bottom: 14px;
+}
+.placeholderText {
+  font-family: 'Playfair Display', serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--th);
+  margin-bottom: 22px;
+}
+.placeholderLinks {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.placeholderLinks a {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.loginCard {
+  max-width: 420px;
+  margin: 140px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.loginBtn {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--amber-text, var(--amber));
+  background: none;
+  border: 1px solid rgba(232, 160, 32, 0.35);
+  padding: 12px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 24px;
+}
+.loginBtn:hover {
+  background: var(--amber-dim);
+}
