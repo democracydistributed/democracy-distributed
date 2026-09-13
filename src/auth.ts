@@ -21,8 +21,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // userinfo call, so we just hand the token response back as-is.
       userinfo: {
         url: `${CORTEZA_AUTH_BASE}/oauth2/userinfo`,
-        async request({ tokens }) {
-          return tokens as unknown as Record<string, unknown>;
+        async request({ tokens }: { tokens: Record<string, unknown> }) {
+          return tokens;
         },
       },
       clientId: process.env.CORTEZA_CLIENT_ID,
