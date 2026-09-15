@@ -142,6 +142,19 @@ export interface ProjectsResponse {
   projects: Project[];
 }
 
+/** A suggestion from the /suggestions endpoint (org-page Suggestions tab). */
+export interface Suggestion {
+  suggestionId?: string;
+  text?: string;
+  category?: string;
+  status?: string;
+  createdAt?: string;
+}
+
+export interface SuggestionsResponse {
+  suggestions: Suggestion[];
+}
+
 /** A single item record from the /item gateway endpoint (API_Item Record workflow). */
 export interface ItemRecordProject {
   projectId?: string;

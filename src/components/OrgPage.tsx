@@ -15,6 +15,7 @@ import type { OrgData, SankeyData } from '@/lib/types';
 import ItemsTab from './tabs/ItemsTab';
 import ProjectsTab from './tabs/ProjectsTab';
 import PeopleTab from './tabs/PeopleTab';
+import SuggestionsTab from './tabs/SuggestionsTab';
 
 // D3 reads window during render, so keep the chart client-only.
 const SankeyChart = dynamic(() => import('./SankeyChart'), { ssr: false });
@@ -154,8 +155,7 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
         {/* SUGGESTIONS (Community Group orgs only) */}
         {isCommunity ? (
           <div className={`tab-pane${activeTab === 'suggestions' ? ' active' : ''}`} role="tabpanel" id="panel-suggestions" aria-labelledby="tab-suggestions">
-            <div className="sec-lbl">Suggestions</div>
-            <div className="items-state">Suggestions are on their way to this page.</div>
+            {visited.has('suggestions') ? <SuggestionsTab orgId={orgId} /> : null}
           </div>
         ) : null}
 
