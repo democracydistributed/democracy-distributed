@@ -124,8 +124,8 @@ export default function PilotPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [modal]);
 
-  function fetchCounts(fresh = false) {
-    fetchPilotCounts(fresh)
+  function fetchCounts() {
+    fetchPilotCounts()
       .then((d) => {
         setOrgs(d.orgs);
         setVols(d.volunteers);
@@ -178,7 +178,7 @@ export default function PilotPage() {
       .then(() => {
         setSending(false);
         setSent(true);
-        fetchCounts(true);
+        fetchCounts();
       })
       .catch(() => {
         setSending(false);

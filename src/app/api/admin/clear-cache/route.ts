@@ -2,7 +2,11 @@ import { timingSafeEqual } from 'crypto';
 import { revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { clearGatewayProxyCache } from '@/lib/gateway-proxy-cache';
+import { CACHE_TAG } from '@/lib/server-api';
 
+// Manual escape hatch for the two caches that GATEWAY_CACHE_ENABLED can turn on (see
+// CACHING.md). A no-op in practice while that switch is off, but kept for when it's on —
+// e.g. after a direct edit in Corteza that this app has no way to know about automatically.
 export const dynamic = 'force-dynamic';
 
 function isAuthorized(key: string | null): boolean {
@@ -20,7 +24,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
-  revalidateTag('gateway-data');
+  revalidateTag(CACHE_TAG);
   clearGatewayProxyCache();
 
   return NextResponse.json({ ok: true, cleared: ['next-data-cache', 'gateway-proxy-cache'] });

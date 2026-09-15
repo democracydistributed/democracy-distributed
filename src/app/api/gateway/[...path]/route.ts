@@ -1,25 +1,23 @@
 import { NextRequest } from 'next/server';
-import { cache, type Entry } from '@/lib/gateway-proxy-cache';
+import { cache, isCacheEnabled, TTL_MS, type Entry } from '@/lib/gateway-proxy-cache';
 
-// Caching reverse-proxy for the gateway.
+// Reverse-proxy for the gateway.
 //
-// Why this exists:
-//  1. The upstream gateway emits a malformed CORS header, so the browser can't
-//     call it directly — we proxy server-side (same-origin to the browser).
-//  2. The data is near-static (budgets change ~monthly) but every uncached call
-//     costs 200–400ms and the gateway cold-starts. So we cache in-process with
-//     stale-while-revalidate semantics — no Redis/CDN required.
+// Why this exists: the upstream gateway emits a malformed CORS header, so the browser
+// can't call it directly — we proxy server-side (same-origin to the browser).
 //
-// Cache lives in the Node process: shared across all users on this instance,
-// cleared on redeploy. Only successful (2xx) responses are cached, so a
-// transient gateway 404/500 never poisons the cache.
+// Caching is OFF by default (see GATEWAY_CACHE_ENABLED in .env.example / CACHING.md).
+// With it off, every request is a plain pass-through — no Map, no TTL, always current.
+// Flip it on only for a specific endpoint that's a proven, measured slowness problem;
+// when on, this uses a plain TTL (see gateway-proxy-cache.ts) — no stale-while-revalidate,
+// no background refresh. That older, fancier model added real complexity (a
+// per-lambda-instance Map, a `_fresh=1` bypass, a sessionStorage workaround on the
+// client) that wasn't proven to be worth it. If a specific endpoint's staleness ever
+// matters again, solve it deliberately then — don't reach for that machinery by default.
 
-export const dynamic = 'force-dynamic'; // we manage caching ourselves
+export const dynamic = 'force-dynamic';
 
 const GATEWAY = 'https://app.democracydistributed.com/api/gateway';
-const FRESH_MS = 5 * 60 * 1000; // serve from cache, no upstream call
-const STALE_MS = 60 * 60 * 1000; // serve stale + refresh in background
-const CACHE_CONTROL = 'public, s-maxage=300, stale-while-revalidate=3600';
 
 interface Upstream {
   ok: boolean;
@@ -29,6 +27,7 @@ interface Upstream {
 }
 
 // Fetch upstream, retrying once after a short delay to absorb cold-start blips.
+// This is about reliability, not caching — kept regardless of the cache switch.
 async function fetchUpstream(url: string): Promise<Upstream> {
   let lastErr: unknown;
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -57,26 +56,18 @@ function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-function respond(entry: Entry, hit: string): Response {
-  return new Response(entry.body, {
-    status: entry.status,
-    headers: {
-      'content-type': entry.contentType,
-      'cache-control': CACHE_CONTROL,
-      'x-dd-cache': hit,
-    },
-  });
-}
-
-function noStore(body: string, status: number, contentType: string, hit: string): Response {
+// `no-store` on every response — this proxy's own cache (or lack of one) is the only
+// caching decision that should exist. The browser must never independently cache a
+// gateway response on top of that (see CACHING.md's "browser cache" writeup).
+function respond(body: string, status: number, contentType: string, hit: string): Response {
   return new Response(body, {
     status,
     headers: { 'content-type': contentType, 'cache-control': 'no-store', 'x-dd-cache': hit },
   });
 }
 
-// Pledge submissions (and any other writes) must never be cached or retried
-// silently — a retry could double-submit a form. Straight pass-through.
+// Writes must never be cached or retried silently — a retry could double-submit a form.
+// Straight pass-through, unaffected by the cache switch.
 export async function POST(req: NextRequest, { params }: { params: { path: string[] } }) {
   const path = (params.path || []).join('/');
   const search = req.nextUrl.search;
@@ -91,69 +82,46 @@ export async function POST(req: NextRequest, { params }: { params: { path: strin
       cache: 'no-store',
     });
     const text = await res.text();
-    return new Response(text, {
-      status: res.status,
-      headers: {
-        'content-type': res.headers.get('content-type') || 'application/json',
-        'cache-control': 'no-store',
-      },
-    });
+    return respond(text, res.status, res.headers.get('content-type') || 'application/json', 'PASS');
   } catch {
-    return new Response(JSON.stringify({ error: 'gateway unreachable' }), {
-      status: 502,
-      headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
-    });
+    return respond(JSON.stringify({ error: 'gateway unreachable' }), 502, 'application/json', 'ERR');
   }
 }
 
 export async function GET(req: NextRequest, { params }: { params: { path: string[] } }) {
   const path = (params.path || []).join('/');
-  const reqUrl = new URL(req.url);
-  // `_fresh=1` is a proxy-only signal, stripped before it reaches the cache
-  // key or the upstream gateway — used right after a write (e.g. a pledge
-  // submission) so the submitter's own refetch isn't served a stale count.
-  const bypassCache = reqUrl.searchParams.get('_fresh') === '1';
-  reqUrl.searchParams.delete('_fresh');
-  const search = reqUrl.search; // includes leading '?', or '' if now empty
-  const key = path + search;
+  const search = req.nextUrl.search;
   const url = `${GATEWAY}/${path}${search}`;
+
+  if (!isCacheEnabled()) {
+    try {
+      const u = await fetchUpstream(url);
+      return respond(u.body, u.status, u.contentType, 'DISABLED');
+    } catch {
+      return respond(JSON.stringify({ error: 'gateway unreachable' }), 502, 'application/json', 'ERR');
+    }
+  }
+
+  const key = path + search;
   const now = Date.now();
   const cached = cache.get(key);
 
-  // Fresh hit.
-  if (!bypassCache && cached && now - cached.ts < FRESH_MS) {
-    return respond(cached, 'HIT');
+  if (cached && now - cached.ts < TTL_MS) {
+    return respond(cached.body, cached.status, cached.contentType, 'HIT');
   }
 
-  // Stale hit: serve immediately, refresh in the background (once).
-  if (!bypassCache && cached && now - cached.ts < STALE_MS) {
-    if (!cached.revalidating) {
-      cached.revalidating = true;
-      fetchUpstream(url)
-        .then((u) => {
-          if (u.ok) cache.set(key, { body: u.body, status: u.status, contentType: u.contentType, ts: Date.now() });
-          else cached.revalidating = false;
-        })
-        .catch(() => {
-          cached.revalidating = false;
-        });
-    }
-    return respond(cached, 'STALE');
-  }
-
-  // Miss (or fully expired): fetch synchronously.
   try {
     const u = await fetchUpstream(url);
     if (u.ok) {
       const entry: Entry = { body: u.body, status: u.status, contentType: u.contentType, ts: now };
       cache.set(key, entry);
-      return respond(entry, 'MISS');
+      return respond(entry.body, entry.status, entry.contentType, 'MISS');
     }
     // Upstream error — prefer a stale-but-good copy over surfacing the error.
-    if (cached) return respond(cached, 'STALE-ERR');
-    return noStore(u.body, u.status, u.contentType, 'ERR');
+    if (cached) return respond(cached.body, cached.status, cached.contentType, 'STALE-ERR');
+    return respond(u.body, u.status, u.contentType, 'ERR');
   } catch {
-    if (cached) return respond(cached, 'STALE-ERR');
-    return noStore(JSON.stringify({ error: 'gateway unreachable' }), 502, 'application/json', 'ERR');
+    if (cached) return respond(cached.body, cached.status, cached.contentType, 'STALE-ERR');
+    return respond(JSON.stringify({ error: 'gateway unreachable' }), 502, 'application/json', 'ERR');
   }
 }

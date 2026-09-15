@@ -2,18 +2,25 @@
 //
 // These call the upstream gateway directly instead of going through our own
 // /api/gateway proxy — server-side fetch isn't subject to the browser CORS
-// restrictions the proxy exists to work around. Caching is delegated to
-// Next's fetch Data Cache (revalidate matches the proxy's 5-minute freshness
-// window) so repeat requests for the same record don't hit the gateway every time.
+// restrictions the proxy exists to work around.
+//
+// Caching is gated by the same GATEWAY_CACHE_ENABLED switch as the client proxy (see
+// gateway-proxy-cache.ts / CACHING.md) — off by default, meaning every server-rendered
+// page load fetches current data. When enabled, this uses Next's own fetch Data Cache
+// rather than a second hand-rolled store, since Server Components already have it
+// built in; there was never a good reason for this app to run two cache
+// implementations for the same kind of data.
+import { isCacheEnabled } from './gateway-proxy-cache';
 import { sanitizeSankeyData } from './sankey';
 import type { ConstitutionRecordData, ItemRecordData, ItemsResponse, LedgerDetailData, OrgData, OrgsResponse, ProjectRecordData, ProjectsResponse, SankeyData, TraceData } from './types';
 
 const GATEWAY = 'https://app.democracydistributed.com/api/gateway';
 const REVALIDATE_SECONDS = 300;
 
-const CACHE_TAG = 'gateway-data';
+export const CACHE_TAG = 'gateway-data';
 
 function get(url: string) {
+  if (!isCacheEnabled()) return fetch(url, { cache: 'no-store' });
   return fetch(url, { next: { revalidate: REVALIDATE_SECONDS, tags: [CACHE_TAG] } });
 }
 
