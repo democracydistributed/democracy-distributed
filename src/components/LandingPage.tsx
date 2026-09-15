@@ -65,8 +65,8 @@ export default function LandingPage() {
           </h1>
           <div className={`${styles.heroH1Line2} ${styles.revealWipe2}`}>Trace the Decisions.</div>
           <p className={`${styles.heroDesc} ${styles.revealFade}`}>
-            Democracy Distributed maps every dollar your city spends — from the vote that authorized it to the invoice that paid it
-            out. Crowdsourced, structured, and fully traceable — open to everyone.
+            Democracy Distributed maps every dollar your city spends, from the vote that authorized it to the invoice that paid it
+            out. Crowdsourced, structured, and fully traceable, open to everyone.
           </p>
           <div className={`${styles.heroActions} ${styles.revealFade}`}>
             <Link href={TORONTO_HREF} className={styles.btnPrimary}>
@@ -78,7 +78,7 @@ export default function LandingPage() {
         <div className={`${styles.heroRight} ${styles.revealFadeSlow}`}>
           <Link href={TORONTO_HREF} className={styles.sankeyContainer} aria-label="Explore the City of Toronto 2024 budget">
             <div className={styles.sankeyHeader}>
-              <span className={styles.sankeyTitle}>City of Toronto — 2024 Operating Budget</span>
+              <span className={styles.sankeyTitle}>City of Toronto · 2024 Operating Budget</span>
               <span className={styles.sankeyCue}>Trace ↗</span>
             </div>
             <div className={styles.sankeySvgWrap}>
@@ -176,11 +176,11 @@ export default function LandingPage() {
       <section className={styles.section} id="features">
         <div className={styles.sectionLabel}>How It Works</div>
         <h2 className={styles.sectionH2}>
-          From idea to dollar — <em>the full chain.</em>
+          From idea to dollar: <em>the full chain.</em>
         </h2>
         <p className={styles.sectionDesc}>
           Every dollar your city spends started as someone&apos;s idea. Democracy Distributed makes every step between that idea and
-          the money visible — and connected.
+          the money visible and connected.
         </p>
 
         <div className={styles.chainRow}>
@@ -192,7 +192,7 @@ export default function LandingPage() {
             <div className={`${styles.chainNodeTag} ${styles.cnTagSuggestion}`}>Suggestion</div>
             <div className={styles.chainNodeTitle}>Someone speaks up</div>
             <p className={styles.chainNodeDesc}>
-              &quot;The path near Riverdale Park is cracked — wheelchairs can&apos;t get through.&quot; Open to anyone. No credentials
+              &quot;The path near Riverdale Park is cracked, wheelchairs can&apos;t get through.&quot; Open to anyone. No credentials
               needed.
             </p>
           </div>
@@ -205,7 +205,7 @@ export default function LandingPage() {
             <div className={`${styles.chainNodeTag} ${styles.cnTagItem}`}>Item / Motion</div>
             <div className={styles.chainNodeTitle}>It becomes a decision</div>
             <p className={styles.chainNodeDesc}>
-              Staff formalize it. A motion is debated, amended, recorded — with the names of everyone involved.
+              Staff formalize it. A motion is debated, amended, recorded, with the names of everyone involved.
             </p>
           </div>
 
@@ -217,7 +217,7 @@ export default function LandingPage() {
             <div className={`${styles.chainNodeTag} ${styles.cnTagVote}`}>Vote</div>
             <div className={styles.chainNodeTitle}>Council authorizes</div>
             <p className={styles.chainNodeDesc}>
-              22 in favour, 3 opposed. The vote is the gate — before it, no money moves. After it, $45,000 is committed.
+              22 in favour, 3 opposed. The vote is the gate: before it, no money moves. After it, $45,000 is committed.
             </p>
           </div>
 
@@ -229,7 +229,7 @@ export default function LandingPage() {
             <div className={`${styles.chainNodeTag} ${styles.cnTagProject}`}>Project</div>
             <div className={styles.chainNodeTitle}>Work begins</div>
             <p className={styles.chainNodeDesc}>
-              A contractor is selected. Milestones are tracked. The $45,000 shows as a greyed flow in the Sankey — planned, not yet
+              A contractor is selected. Milestones are tracked. The $45,000 shows as a greyed flow in the Sankey: planned, not yet
               spent.
             </p>
           </div>
@@ -242,7 +242,7 @@ export default function LandingPage() {
             <div className={`${styles.chainNodeTag} ${styles.cnTagMoney}`}>Ledger Entry</div>
             <div className={styles.chainNodeTitle}>The dollar moves</div>
             <p className={styles.chainNodeDesc}>
-              Each invoice paid fills the Sankey with colour. Tap any flow — trace it back to the vote, the complaint, the person who
+              Each invoice paid fills the Sankey with colour. Tap any flow to trace it back to the vote, the complaint, the person who
               raised it.
             </p>
           </div>
@@ -266,7 +266,7 @@ export default function LandingPage() {
             </h2>
             <p className={styles.sectionDesc} style={{ marginBottom: 32 }}>
               Democracy Distributed runs on community contributions. Every verified data point, correction, or new organization you
-              add earns you reputation — and reputation unlocks more access and influence on the platform.
+              add earns you reputation, and reputation unlocks more access and influence on the platform.
             </p>
             <Link href="/contribute" className={styles.btnPrimary}>
               Start Contributing →
@@ -332,7 +332,7 @@ export default function LandingPage() {
           deserves to be <em>seen.</em>
         </h2>
         <p className={styles.ctaDesc}>
-          Help us map every government, track every decision, and make civic data a public right — not a privilege.
+          Help us map every government, track every decision, and make civic data a public right, not a privilege.
         </p>
         <div className={styles.ctaActions}>
           <Link href={TORONTO_HREF} className={styles.btnPrimary}>
@@ -371,7 +371,7 @@ export default function LandingPage() {
             '@type': 'DataCatalog',
             name: 'Democracy Distributed Civic Data Catalog',
             description:
-              'Open, crowdsourced data connecting government finances, decisions, and outcomes — municipal budgets, council decisions, funded projects, and the ledger entries that trace spending back to the votes that authorized it.',
+              'Open, crowdsourced data connecting government finances, decisions, and outcomes: municipal budgets, council decisions, funded projects, and the ledger entries that trace spending back to the votes that authorized it.',
             url: 'https://democracydistributed.com/browse',
             creator: { '@type': 'Organization', name: 'Democracy Distributed' },
             keywords: ['municipal budget', 'government spending', 'civic accountability', 'open data', 'council decisions'],

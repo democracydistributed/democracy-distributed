@@ -5,7 +5,7 @@ import { Logo } from './Logo';
 export default function Nav() {
   return (
     <nav>
-      <Link href="/" className="nav-logo" aria-label="Democracy Distributed — Home">
+      <Link href="/" className="nav-logo" aria-label="Democracy Distributed: Home">
         <Logo size={36} />
       </Link>
       <div className="nav-r">

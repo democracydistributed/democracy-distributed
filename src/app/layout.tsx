@@ -10,14 +10,14 @@ export const metadata: Metadata = {
     default: 'Democracy Distributed',
     template: '%s | Democracy Distributed',
   },
-  description: 'Follow the money from vote to invoice. Democracy Distributed maps every dollar your city spends — open, crowdsourced, fully traceable.',
+  description: 'Follow the money from vote to invoice. Democracy Distributed maps every dollar your city spends: open, crowdsourced, fully traceable.',
   openGraph: {
     type: 'website',
     siteName: 'Democracy Distributed',
     title: 'Democracy Distributed',
     description: 'Follow the money from vote to invoice.',
     url: SITE_URL,
-    images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Democracy Distributed — Follow the Money' }],
+    images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Democracy Distributed: Follow the Money' }],
   },
   twitter: {
     card: 'summary_large_image',
