@@ -10,7 +10,6 @@ export default function Nav() {
       </Link>
       <div className="nav-r">
         <div className="nav-links">
-          <Link href="/about">About</Link>
           <Link href="/contribute">Contribute</Link>
         </div>
         <Link href="/browse" className="nav-cta">
