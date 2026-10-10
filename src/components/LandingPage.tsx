@@ -59,14 +59,14 @@ export default function LandingPage() {
         </svg>
 
         <div className={styles.heroLeft}>
-          <div className={`${styles.heroEyebrow} ${styles.revealFade}`}>Civic accountability infrastructure</div>
           <h1 className={`${styles.heroH1} ${styles.revealWipe}`}>
             Follow the <em>Money.</em>
           </h1>
           <div className={`${styles.heroH1Line2} ${styles.revealWipe2}`}>Trace the Decisions.</div>
           <p className={`${styles.heroDesc} ${styles.revealFade}`}>
-            Democracy Distributed maps every dollar your city spends, from the vote that authorized it to the invoice that paid it
-            out. Crowdsourced, structured, and fully traceable, open to everyone.
+            Your city spends billions, but the decisions, rules, and people behind that money are scattered across documents
+            few people can follow. Democracy Distributed aims to show how they all connect, so we can understand them together and act on what we
+            find.
           </p>
           <div className={`${styles.heroActions} ${styles.revealFade}`}>
             <Link href={TORONTO_HREF} className={styles.btnPrimary}>
@@ -76,13 +76,13 @@ export default function LandingPage() {
         </div>
 
         <div className={`${styles.heroRight} ${styles.revealFadeSlow}`}>
-          <Link href={TORONTO_HREF} className={styles.sankeyContainer} aria-label="Explore the City of Toronto 2024 budget">
+          <Link href={TORONTO_HREF} className={styles.sankeyContainer} aria-label="Explore City of Toronto financial information">
             <div className={styles.sankeyHeader}>
-              <span className={styles.sankeyTitle}>City of Toronto · 2024 Operating Budget</span>
+              <span className={styles.sankeyTitle}>City of Toronto · Financial Information</span>
               <span className={styles.sankeyCue}>Trace ↗</span>
             </div>
             <div className={styles.sankeySvgWrap}>
-              <svg viewBox="0 0 500 280" width="100%">
+              <svg viewBox="0 0 500 336" width="100%">
                 <defs>
                   <linearGradient id="g1" x1="0%" x2="100%">
                     <stop offset="0%" stopColor="#3b82f6" />
@@ -103,70 +103,60 @@ export default function LandingPage() {
                 </defs>
 
                 {/* Source nodes (left) — heights proportional to share of $14.0B */}
-                <rect x="8" y="15" width="12" height="88" rx="2" fill="#3b82f6" opacity="0.9" />
-                <rect x="8" y="111" width="12" height="80" rx="2" fill="#2dd4bf" opacity="0.9" />
-                <rect x="8" y="199" width="12" height="32" rx="2" fill="#8b5cf6" opacity="0.9" />
-                <rect x="8" y="239" width="12" height="14" rx="2" fill="#f59e0b" opacity="0.9" />
+                <rect x="8" y="15" width="12" height="88" rx="2" fill="#3b82f6" opacity="0.9" transform="scale(1 1.2)" />
+                <rect x="8" y="111" width="12" height="80" rx="2" fill="#2dd4bf" opacity="0.9" transform="scale(1 1.2)" />
+                <rect x="8" y="199" width="12" height="32" rx="2" fill="#8b5cf6" opacity="0.9" transform="scale(1 1.2)" />
+                <rect x="8" y="239" width="12" height="14" rx="2" fill="#f59e0b" opacity="0.9" transform="scale(1 1.2)" />
 
-                <text x="26" y="54" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3">Provincial Tfr.</text>
-                <text x="26" y="64" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3">$5.8B CAD</text>
-                <text x="26" y="145" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3">Property Tax</text>
-                <text x="26" y="155" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3">$5.2B CAD</text>
-                <text x="26" y="208" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3">User Fees</text>
-                <text x="26" y="218" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3">$2.1B CAD</text>
-                <text x="26" y="244" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3">Federal Grants</text>
-                <text x="26" y="254" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3">$0.9B CAD</text>
+                <text x="26" y="64.8" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3">Provincial Tfr.</text>
+                <text x="26" y="76.8" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3">$5.8B CAD</text>
+                <text x="26" y="174.0" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3">Property Tax</text>
+                <text x="26" y="186.0" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3">$5.2B CAD</text>
+                <text x="26" y="249.6" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3">User Fees</text>
+                <text x="26" y="261.6" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3">$2.1B CAD</text>
+                <text x="26" y="292.8" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3">Federal Grants</text>
+                <text x="26" y="304.8" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3">$0.9B CAD</text>
 
                 {/* Centre node */}
-                <rect x="195" y="10" width="14" height="255" rx="3" fill="#e8a020" opacity="0.95" />
-                <text x="202" y="6" fontFamily="Playfair Display, serif" fontSize="10" fill="#e8a020" textAnchor="middle">City of Toronto</text>
-                <text x="202" y="276" fontFamily="DM Mono, monospace" fontSize="8" fill="#e8a020" textAnchor="middle">$14.0B</text>
+                <rect x="195" y="10" width="14" height="255" rx="3" fill="#e8a020" opacity="0.95" transform="scale(1 1.2)" />
+                <text x="202" y="7.2" fontFamily="Playfair Display, serif" fontSize="10" fill="#e8a020" textAnchor="middle">City of Toronto</text>
+                <text x="202" y="331.2" fontFamily="DM Mono, monospace" fontSize="8" fill="#e8a020" textAnchor="middle">$14.0B</text>
 
                 {/* Flows left to centre */}
-                <path className={styles.flowPath} d="M20,59 C108,59 108,88 195,88" fill="none" stroke="url(#g1)" strokeWidth="50" opacity="0.18" />
-                <path d="M20,59 C108,59 108,88 195,88" fill="none" stroke="url(#g1)" strokeWidth="1.5" opacity="0.6" />
+                <path className={styles.flowPath} d="M20,59 C108,59 108,88 195,88" fill="none" stroke="url(#g1)" strokeWidth="50" opacity="0.18" transform="scale(1 1.2)" />
+                <path d="M20,59 C108,59 108,88 195,88" fill="none" stroke="url(#g1)" strokeWidth="1.5" opacity="0.6" transform="scale(1 1.2)" />
 
-                <path className={styles.flowPath} d="M20,151 C108,151 108,132 195,132" fill="none" stroke="url(#g2)" strokeWidth="45" opacity="0.18" style={{ animationDelay: '0.5s' }} />
-                <path d="M20,151 C108,151 108,132 195,132" fill="none" stroke="url(#g2)" strokeWidth="1.2" opacity="0.6" />
+                <path className={styles.flowPath} d="M20,151 C108,151 108,132 195,132" fill="none" stroke="url(#g2)" strokeWidth="45" opacity="0.18" style={{ animationDelay: '0.5s' }} transform="scale(1 1.2)" />
+                <path d="M20,151 C108,151 108,132 195,132" fill="none" stroke="url(#g2)" strokeWidth="1.2" opacity="0.6" transform="scale(1 1.2)" />
 
-                <path className={styles.flowPath} d="M20,215 C108,215 108,175 195,175" fill="none" stroke="url(#g3)" strokeWidth="18" opacity="0.18" style={{ animationDelay: '1s' }} />
-                <path d="M20,215 C108,215 108,175 195,175" fill="none" stroke="url(#g3)" strokeWidth="1" opacity="0.6" />
+                <path className={styles.flowPath} d="M20,215 C108,215 108,175 195,175" fill="none" stroke="url(#g3)" strokeWidth="18" opacity="0.18" style={{ animationDelay: '1s' }} transform="scale(1 1.2)" />
+                <path d="M20,215 C108,215 108,175 195,175" fill="none" stroke="url(#g3)" strokeWidth="1" opacity="0.6" transform="scale(1 1.2)" />
 
-                <path className={styles.flowPath} d="M20,246 C108,246 108,210 195,210" fill="none" stroke="url(#g4)" strokeWidth="8" opacity="0.18" style={{ animationDelay: '1.5s' }} />
-                <path d="M20,246 C108,246 108,210 195,210" fill="none" stroke="url(#g4)" strokeWidth="0.8" opacity="0.6" />
+                <path className={styles.flowPath} d="M20,246 C108,246 108,210 195,210" fill="none" stroke="url(#g4)" strokeWidth="8" opacity="0.18" style={{ animationDelay: '1.5s' }} transform="scale(1 1.2)" />
+                <path d="M20,246 C108,246 108,210 195,210" fill="none" stroke="url(#g4)" strokeWidth="0.8" opacity="0.6" transform="scale(1 1.2)" />
 
                 {/* Output nodes (right) — heights proportional to share of $14.0B */}
-                <rect x="478" y="15" width="12" height="132" rx="2" fill="#e05252" opacity="0.9" />
-                <rect x="478" y="155" width="12" height="47" rx="2" fill="#f59e0b" opacity="0.9" />
-                <rect x="478" y="210" width="12" height="25" rx="2" fill="#4ade80" opacity="0.9" />
+                <rect x="478" y="15" width="12" height="132" rx="2" fill="#e05252" opacity="0.9" transform="scale(1 1.2)" />
+                <rect x="478" y="155" width="12" height="47" rx="2" fill="#f59e0b" opacity="0.9" transform="scale(1 1.2)" />
+                <rect x="478" y="210" width="12" height="25" rx="2" fill="#4ade80" opacity="0.9" transform="scale(1 1.2)" />
 
-                <text x="472" y="74" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3" textAnchor="end">Services</text>
-                <text x="472" y="84" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3" textAnchor="end">$9.1B CAD</text>
-                <text x="472" y="175" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3" textAnchor="end">Capital Debt</text>
-                <text x="472" y="185" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3" textAnchor="end">$3.2B CAD</text>
-                <text x="472" y="220" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3" textAnchor="end">Corporate</text>
-                <text x="472" y="230" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3" textAnchor="end">$1.7B CAD</text>
+                <text x="472" y="88.8" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3" textAnchor="end">Services</text>
+                <text x="472" y="100.8" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3" textAnchor="end">$9.1B CAD</text>
+                <text x="472" y="210.0" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3" textAnchor="end">Capital Debt</text>
+                <text x="472" y="222.0" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3" textAnchor="end">$3.2B CAD</text>
+                <text x="472" y="264.0" fontFamily="DM Mono, monospace" fontSize="9" fill="#8896b3" textAnchor="end">Corporate</text>
+                <text x="472" y="276.0" fontFamily="DM Mono, monospace" fontSize="8" fill="#8896b3" textAnchor="end">$1.7B CAD</text>
 
                 {/* Flows centre to right */}
-                <path className={styles.flowPath} d="M209,74 C320,74 320,81 478,81" fill="none" stroke="#e05252" strokeWidth="74" opacity="0.15" style={{ animationDelay: '0.3s' }} />
-                <path d="M209,74 C320,74 320,81 478,81" fill="none" stroke="#e05252" strokeWidth="1.5" opacity="0.5" />
+                <path className={styles.flowPath} d="M209,74 C320,74 320,81 478,81" fill="none" stroke="#e05252" strokeWidth="74" opacity="0.15" style={{ animationDelay: '0.3s' }} transform="scale(1 1.2)" />
+                <path d="M209,74 C320,74 320,81 478,81" fill="none" stroke="#e05252" strokeWidth="1.5" opacity="0.5" transform="scale(1 1.2)" />
 
-                <path className={styles.flowPath} d="M209,162 C320,162 320,178 478,178" fill="none" stroke="#f59e0b" strokeWidth="26" opacity="0.15" style={{ animationDelay: '0.8s' }} />
-                <path d="M209,162 C320,162 320,178 478,178" fill="none" stroke="#f59e0b" strokeWidth="1.2" opacity="0.5" />
+                <path className={styles.flowPath} d="M209,162 C320,162 320,178 478,178" fill="none" stroke="#f59e0b" strokeWidth="26" opacity="0.15" style={{ animationDelay: '0.8s' }} transform="scale(1 1.2)" />
+                <path d="M209,162 C320,162 320,178 478,178" fill="none" stroke="#f59e0b" strokeWidth="1.2" opacity="0.5" transform="scale(1 1.2)" />
 
-                <path className={styles.flowPath} d="M209,215 C320,215 320,222 478,222" fill="none" stroke="#4ade80" strokeWidth="14" opacity="0.15" style={{ animationDelay: '1.3s' }} />
-                <path d="M209,215 C320,215 320,222 478,222" fill="none" stroke="#4ade80" strokeWidth="1" opacity="0.5" />
+                <path className={styles.flowPath} d="M209,215 C320,215 320,222 478,222" fill="none" stroke="#4ade80" strokeWidth="14" opacity="0.15" style={{ animationDelay: '1.3s' }} transform="scale(1 1.2)" />
+                <path d="M209,215 C320,215 320,222 478,222" fill="none" stroke="#4ade80" strokeWidth="1" opacity="0.5" transform="scale(1 1.2)" />
               </svg>
-            </div>
-            <div className={styles.dataTicker}>
-              <div className={styles.tickerItem}>
-                <span className={styles.tickerLabel}>Total Budget</span>
-                <span className={styles.tickerValue}>$14.0B</span>
-              </div>
-              <div className={styles.tickerItem}>
-                <span className={styles.tickerLabel}>Fiscal Year</span>
-                <span className={styles.tickerValue}>2024</span>
-              </div>
             </div>
           </Link>
         </div>
