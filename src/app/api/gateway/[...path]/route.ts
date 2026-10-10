@@ -66,10 +66,19 @@ function respond(body: string, status: number, contentType: string, hit: string)
   });
 }
 
+// This proxy is for reads. The only write it still relays is the pilot signup form,
+// which hasn't moved to an authenticated route yet — every other POST is refused so
+// the proxy can't be used as a backdoor around a dedicated write route (suggestions
+// now go through src/app/api/suggestions, which attaches a real identity).
+const POST_ALLOWED = new Set(['pilot/signup']);
+
 // Writes must never be cached or retried silently — a retry could double-submit a form.
 // Straight pass-through, unaffected by the cache switch.
 export async function POST(req: NextRequest, { params }: { params: { path: string[] } }) {
   const path = (params.path || []).join('/');
+  if (!POST_ALLOWED.has(path)) {
+    return respond(JSON.stringify({ error: 'method not allowed' }), 405, 'application/json', 'DENY');
+  }
   const search = req.nextUrl.search;
   const url = `${GATEWAY}/${path}${search}`;
   const body = await req.text();

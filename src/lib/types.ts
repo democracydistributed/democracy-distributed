@@ -145,6 +145,7 @@ export interface ProjectsResponse {
 /** A suggestion from the /suggestions endpoint (org-page Suggestions tab). */
 export interface Suggestion {
   suggestionId?: string;
+  subject?: string;
   text?: string;
   category?: string;
   status?: string;

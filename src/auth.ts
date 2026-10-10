@@ -38,6 +38,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   ],
   callbacks: {
+    // Only stores the tokens at first login. Renewing an expired Corteza token is
+    // intentionally NOT done here — this callback also runs while pages render,
+    // where the renewed cookie can't be saved. Renewal lives in
+    // getWriteIdentity() in src/lib/corteza-write.ts.
     async jwt({ token, account }) {
       if (account) {
         token.accessToken = account.access_token;
@@ -46,8 +50,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return token;
     },
-    async session({ session, token }) {
-      session.accessToken = token.accessToken as string | undefined;
+    // The Corteza access token deliberately stays in the encrypted JWT cookie
+    // only — never copied onto the session, which any script on the page can
+    // read. Server code that needs it reads it via getToken() (see
+    // src/lib/corteza-write.ts).
+    async session({ session }) {
       return session;
     },
   },

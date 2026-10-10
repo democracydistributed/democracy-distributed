@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import FeedbackLink from './FeedbackLink';
 
 export default function Footer() {
   return (
@@ -6,6 +7,7 @@ export default function Footer() {
       <div className="f-logo">Democracy Distributed</div>
       <div className="f-links">
         <Link href="/contribute">Contribute</Link>
+        <FeedbackLink />
         <a href="https://democracy-distributed.gitbook.io/democracy-distributed-docs/" target="_blank" rel="noopener noreferrer">
           Documentation
         </a>

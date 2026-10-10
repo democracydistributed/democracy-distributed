@@ -119,21 +119,26 @@ export async function fetchSuggestions(orgId: string): Promise<SuggestionsRespon
 }
 
 export interface NewSuggestion {
-  orgId: string;
+  /** Omitted for site-wide (footer) feedback — the server files it under DD Central Government. */
+  orgId?: string;
+  /** Org-page suggestions have a subject; footer feedback has a category instead. */
+  subject?: string;
   text: string;
-  category: string;
+  category?: string;
   email?: string;
 }
 
-/** Posts a new suggestion. Never cached/retried by the proxy — see route.ts. */
+/** Posts a new suggestion through our own server route (src/app/api/suggestions),
+ *  not the gateway — the server attaches the member's or the anonymous account's
+ *  identity so the record has a real owner. */
 export async function postSuggestion(payload: NewSuggestion): Promise<{ ok: boolean; id?: string; error?: string }> {
-  const res = await gatewayFetch(SUGGESTIONS_ENDPOINT, {
+  const res = await fetch('/api/suggestions', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(payload),
+    cache: 'no-store',
   });
-  const raw = await res.json();
-  const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  const data = await res.json().catch(() => null);
   if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
   return data;
 }
