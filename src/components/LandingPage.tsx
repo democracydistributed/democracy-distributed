@@ -164,9 +164,9 @@ export default function LandingPage() {
 
       {/* ── HOW IT WORKS / CHAIN ── */}
       <section className={styles.section} id="features">
-        <div className={styles.sectionLabel}>How It Works</div>
+        <div className={styles.sectionLabel}>Trace It</div>
         <h2 className={styles.sectionH2}>
-          From idea to dollar: <em>the full chain.</em>
+          How it all <em>connects.</em>
         </h2>
         <p className={styles.sectionDesc}>
           Every dollar your city spends started as someone&apos;s idea. Democracy Distributed makes every step between that idea and
@@ -250,14 +250,29 @@ export default function LandingPage() {
       <section className={styles.contributeSection} id="contribute">
         <div className={styles.contributeInner}>
           <div>
-            <div className={styles.sectionLabel}>Contribute &amp; Earn</div>
+            <div className={styles.sectionLabel}>Contribute</div>
             <h2 className={styles.sectionH2}>
-              Your knowledge has <em>value.</em>
+              Build it <em>together.</em>
             </h2>
             <p className={styles.sectionDesc} style={{ marginBottom: 32 }}>
               Democracy Distributed runs on community contributions. Every verified data point, correction, or new organization you
-              add earns you reputation, and reputation unlocks more access and influence on the platform.
+              add is credited to you and builds your reputation.
             </p>
+            <div className={styles.contributePoints}>
+              <div>
+                <h3 className={styles.contributePointTitle}>Understand together</h3>
+                <p className={styles.contributePointText}>
+                  Ask questions, share what you know, and make sense of decisions alongside people who know the story first-hand.
+                </p>
+              </div>
+              <div>
+                <h3 className={styles.contributePointTitle}>Act together</h3>
+                <p className={styles.contributePointText}>
+                  Follow the issues you care about, take what you find to council, and organize with others who care about the
+                  same thing.
+                </p>
+              </div>
+            </div>
             <Link href="/contribute" className={styles.btnPrimary}>
               Start Contributing →
             </Link>

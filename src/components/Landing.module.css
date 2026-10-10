@@ -196,6 +196,10 @@
 }
 .tickerValue { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--amber); font-weight: 500; }
 
+.contributePoints { display: flex; flex-direction: column; gap: 24px; margin-bottom: 32px; }
+.contributePointTitle { font-size: 18px; color: var(--th); font-weight: 500; margin: 0 0 6px; }
+.contributePointText { font-size: 15px; line-height: 1.7; color: var(--tm); margin: 0; }
+
 @keyframes flow { from { stroke-dashoffset: 800; } to { stroke-dashoffset: 0; } }
 .flowPath { stroke-dasharray: 800; animation: flow 3s ease-in-out infinite alternate; }
 
