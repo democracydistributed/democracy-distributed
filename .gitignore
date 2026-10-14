@@ -22,3 +22,6 @@
 # misc OS/editor junk
 .DS_Store
 .fuse_hidden*
+
+# local Claude Code tooling
+/.claude/
