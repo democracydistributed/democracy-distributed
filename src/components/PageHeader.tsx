@@ -22,8 +22,11 @@ function Description({ text }: { text: string | null }) {
 
 export default function PageHeader({ org }: { org: OrgData | null }) {
   const [ready, setReady] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
   const flowRef = useRef<SVGSVGElement>(null);
   const statusActive = org?.status?.toLowerCase() === 'active';
+  const photoId = org?.coverPhoto;
+  const showImg = !!photoId && !imgFailed;
 
   useEffect(() => {
     // Set per-path dash lengths before animating
@@ -75,7 +78,19 @@ export default function PageHeader({ org }: { org: OrgData | null }) {
       </div>
       {org ? (
         <div className="org-id">
-          <div className="org-seal">🏛</div>
+          <div className={`org-seal${showImg ? ' org-seal-has-img' : ''}`}>
+            {showImg ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`/api/org-image/${encodeURIComponent(photoId)}`}
+                alt={`${org.name ?? 'Organization'} logo`}
+                className="org-seal-img"
+                onError={() => setImgFailed(true)}
+              />
+            ) : (
+              '🏛'
+            )}
+          </div>
           <div className="org-info">
             <h1>{org.name}</h1>
             <div className="org-tags">

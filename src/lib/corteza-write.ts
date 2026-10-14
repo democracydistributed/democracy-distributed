@@ -36,7 +36,7 @@ export class ReauthRequired extends Error {
 
 let anonToken: { value: string; expiresAt: number } | null = null;
 
-async function getAnonymousToken(): Promise<string> {
+export async function getAnonymousToken(): Promise<string> {
   // Reuse until a minute before expiry. Per-lambda-instance memory only; a cold
   // start just mints a fresh one, which is cheap.
   if (anonToken && Date.now() < anonToken.expiresAt - 60_000) return anonToken.value;

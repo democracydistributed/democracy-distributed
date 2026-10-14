@@ -71,6 +71,8 @@ export interface OrgData {
   jurisdiction?: string;
   website?: string;
   description?: string;
+  /** Corteza attachment ID of the org's image; served via /api/org-image/[id]. */
+  coverPhoto?: string | null;
 }
 
 /** A frame in the drawer's drill-down back-stack. */

@@ -83,7 +83,11 @@ html.light .page-header::before { opacity:.3; }
 .bc a { color:var(--accent-text, var(--accent)); text-decoration:none; } .bc a:hover { color:var(--accent-l); } .bc .sep { opacity:.35; }
 .org-id { display:flex; flex-direction:column; gap:14px; }
 @media(min-width:520px){ .org-id{flex-direction:row;align-items:flex-start;gap:20px;} }
-.org-seal { width:60px; height:60px; border-radius:10px; flex-shrink:0; background:var(--bg-card); border:1px solid var(--bhi); display:flex; align-items:center; justify-content:center; font-size:28px; }
+.org-seal { width:88px; height:88px; border-radius:14px; flex-shrink:0; background:var(--bg-card); border:1px solid var(--bhi); display:flex; align-items:center; justify-content:center; font-size:40px; overflow:hidden; }
+/* Logos fill the tile edge to edge: full-bleed ones (Toronto) get no frame, and ones on a
+   white background (Ludhiana) merge into the white tile instead of floating in the dark card. */
+.org-seal-has-img { background:#fff; }
+.org-seal-img { width:100%; height:100%; object-fit:contain; }
 .org-info h1 { font-family:'Playfair Display',serif; font-size:clamp(22px,4.5vw,42px); font-weight:900; color:var(--th); line-height:1.1; margin-bottom:10px; }
 .org-info h1 em { font-style:italic; color:var(--accent-text, var(--accent)); }
 .org-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
