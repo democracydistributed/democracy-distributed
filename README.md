@@ -4,8 +4,6 @@
 
 Every tracked organization gets a public page with its finances drawn as an interactive Sankey diagram. Where the records connect, you can follow a dollar back to the project it funded, the vote that approved it, and the suggestion that started it.
 
-<!-- TODO: screenshot or GIF of the Toronto Sankey -->
-
 - Live: [democracydistributed.com](https://democracydistributed.com/) 
 - Docs: [democracy-distributed.gitbook.io](https://democracy-distributed.gitbook.io/democracy-distributed-docs)
 
