@@ -59,3 +59,7 @@ For code changes:
 3. Open a pull request describing what changed and why.
 
 You can also help with the data itself, like spotting missing records, on the [platform](https://democracydistributed.com/contribute) (still growing), or see more ways to [get involved](https://democracy-distributed.gitbook.io/democracy-distributed-docs/contribute/get-involved).
+
+## License
+
+The code is released under the [MIT License](LICENSE).
