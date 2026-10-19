@@ -148,6 +148,14 @@ const STATUS_STEPS = ['Backlog', 'To Do', 'In Progress', 'Done'];
  * (layout switches in CSS). Prev/next step through the tasks shown on that project's card.
  */
 function TaskPanel({ o, onClose, onStep }: { o: OpenTask; onClose: () => void; onStep: (d: number) => void }) {
+  // Play the exit animation, then unmount.
+  const [closing, setClosing] = useState(false);
+  const requestClose = useCallback(() => {
+    if (closing) return;
+    setClosing(true);
+    window.setTimeout(onClose, 220);
+  }, [closing, onClose]);
+
   const { project: p, index } = o;
   const list = p.preparedTasks;
   const t = list[index];
@@ -166,13 +174,13 @@ function TaskPanel({ o, onClose, onStep }: { o: OpenTask; onClose: () => void; o
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') requestClose();
       else if (e.key === 'ArrowLeft' && index > 0) onStep(-1);
       else if (e.key === 'ArrowRight' && index < list.length - 1) onStep(1);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose, onStep, index, list.length]);
+  }, [requestClose, onStep, index, list.length]);
 
   if (!t) return null;
 
@@ -204,8 +212,13 @@ function TaskPanel({ o, onClose, onStep }: { o: OpenTask; onClose: () => void; o
   // Portal to <body>: an ancestor with a transform would otherwise anchor position:fixed to itself.
   return createPortal(
     <>
-      <div className="pj-scrim" onClick={onClose} />
-      <div className="pj-panel" role="dialog" aria-modal="true" aria-label={t.title || 'Task detail'}>
+      <div className={'pj-scrim' + (closing ? ' out' : '')} onClick={requestClose} />
+      <div
+        className={'pj-panel' + (closing ? ' out' : '')}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t.title || 'Task detail'}
+      >
         <div className="pj-panel-grab" aria-hidden="true">
           <span />
         </div>
@@ -231,7 +244,7 @@ function TaskPanel({ o, onClose, onStep }: { o: OpenTask; onClose: () => void; o
               </button>
             </div>
           ) : null}
-          <button ref={closeRef} className="pj-panel-x" aria-label="Close" onClick={onClose}>
+          <button ref={closeRef} className="pj-panel-x" aria-label="Close" onClick={requestClose}>
             ×
           </button>
         </div>
