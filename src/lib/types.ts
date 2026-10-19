@@ -130,6 +130,29 @@ export interface ItemsResponse {
   items: Item[];
 }
 
+/** A public task nested in a project (only To Do / In Progress rows). */
+export interface ProjectTask {
+  taskId?: string;
+  title?: string | null;
+  description?: string | null;
+  domain?: string | null;
+  status?: string | null;
+  assigneeId?: string | null;
+  reputationReward?: string | null;
+  currency?: string | null;
+  dueDate?: string | null;
+  isRealCurrency?: boolean;
+  claimed?: boolean;
+}
+
+/** counts covers EVERY job on the project (incl. Backlog/Done), so it can exceed tasks.length. */
+export interface ProjectCounts {
+  total: number;
+  done: number;
+  open: number;
+  unclaimed: number;
+}
+
 /** A project from the /projects endpoint. */
 export interface Project {
   projectId?: string;
@@ -137,11 +160,27 @@ export interface Project {
   status?: string;
   dueDate?: string;
   financialReward?: number | null;
-  description?: string;
+  description?: string | null;
+  /** Project-level domain; used for filtering only when the project has no public tasks. */
+  domain?: string | null;
+  /** Authorizing Item (resolved server-side); all null when the project has no linked item. */
+  itemId?: string | null;
+  itemNumber?: string | null;
+  itemSubject?: string | null;
+  projectNumber?: string | null;
+  createdAt?: string | null;
+  tasks?: ProjectTask[];
+  domains?: string[];
+  counts?: ProjectCounts;
 }
 
 export interface ProjectsResponse {
   projects: Project[];
+  total?: number;
+  totalAvailable?: number | string;
+  openTasks?: number;
+  /** Keys are capitalized domain names plus "unspecified". */
+  domainCounts?: Record<string, number>;
 }
 
 /** A suggestion from the /suggestions endpoint (org-page Suggestions tab). */

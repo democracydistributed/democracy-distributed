@@ -1,17 +1,43 @@
 // Small text/date helpers shared by the Items and Projects tabs.
 
-/** Strip HTML tags + decode the few common entities. SSR-safe (no DOM). */
-export function stripHtml(str: string | null | undefined): string {
+/**
+ * HTML -> plain text. Block-level tags become newlines (list items get a "• "
+ * prefix) so adjacent <li>/<p> text never welds together. SSR-safe (no DOM);
+ * the result is plain text, safe to render as a React text node.
+ */
+export function htmlToText(str: string | null | undefined): string {
   if (!str) return '';
   return String(str)
+    .replace(/<li[^>]*>/gi, '\n• ')
+    .replace(/<br\s*\/?>|<\/(p|div|li|ul|ol|h[1-6]|blockquote|tr)>/gi, '\n')
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{2,}/g, '\n')
     .trim();
+}
+
+/** Single-line version of htmlToText (block separators collapse to " · "). */
+export function stripHtml(str: string | null | undefined): string {
+  return htmlToText(str)
+    .replace(/\n• /g, ' · ')
+    .replace(/\n/g, ' · ')
+    .replace(/^(?:· |• )/, '')
+    .replace(/(?:· ){2,}/g, '· ');
+}
+
+/** Clamp to ~max chars on a word boundary, adding an ellipsis if cut. */
+export function clampWords(str: string, max = 140): string {
+  if (str.length <= max) return str;
+  const cut = str.slice(0, max);
+  const sp = cut.lastIndexOf(' ');
+  return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[\s,;:·•-]+$/, '') + '…';
 }
 
 /** Format an item date (handles bare YYYY-MM-DD by anchoring to midnight). */
