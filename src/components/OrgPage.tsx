@@ -53,9 +53,13 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
   const isMobile = useIsMobile();
   const [showFullChart, setShowFullChart] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<Tab>('finances');
+  // The first tab in the bar is the default: Suggestions for community-style
+  // orgs, Finances for the rest.
+  const isCommunityInitial = initialOrg?.type === 'Community Group' || initialOrg?.type === 'DD Government';
+  const defaultTab: Tab = (isCommunityInitial ? COMMUNITY_TABS : GOV_TABS)[0].id;
+  const [activeTab, setActiveTab] = useState<Tab>(defaultTab);
   // Tabs are lazy-loaded: a pane mounts (and fetches) only once visited.
-  const [visited, setVisited] = useState<Set<Tab>>(() => new Set<Tab>(['finances']));
+  const [visited, setVisited] = useState<Set<Tab>>(() => new Set<Tab>([defaultTab]));
   const [org] = useState<OrgData | null>(initialOrg);
   const [data] = useState<SankeyData | null>(initialSankey);
   const [error] = useState<string | null>(initialError);
