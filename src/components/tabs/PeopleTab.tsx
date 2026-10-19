@@ -87,7 +87,7 @@ export default function PeopleTab({ orgId }: { orgId: string }) {
   if (error) {
     return (
       <>
-        <div className="sec-lbl">Officials &amp; People</div>
+        <div className="sec-lbl">Officials</div>
         <div className="items-state">
           <span className="items-state-err">⚠ Failed to load people</span>
           <span className="items-state-sub">{error}</span>
@@ -99,7 +99,7 @@ export default function PeopleTab({ orgId }: { orgId: string }) {
   if (!data) {
     return (
       <>
-        <div className="sec-lbl">Officials &amp; People</div>
+        <div className="sec-lbl">Officials</div>
         <div className="items-state">Loading people…</div>
       </>
     );
@@ -111,7 +111,7 @@ export default function PeopleTab({ orgId }: { orgId: string }) {
   return (
     <>
       {/* ── Section 1: Officials (real-world axis) ── */}
-      <div className="sec-lbl">Officials &amp; People</div>
+      <div className="sec-lbl">Officials</div>
       {officials.length === 0 ? (
         <div className="items-state">No positions on record yet.</div>
       ) : (

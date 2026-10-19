@@ -53,7 +53,6 @@ export default function ItemsTab({ orgId }: { orgId: string }) {
   if (error) {
     return (
       <>
-        <div className="sec-lbl">Items</div>
         <div className="items-state">
           <span className="items-state-err">⚠ Failed to load items</span>
           <span className="items-state-sub">{error}</span>
@@ -65,7 +64,6 @@ export default function ItemsTab({ orgId }: { orgId: string }) {
   if (!items) {
     return (
       <>
-        <div className="sec-lbl">Items</div>
         <div className="items-state">Loading items…</div>
       </>
     );
@@ -76,7 +74,6 @@ export default function ItemsTab({ orgId }: { orgId: string }) {
 
   return (
     <>
-      <div className="sec-lbl">Items</div>
       <div className="items-toolbar">
         <input
           className="items-search"

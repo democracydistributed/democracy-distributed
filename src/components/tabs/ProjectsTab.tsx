@@ -390,7 +390,6 @@ export default function ProjectsTab({ orgId, fmt }: { orgId: string; fmt: Format
   if (error) {
     return (
       <>
-        <div className="sec-lbl">Projects</div>
         <div className="items-state">
           <span className="items-state-err">⚠ Failed to load projects</span>
           <span className="items-state-sub">{error}</span>
@@ -402,7 +401,6 @@ export default function ProjectsTab({ orgId, fmt }: { orgId: string; fmt: Format
   if (!projects || !data) {
     return (
       <>
-        <div className="sec-lbl">Projects</div>
         <div className="items-state">Loading projects…</div>
       </>
     );
@@ -411,7 +409,6 @@ export default function ProjectsTab({ orgId, fmt }: { orgId: string; fmt: Format
   if (projects.length === 0) {
     return (
       <>
-        <div className="sec-lbl">Projects</div>
         <div className="items-state">
           No projects on record yet.
           <br />
@@ -431,7 +428,6 @@ export default function ProjectsTab({ orgId, fmt }: { orgId: string; fmt: Format
 
   return (
     <>
-      <div className="sec-lbl">Projects</div>
       <div className="pj-tabs" role="tablist">
         {(['open', 'closed'] as const).map((v) => (
           <button

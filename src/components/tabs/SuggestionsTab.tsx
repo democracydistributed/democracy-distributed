@@ -30,7 +30,6 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
   if (error) {
     return (
       <>
-        <div className="sec-lbl">Suggestions</div>
         <div className="items-state">
           <span className="items-state-err">⚠ Failed to load suggestions</span>
           <span className="items-state-sub">{error}</span>
@@ -42,7 +41,6 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
   if (!suggestions) {
     return (
       <>
-        <div className="sec-lbl">Suggestions</div>
         <div className="items-state">Loading suggestions…</div>
       </>
     );
@@ -54,16 +52,13 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
 
   return (
     <>
-      <div className="sugg-top">
-        <div className="sec-lbl" style={{ marginBottom: 0 }}>
-          Suggestions
-        </div>
-        {!composerOpen ? (
+      {!composerOpen ? (
+        <div className="sugg-top" style={{ justifyContent: 'flex-end' }}>
           <button className="sugg-new-btn" onClick={() => setComposerOpen(true)}>
             + New
           </button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {composerOpen ? (
         <OrgSuggestionComposer

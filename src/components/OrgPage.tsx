@@ -105,7 +105,6 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
         <div className={`tab-pane${activeTab === 'finances' ? ' active' : ''}`} role="tabpanel" id="panel-finances" aria-labelledby="tab-finances">
           <div className="fin-top">
             <div>
-              <div className="sec-lbl">Financial Overview</div>
               <div className="fin-title">Follow the Money</div>
             </div>
           </div>
@@ -169,7 +168,6 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
         {/* RULES (Community Group orgs only) */}
         {isCommunity ? (
           <div className={`tab-pane${activeTab === 'rules' ? ' active' : ''}`} role="tabpanel" id="panel-rules" aria-labelledby="tab-rules">
-            <div className="sec-lbl">Rules</div>
             <div className="items-state">Rules are on their way to this page.</div>
           </div>
         ) : null}
