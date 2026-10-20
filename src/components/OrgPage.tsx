@@ -11,6 +11,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { useDrawer } from '@/hooks/useDrawer';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { detectScale, makeFmt } from '@/lib/format';
+import { defaultYear, filterByYear, listYears } from '@/lib/sankey';
 import type { OrgData, SankeyData } from '@/lib/types';
 import ItemsTab from './tabs/ItemsTab';
 import ProjectsTab from './tabs/ProjectsTab';
@@ -61,7 +62,7 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
   // Tabs are lazy-loaded: a pane mounts (and fetches) only once visited.
   const [visited, setVisited] = useState<Set<Tab>>(() => new Set<Tab>([defaultTab]));
   const [org] = useState<OrgData | null>(initialOrg);
-  const [data] = useState<SankeyData | null>(initialSankey);
+  const [rawData] = useState<SankeyData | null>(initialSankey);
   const [error] = useState<string | null>(initialError);
 
   // 'DD Government' covers Democracy Distributed's own internal/POD-governed
@@ -79,7 +80,16 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
     if (org?.name) document.title = `${org.name} — Democracy Distributed`;
   }, [org]);
 
-  const fmt = useMemo(() => makeFmt(data ? detectScale(data.revenue) : false), [data]);
+  // Year chips: the payload holds every year; filtering is client-side (see
+  // filterByYear). `year === null` only when there are no dated entries. Data without dated entries
+  // (e.g. ?org=toronto demo data) yields no chips and is shown unfiltered.
+  const years = useMemo(() => (rawData ? listYears(rawData) : []), [rawData]);
+  const [year, setYear] = useState<number | null>(() => (initialSankey ? defaultYear(initialSankey) : null));
+  const data = useMemo(() => (rawData && year !== null ? filterByYear(rawData, year) : rawData), [rawData, year]);
+
+  // Scale comes from the unfiltered totals: a near-empty year (e.g. $10 of
+  // revenue) would otherwise trip detectScale's "already in billions" guess.
+  const fmt = useMemo(() => makeFmt(rawData ? detectScale(rawData.revenue) : false), [rawData]);
 
   function openTab(id: Tab) {
     setActiveTab(id);
@@ -118,6 +128,15 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
             </p>
           ) : null}
           <div className="sankey-card">
+            {years.length ? (
+              <div className="sankey-years" role="group" aria-label="Filter by year">
+                {years.map((y) => (
+                  <button key={y} type="button" className={`pj-chip${year === y ? ' on' : ''}`} aria-pressed={year === y} onClick={() => setYear(y)}>
+                    {y}
+                  </button>
+                ))}
+              </div>
+            ) : null}
             <div className="sankey-hint">Click any node to trace transactions</div>
             {error ? (
               <div className="sankey-error">
