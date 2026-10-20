@@ -337,6 +337,7 @@ footer { background:var(--bg-card); border-top:1px solid var(--border); padding:
 .pj-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border-radius:16px; border:1px solid var(--border); background:var(--cdim); color:var(--text); font-family:'DM Sans',sans-serif; font-size:12px; cursor:pointer; white-space:nowrap; transition:all .15s; }
 .pj-chip:hover { border-color:var(--accent); }
 .pj-chip.on { background:var(--accent-dim); border-color:var(--accent); color:var(--accent-text, var(--accent)); }
+.sankey-years { display:flex; gap:6px; flex-wrap:wrap; padding:14px 20px 0; }
 .pj-chip-n { font-family:'DM Mono',monospace; font-size:10px; color:var(--tm); }
 .pj-chip.on .pj-chip-n { color:inherit; }
 .pj-note { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.06em; color:var(--tm); margin-bottom:14px; }
