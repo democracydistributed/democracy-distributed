@@ -106,13 +106,30 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
       // maintain. Folding is visual only — no underlying data is merged.
       //
       // ---- Pass 1: measure --------------------------------------------------
-      // Lay the full tree out at the FIXED reference height purely to learn each
+      // Lay the tree out at the FIXED reference height purely to learn each
       // node's pixel height there, so the fold decision (below) is the same on
       // every screen regardless of the actual render height.
-      const measured: any = makeSankey(FOLD_REF_H)({
-        nodes: nodes.map((n, i) => ({ ...n, index: i })),
-        links: links.map((l) => ({ ...l })),
-      });
+      //
+      // Measure TOP-DOWN, one tree level at a time: level L is measured on a
+      // graph holding only levels ≤ L, minus anything already folded away.
+      // d3 scales every bar by the most crowded column, so measuring the whole
+      // tree at once lets one dense tier of leaves (e.g. 100+ procurement
+      // contracts) squeeze its padding out of everyone's height — every
+      // top-level category then reads as "thin" and the entire chart folds
+      // into a single "N more" band per side. Measuring per level means a node
+      // is judged only against its peers and ancestors, never its descendants.
+      const measured: any = { nodes: nodes.map((n, i) => ({ ...n, index: i })) };
+
+      const levelCache = new Map<number, number>();
+      const levelOf = (idx: number): number => {
+        const hit = levelCache.get(idx);
+        if (hit !== undefined) return hit;
+        const n: any = nodes[idx];
+        const lv = n.id === 'org-centre' || n.parent === undefined || n.parent === null ? 0 : 1 + levelOf(n.parent);
+        levelCache.set(idx, lv);
+        return lv;
+      };
+      const maxLevel = Math.max(0, ...nodes.map((_, i) => levelOf(i)));
 
       // A node shorter than its two-line label is a merge candidate. When a
       // parent has 2+ such children we fold ALL of them — wherever the layout
@@ -130,14 +147,6 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
       // cycle d3-sankey rejects ("circular link"). Every non-org parent has
       // single-side children, so keying by side only ever splits org's group.
       const sideOf = (n: any) => (typeof n.type === 'string' && n.type.startsWith('credit') ? 'c' : 'd');
-      const thinByParent = new Map<string, any[]>();
-      measured.nodes.forEach((n: any) => {
-        if (n.id === 'org-centre' || n.parent === undefined || n.parent === null) return;
-        if (n.y1 - n.y0 >= MERGE_H) return;
-        const key = n.parent + ':' + sideOf(n);
-        if (!thinByParent.has(key)) thinByParent.set(key, []);
-        thinByParent.get(key)!.push(n);
-      });
 
       const childrenOf = new Map<number, number[]>();
       measured.nodes.forEach((n: any) => {
@@ -147,27 +156,47 @@ export default function SankeyChart({ data, fmt, theme, onOpenNode }: Props) {
       });
 
       // Everything that gets folded away: each thin node in a 2+ group, plus
-      // its whole subtree. Compute this FIRST — before making any bands — so we
-      // can tell a surviving parent (which needs an "N more" band for its thin
-      // children) from a folded one (whose entire subtree is gone, so its thin
-      // children must NOT spawn their own band and orphan-render).
-      const mergedAwayIdx = new Set<number>();
-      thinByParent.forEach((thin) => {
-        if (thin.length >= 2) thin.forEach((t: any) => mergedAwayIdx.add(t.index));
-      });
+      // its whole subtree. Because levels are processed top-down, a folded
+      // node's subtree is excluded before its children are ever measured, so
+      // they can't spawn a band of their own and orphan-render.
       const excludedIdx = new Set<number>();
       const collectSubtree = (idx: number) => {
         excludedIdx.add(idx);
         (childrenOf.get(idx) || []).forEach(collectSubtree);
       };
-      mergedAwayIdx.forEach((idx) => collectSubtree(idx));
+      const thinGroups: any[][] = [];
+
+      for (let level = 1; level <= maxLevel; level++) {
+        const keep = measured.nodes.filter((n: any) => !excludedIdx.has(n.index) && levelOf(n.index) <= level);
+        if (!keep.some((n: any) => levelOf(n.index) === level)) continue;
+        const localIdx = new Map<number, number>();
+        keep.forEach((n: any, i: number) => localIdx.set(n.index, i));
+        const levelGraph: any = makeSankey(FOLD_REF_H)({
+          nodes: keep.map((n: any) => ({ ...n, origIndex: n.index })),
+          links: links
+            .filter((l: any) => localIdx.has(l.source) && localIdx.has(l.target))
+            .map((l: any) => ({ ...l, source: localIdx.get(l.source), target: localIdx.get(l.target) })),
+        });
+
+        const thinByParent = new Map<string, any[]>();
+        levelGraph.nodes.forEach((ln: any) => {
+          if (levelOf(ln.origIndex) !== level) return;
+          if (ln.y1 - ln.y0 >= MERGE_H) return;
+          const n = measured.nodes[ln.origIndex];
+          const key = n.parent + ':' + sideOf(n);
+          if (!thinByParent.has(key)) thinByParent.set(key, []);
+          thinByParent.get(key)!.push(n);
+        });
+        thinByParent.forEach((thin) => {
+          if (thin.length < 2) return;
+          thin.forEach((t: any) => collectSubtree(t.index));
+          thinGroups.push(thin);
+        });
+      }
 
       const bandForNode = new Map<number, any>(); // original node index -> its band
       const bandsList: any[] = [];
-      thinByParent.forEach((thin) => {
-        if (thin.length < 2) return;
-        const parentIdx = thin[0].parent; // all siblings in a group share one parent
-        if (excludedIdx.has(parentIdx)) return; // parent is folded too → no band, subtree just drops
+      thinGroups.forEach((thin) => {
         const first = thin[0];
         const band: any = {
           ...first,
