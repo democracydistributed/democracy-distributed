@@ -17,11 +17,12 @@ import ItemsTab from './tabs/ItemsTab';
 import ProjectsTab from './tabs/ProjectsTab';
 import PeopleTab from './tabs/PeopleTab';
 import SuggestionsTab from './tabs/SuggestionsTab';
+import FeedbackInsightsTab from './tabs/FeedbackInsightsTab';
 
 // D3 reads window during render, so keep the chart client-only.
 const SankeyChart = dynamic(() => import('./SankeyChart'), { ssr: false });
 
-type Tab = 'finances' | 'suggestions' | 'items' | 'rules' | 'projects' | 'people';
+type Tab = 'finances' | 'suggestions' | 'items' | 'rules' | 'projects' | 'people' | 'insights';
 
 const GOV_TABS: { id: Tab; label: string }[] = [
   { id: 'finances', label: 'Finances' },
@@ -108,6 +109,14 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
             {t.label}
           </button>
         ))}
+        {/* Feedback Insights sits apart at the right end of the bar, on every org type. */}
+        <button role="tab" id="tab-insights" aria-selected={activeTab === 'insights'} aria-controls="panel-insights" className={`tab tab-insights${activeTab === 'insights' ? ' active' : ''}`} onClick={() => openTab('insights')}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z" />
+            <path d="M9 14v-2M12 14V9M15 14v-4" />
+          </svg>
+          Feedback Insights
+        </button>
       </div>
 
       <div className="content" style={{ flex: '1 0 auto' }}>
@@ -196,6 +205,9 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
 
         {/* PEOPLE */}
         <div className={`tab-pane${activeTab === 'people' ? ' active' : ''}`} role="tabpanel" id="panel-people" aria-labelledby="tab-people">{visited.has('people') ? <PeopleTab orgId={orgId} /> : null}</div>
+
+        {/* FEEDBACK INSIGHTS (demo data) */}
+        <div className={`tab-pane${activeTab === 'insights' ? ' active' : ''}`} role="tabpanel" id="panel-insights" aria-labelledby="tab-insights">{visited.has('insights') ? <FeedbackInsightsTab orgName={org?.name} /> : null}</div>
       </div>
 
       <Footer />
