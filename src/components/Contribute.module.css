@@ -27,7 +27,7 @@
   z-index: 1; pointer-events: none;
 }
 
-.heroInner { max-width: 680px; position: relative; z-index: 2; }
+.heroInner { max-width: 760px; position: relative; z-index: 2; }
 
 /* ── HERO EYEBROW ─────────────────────────────────────── */
 .heroEyebrow {
@@ -92,7 +92,7 @@
 
 .heroDesc {
   font-size: 17px; color: var(--tm); line-height: 1.75;
-  max-width: 520px; margin-bottom: 16px;
+  max-width: 600px; margin-bottom: 36px;
 }
 .heroSubdesc {
   font-size: 14px; color: var(--tm); line-height: 1.7;
@@ -164,114 +164,84 @@
   max-width: 680px; margin-bottom: 48px;
 }
 
+/* ── JOIN CARDS ───────────────────────────────────────── */
+.joinGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+.joinCard {
+  display: block; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 22px 24px; color: var(--text); text-decoration: none;
+  transition: border-color 0.2s;
+}
+.joinCard:hover { border-color: rgba(232,160,32,0.5); }
+.joinCard:first-child:hover { border-color: rgba(45,212,191,0.5); }
+.joinKind {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--amber); margin-bottom: 10px;
+}
+.joinKindTeal { color: var(--teal); }
+.joinTitle { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--th); margin-bottom: 4px; }
+.joinTitleEmail { font-size: clamp(17px, 2.4vw, 22px); word-break: break-all; }
+.joinSub { font-size: 14px; color: var(--tm); }
+
+/* ── LIVE ORG EMBED ───────────────────────────────────── */
+.liveWrap { padding: 0 20px 80px; position: relative; z-index: 1; }
+@media (min-width: 680px) { .liveWrap { padding: 0 48px 100px; } }
+.liveFrame {
+  max-width: 1100px; margin: 0 auto; border: 1px solid var(--bhi);
+  border-radius: 10px; overflow: hidden; background: var(--bg);
+}
+.liveHead {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 16px 24px; background: var(--bg-card); border-bottom: 1px solid var(--border);
+}
+.liveLabel { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tm); }
+.liveName { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--th); }
+.liveOpen { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--teal); text-decoration: none; }
+.liveTabs { display: flex; overflow-x: auto; background: var(--bg-card); border-bottom: 1px solid var(--bhi); }
+.liveTab {
+  flex-shrink: 0; padding: 18px 26px; background: transparent; border: none;
+  border-bottom: 3px solid transparent; font-family: 'DM Mono', monospace; font-size: 13px;
+  letter-spacing: 0.16em; text-transform: uppercase; font-weight: 500; cursor: pointer; color: var(--tm);
+}
+.liveTabOn { color: var(--teal); border-bottom-color: var(--teal); }
+.liveBody { padding: clamp(20px, 3vw, 32px); min-height: 260px; }
+/* Only cap height where the page itself isn't the scroller (avoids nested scrolling on phones). */
+@media (min-width: 680px) { .liveBody { max-height: 640px; overflow-y: auto; } }
+
+/* ── HOW WE GOVERN ────────────────────────────────────── */
+.sectionGovern { padding-bottom: 40px; }
+.introTight { margin-bottom: 14px; }
+.introLast { margin-bottom: 0; }
+
 /* ── TASK CARDS ───────────────────────────────────────── */
-.taskGrid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+.taskGrid { display: grid; grid-template-columns: 1fr; gap: 18px; margin-bottom: 40px; }
 @media (min-width: 680px) { .taskGrid { grid-template-columns: repeat(3, 1fr); } }
 
 .taskCard {
-  /* On alt bg (--bg-card), cards use plain --bg for depth */
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px; padding: 26px 22px;
-  position: relative; overflow: hidden;
-  transition: all 0.25s;
+  border-radius: 8px; padding: 24px 22px;
 }
-.taskCard::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--amber); opacity: 0; transition: opacity 0.3s;
-}
-.taskCard:hover { border-color: rgba(232,160,32,0.22); transform: translateY(-2px); }
-.taskCard:hover::before { opacity: 1; }
-
-.taskCardSecondary { border-style: dashed; opacity: 0.75; }
-.taskCardSecondary:hover { opacity: 1; }
-
-.taskIcon { font-size: 24px; margin-bottom: 14px; display: block; line-height: 1; }
-
 .taskTitle {
   font-family: 'Playfair Display', serif;
-  font-size: 18px; font-weight: 700;
+  font-size: 19px; font-weight: 700;
   color: var(--th); margin-bottom: 10px;
 }
-.taskDesc { font-size: 13px; color: var(--tm); line-height: 1.65; margin-bottom: 18px; }
+.taskDesc { font-size: 14px; color: var(--tm); line-height: 1.65; margin-bottom: 16px; }
 .taskProduces {
   font-family: 'DM Mono', monospace;
   font-size: 10px; letter-spacing: 0.04em;
   color: var(--teal);
 }
-.taskCardSecondary .taskProduces { color: var(--amber); }
-.taskProducesSoon { color: var(--tm) !important; }
 
 /* ── STEPS ────────────────────────────────────────────── */
-.steps { display: grid; grid-template-columns: 1fr; gap: 18px; }
+.steps { display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 40px; }
 @media (min-width: 680px) { .steps { grid-template-columns: repeat(3, 1fr); } }
 
-.step {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px; padding: 22px 20px;
-}
+.step { display: flex; gap: 14px; align-items: flex-start; }
 .stepNum {
   font-family: 'Playfair Display', serif;
   font-size: 30px; font-weight: 900;
-  color: rgba(232,160,32,0.25); line-height: 1;
+  color: rgba(232,160,32,0.4); line-height: 1;
 }
-.step h3 { font-size: 15px; font-weight: 600; color: var(--th); margin: 8px 0 6px; }
+.step h3 { font-size: 15px; font-weight: 600; color: var(--th); margin: 0 0 4px; }
 .step p  { font-size: 13px; color: var(--tm); line-height: 1.65; }
-
-/* ── REWARDS ──────────────────────────────────────────── */
-.rewardsGrid { display: grid; grid-template-columns: 1fr; gap: 18px; }
-@media (min-width: 680px) { .rewardsGrid { grid-template-columns: repeat(3, 1fr); } }
-
-.rewardCard {
-  /* On alt bg (--bg-card), cards use plain --bg */
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px; padding: 24px 22px;
-}
-.rewardIcon { font-size: 22px; color: var(--teal); line-height: 1; }
-.rewardCard h3 { font-size: 15px; font-weight: 600; color: var(--th); margin: 10px 0 6px; }
-.rewardCard p  { font-size: 13px; color: var(--tm); line-height: 1.65; }
-
-.rewardNote {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px; color: var(--tm);
-  margin-top: 24px; padding-left: 14px;
-  border-left: 2px solid rgba(232,160,32,0.3);
-  line-height: 1.6;
-}
-
-/* ── CTA ──────────────────────────────────────────────── */
-.ctaSection {
-  background: var(--bg-card);
-  border-top: 1px solid var(--border);
-  padding: 80px 20px; text-align: center;
-  position: relative; overflow: hidden; z-index: 1;
-}
-@media (min-width: 680px) { .ctaSection { padding: 120px 48px; } }
-
-/* Acceptable amber glow on CTA per v6 spec */
-.ctaSection::before {
-  content: ''; position: absolute;
-  top: 50%; left: 50%; transform: translate(-50%, -50%);
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(232,160,32,0.07) 0%, transparent 70%);
-  pointer-events: none;
-}
-.ctaSection h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(30px, 4vw, 46px);
-  font-weight: 900; color: var(--th);
-  line-height: 1.12; margin-bottom: 18px;
-  position: relative; z-index: 1;
-}
-.ctaSection h2 em { font-style: italic; color: var(--amber); }
-.ctaSection p {
-  font-size: 16px; color: var(--tm);
-  max-width: 480px; margin: 0 auto 36px;
-  line-height: 1.7; position: relative; z-index: 1;
-}
-.ctaActions {
-  display: flex; justify-content: center; gap: 16px;
-  flex-wrap: wrap; position: relative; z-index: 1;
-}

@@ -1,15 +1,50 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Nav from './Nav';
 import Footer from './Footer';
+import ItemsTab from './tabs/ItemsTab';
+import ProjectsTab from './tabs/ProjectsTab';
+import PeopleTab from './tabs/PeopleTab';
+import SuggestionsTab from './tabs/SuggestionsTab';
+import { makeFmt } from '@/lib/format';
+import { useTabKeys } from '@/hooks/useTabKeys';
 import styles from './Contribute.module.css';
 
 const APP_URL = 'https://app.democracydistributed.com';
+const SLACK_URL = 'http://link.civictech.ca/slack';
+const CONTACT_EMAIL = 'democracydistributed@gmail.com';
 
-export default function ContributePage() {
+type GovTab = 'suggestions' | 'items' | 'projects' | 'finances' | 'rules' | 'people';
+const GOV_TABS: { id: GovTab; label: string }[] = [
+  { id: 'suggestions', label: 'Suggestions' },
+  { id: 'items', label: 'Items' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'finances', label: 'Finances' },
+  { id: 'rules', label: 'Rules' },
+  { id: 'people', label: 'People' },
+];
+
+const GOV_TAB_IDS = GOV_TABS.map((t) => t.id);
+
+const TASKS = [
+  { title: 'Connect the chain', desc: 'Match a transaction to the council item, meeting, or vote that authorized the spend. This is the core work.', result: 'Builds a verified link' },
+  { title: 'Enter source data', desc: 'Enter budget line items, transactions, or council decisions from official government documents.', result: 'Adds a source record' },
+  { title: 'Verify & correct', desc: "Review data others have entered. Flag errors, suggest corrections, or confirm what's right.", result: 'Keeps the data honest' },
+];
+
+const STEPS = [
+  { n: '1', title: "Spot what's missing", desc: 'On any org page, incomplete links in the chain are visible.' },
+  { n: '2', title: 'Pick the match', desc: 'Search existing records and choose the right one. No forms.' },
+  { n: '3', title: 'Submit', desc: 'The community verifies your link, then it goes live, credited to you.' },
+];
+
+export default function ContributePage({ govOrgId }: { govOrgId: string | null }) {
   const [ready, setReady] = useState(false);
+  const [activeTab, setActiveTab] = useState<GovTab>('suggestions');
+  const fmt = useMemo(() => makeFmt(false), []);
+  const tabKeys = useTabKeys(GOV_TAB_IDS, activeTab, setActiveTab);
   const flowRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -65,19 +100,127 @@ export default function ContributePage() {
           </div>
           <div className={styles.headlineWrap}>
             <h1 className={styles.heroH1}>
-              The data exists.<br />
-              The <em>connections</em> don&apos;t — yet.
+              Join us, and help <em>make city spending easy to follow.</em>
             </h1>
           </div>
           <p className={`${styles.heroDesc} ${styles.heroFade}`}>
-            Government budgets are public. Council decisions are public. But nobody has connected them — transaction to decision,
-            dollar to vote. That&apos;s what contributors do here.
+            Find us on the Civic Tech Toronto Slack in #proj-dd, or send an email.
           </p>
-          <p className={`${styles.heroSubdesc} ${styles.heroFade}`}>
-            Think Wikipedia, but for the accountability chain between public money and the decisions that authorized it. Every link
-            you make is permanent, public, and credited to you.
-          </p>
-          <div className={`${styles.heroActions} ${styles.heroFade}`}>
+          <div className={`${styles.joinGrid} ${styles.heroFade}`}>
+            <a className={styles.joinCard} href={SLACK_URL} target="_blank" rel="noopener noreferrer">
+              <div className={`${styles.joinKind} ${styles.joinKindTeal}`}>Slack</div>
+              <div className={styles.joinTitle}>#proj-dd</div>
+              <div className={styles.joinSub}>Civic Tech Toronto Slack</div>
+            </a>
+            <a className={styles.joinCard} href={`mailto:${CONTACT_EMAIL}`}>
+              <div className={styles.joinKind}>Email</div>
+              <div className={`${styles.joinTitle} ${styles.joinTitleEmail}`}>{CONTACT_EMAIL}</div>
+              <div className={styles.joinSub}>Write to us directly</div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ── HOW WE GOVERN ── */}
+      <div className={`${styles.section} ${styles.sectionGovern}`}>
+        <div className={styles.sectionLabel}>How we govern</div>
+        <h2>
+          We run on the <em>same tools</em> we publish.
+        </h2>
+        <p className={`${styles.sectionIntro} ${styles.introTight}`}>
+          Democracy Distributed is self-governing. Our own decisions live in an organization on the platform, DD Central Government,
+          and are recorded the way any public body&apos;s would be.
+        </p>
+        <p className={`${styles.sectionIntro} ${styles.introLast}`}>
+          Anyone can post a suggestion. Suggestions become items that members vote on. Approved items become projects with budgets,
+          and the rules that bind all of it are written down in the open. What follows is the live page.
+        </p>
+      </div>
+
+      <div className={styles.liveWrap}>
+        <div className={styles.liveFrame}>
+          <div className={styles.liveHead}>
+            <div>
+              <div className={styles.liveLabel}>Organization</div>
+              <div className={styles.liveName}>DD Central Government</div>
+            </div>
+            {govOrgId ? (
+              <Link className={styles.liveOpen} href={`/org/${govOrgId}`}>
+                Open full page →
+              </Link>
+            ) : null}
+          </div>
+          <div className={styles.liveTabs} role="tablist" aria-label="DD Central Government sections" onKeyDown={tabKeys.onKeyDown}>
+            {GOV_TABS.map((t) => (
+              <button
+                key={t.id}
+                role="tab"
+                id={`tab-${t.id}`}
+                aria-controls="panel-gov"
+                aria-selected={activeTab === t.id}
+                tabIndex={tabKeys.tabIndex(t.id)}
+                className={`${styles.liveTab} ${activeTab === t.id ? styles.liveTabOn : ''}`}
+                onClick={() => setActiveTab(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className={styles.liveBody} role="tabpanel" id="panel-gov" aria-labelledby={`tab-${activeTab}`}>
+            {!govOrgId ? (
+              <div className="items-state">The live organization page is unavailable right now.</div>
+            ) : activeTab === 'suggestions' ? (
+              <SuggestionsTab orgId={govOrgId} />
+            ) : activeTab === 'items' ? (
+              <ItemsTab orgId={govOrgId} />
+            ) : activeTab === 'projects' ? (
+              <ProjectsTab orgId={govOrgId} fmt={fmt} />
+            ) : activeTab === 'people' ? (
+              <PeopleTab orgId={govOrgId} />
+            ) : (
+              <div className="items-state">
+                {activeTab === 'finances' ? 'Finances' : 'Rules'} live on the{' '}
+                <Link href={`/org/${govOrgId}`} style={{ color: 'var(--teal)' }}>
+                  full organization page
+                </Link>
+                .
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── WHAT CONTRIBUTORS DO ── */}
+      <div className={styles.sectionWrapAlt}>
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>What contributors do</div>
+          <h2>
+            Link records that <em>already exist.</em>
+          </h2>
+
+          <div className={styles.taskGrid}>
+            {TASKS.map((k) => (
+              <div className={styles.taskCard} key={k.title}>
+                <div className={styles.taskTitle}>{k.title}</div>
+                <p className={styles.taskDesc}>{k.desc}</p>
+                <div className={styles.taskProduces}>{k.result}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.steps}>
+            {STEPS.map((p) => (
+              <div className={styles.step} key={p.n}>
+                <div className={styles.stepNum}>{p.n}</div>
+                <div>
+                  <h3>{p.title}</h3>
+                  <p>{p.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.heroActions}>
             <a className={styles.btnPrimary} href={APP_URL} target="_blank" rel="noopener noreferrer">
               Create an account →
             </a>
@@ -85,164 +228,6 @@ export default function ContributePage() {
               Explore the data first
             </Link>
           </div>
-        </div>
-      </div>
-
-      {/* ── WHAT CONTRIBUTORS DO — alt bg ── */}
-      <div className={styles.sectionWrapAlt}>
-        <div className={styles.section}>
-          <div className={styles.sectionLabel}>What Contributors Do</div>
-          <h2>
-            Three kinds of work.<br />
-            One <em>accountability chain.</em>
-          </h2>
-          <p className={styles.sectionIntro}>
-            Every contribution moves the platform closer to a complete picture of how public money flows through decisions and into
-            the world. You don&apos;t need to do everything — pick what fits your skills and interest.
-          </p>
-
-          <div className={styles.taskGrid}>
-            <div className={styles.taskCard}>
-              <span className={styles.taskIcon}>🔗</span>
-              <div className={styles.taskTitle}>Connect the chain</div>
-              <p className={styles.taskDesc}>
-                Find a transaction that&apos;s missing its decision link. Match it to the council Item, meeting, or vote that
-                authorized the spend. This is the core work — and the hardest data to find anywhere else.
-              </p>
-              <div className={styles.taskProduces}>Builds a verified link</div>
-            </div>
-            <div className={styles.taskCard}>
-              <span className={styles.taskIcon}>📥</span>
-              <div className={styles.taskTitle}>Enter source data</div>
-              <p className={styles.taskDesc}>
-                Pull budget line items, transaction records, or council decisions from official government documents and enter them
-                into the platform. Grows the database that everything else depends on.
-              </p>
-              <div className={styles.taskProduces}>Adds a source record</div>
-            </div>
-            <div className={styles.taskCard}>
-              <span className={styles.taskIcon}>✅</span>
-              <div className={styles.taskTitle}>Verify &amp; correct</div>
-              <p className={styles.taskDesc}>
-                Review data others have entered. Flag errors, suggest corrections, or confirm accuracy. The platform only becomes
-                trustworthy when the community checks each other&apos;s work.
-              </p>
-              <div className={styles.taskProduces}>Keeps the data honest</div>
-            </div>
-            <div className={`${styles.taskCard} ${styles.taskCardSecondary}`}>
-              <span className={styles.taskIcon}>🏛️</span>
-              <div className={styles.taskTitle}>Add a new organization</div>
-              <p className={styles.taskDesc}>
-                Set up the profile for a government body or civic org that isn&apos;t yet on the platform. Includes jurisdiction,
-                structure, positions, and initial budget data.
-              </p>
-              <div className={styles.taskProduces}>Opens a new org page</div>
-            </div>
-            <div className={`${styles.taskCard} ${styles.taskCardSecondary}`}>
-              <span className={styles.taskIcon}>📋</span>
-              <div className={styles.taskTitle}>Pick up a platform job</div>
-              <p className={styles.taskDesc}>
-                The platform&apos;s central government posts structured Jobs — specific tasks with a defined scope. Browse open jobs
-                and claim one.
-              </p>
-              <div className={`${styles.taskProduces} ${styles.taskProducesSoon}`}>Coming soon</div>
-            </div>
-            <div className={`${styles.taskCard} ${styles.taskCardSecondary}`}>
-              <span className={styles.taskIcon}>💡</span>
-              <div className={styles.taskTitle}>Submit a suggestion</div>
-              <p className={styles.taskDesc}>
-                Spot a data gap or a missing relationship between records? Submit a Suggestion. If it&apos;s accepted and acted on,
-                you get credit for starting the chain.
-              </p>
-              <div className={styles.taskProduces}>Starts a new chain</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── HOW IT WORKS — plain bg ── */}
-      <div className={styles.section} id="how-it-works">
-        <div className={styles.sectionLabel}>How It Works · No account needed</div>
-        <h2>
-          Complete a chain that <em>already exists.</em>
-        </h2>
-        <p className={styles.sectionIntro}>
-          The contribution flow is a guided search, not a data-entry form. You aren&apos;t creating records from scratch —
-          you&apos;re linking records that already exist. The work is recognition, not recall.
-        </p>
-
-        <div className={styles.steps}>
-          <div className={styles.step}>
-            <div className={styles.stepNum}>1</div>
-            <h3>Spot what&apos;s missing</h3>
-            <p>
-              On any org page, the money-to-decision chain is laid out — and incomplete links are visible. Find one you can help
-              with.
-            </p>
-          </div>
-          <div className={styles.step}>
-            <div className={styles.stepNum}>2</div>
-            <h3>Pick the match</h3>
-            <p>Search the records that already exist and choose the right one. One tap. No forms to fill.</p>
-          </div>
-          <div className={styles.step}>
-            <div className={styles.stepNum}>3</div>
-            <h3>Submit</h3>
-            <p>The community verifies your link, then it goes live on the page — credited to you.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── WHAT YOU GET — alt bg ── */}
-      <div className={styles.sectionWrapAlt}>
-        <div className={styles.section}>
-          <div className={styles.sectionLabel}>What You Get</div>
-          <h2>
-            Recognition that&apos;s <em>real</em> today.
-          </h2>
-          <p className={styles.sectionIntro}>
-            Every contribution is logged against your account and visible on your public profile. Your name appears on the data you
-            connected — permanently. The accountability chain you&apos;re building includes you.
-          </p>
-
-          <div className={styles.rewardsGrid}>
-            <div className={styles.rewardCard}>
-              <div className={styles.rewardIcon}>✍️</div>
-              <h3>Your name on the data</h3>
-              <p>Every link you make is credited to you, permanently — part of the public record you&apos;re helping build.</p>
-            </div>
-            <div className={styles.rewardCard}>
-              <div className={styles.rewardIcon}>👤</div>
-              <h3>A public profile</h3>
-              <p>Every chain you&apos;ve closed, gathered on one shareable page. Recognition you can point to — not a points dashboard.</p>
-            </div>
-            <div className={styles.rewardCard}>
-              <div className={styles.rewardIcon}>↗</div>
-              <h3>A growing voice</h3>
-              <p>As you contribute, you unlock higher-trust contributions, moderation, and a say in how the platform evolves.</p>
-            </div>
-          </div>
-          <p className={styles.rewardNote}>
-            A contribution currency is planned for later — for now, the record and the recognition are the reward.
-          </p>
-        </div>
-      </div>
-
-      {/* ── CTA ── */}
-      <div className={styles.ctaSection}>
-        <h2>
-          Every connection you make<br />
-          is a piece of the chain<br />
-          <em>nobody else has built.</em>
-        </h2>
-        <p>The data is out there. It just hasn&apos;t been connected yet. That&apos;s the work — and it matters.</p>
-        <div className={styles.ctaActions}>
-          <a className={styles.btnPrimary} href={APP_URL} target="_blank" rel="noopener noreferrer">
-            Create an account →
-          </a>
-          <Link className={styles.btnSecondary} href="/browse">
-            Explore the data first
-          </Link>
         </div>
       </div>
 

@@ -10,6 +10,7 @@ import MobileSankeySummary from './MobileSankeySummary';
 import { useTheme } from '@/context/ThemeContext';
 import { useDrawer } from '@/hooks/useDrawer';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useTabKeys } from '@/hooks/useTabKeys';
 import { detectScale, makeFmt } from '@/lib/format';
 import { defaultYear, filterByYear, listYears } from '@/lib/sankey';
 import type { OrgData, SankeyData } from '@/lib/types';
@@ -97,20 +98,23 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
     setVisited((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
   }
 
+  // Feedback Insights is the last tab in the bar on every org type.
+  const tabKeys = useTabKeys<Tab>([...TABS.map((t) => t.id), 'insights'], activeTab, openTab);
+
   return (
     <>
       <div data-org-type={isCommunity ? 'community' : 'gov'} style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Nav />
       <PageHeader org={org} />
 
-      <div className="tab-bar" role="tablist" aria-label="Page sections">
+      <div className="tab-bar" role="tablist" aria-label="Page sections" onKeyDown={tabKeys.onKeyDown}>
         {TABS.map((t) => (
-          <button key={t.id} role="tab" id={`tab-${t.id}`} aria-selected={activeTab === t.id} aria-controls={`panel-${t.id}`} className={`tab${activeTab === t.id ? ' active' : ''}`} onClick={() => openTab(t.id)}>
+          <button key={t.id} role="tab" id={`tab-${t.id}`} aria-selected={activeTab === t.id} aria-controls={`panel-${t.id}`} tabIndex={tabKeys.tabIndex(t.id)} className={`tab${activeTab === t.id ? ' active' : ''}`} onClick={() => openTab(t.id)}>
             {t.label}
           </button>
         ))}
         {/* Feedback Insights sits apart at the right end of the bar, on every org type. */}
-        <button role="tab" id="tab-insights" aria-selected={activeTab === 'insights'} aria-controls="panel-insights" className={`tab tab-insights${activeTab === 'insights' ? ' active' : ''}`} onClick={() => openTab('insights')}>
+        <button role="tab" id="tab-insights" aria-selected={activeTab === 'insights'} aria-controls="panel-insights" tabIndex={tabKeys.tabIndex('insights')} className={`tab tab-insights${activeTab === 'insights' ? ' active' : ''}`} onClick={() => openTab('insights')}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z" />
             <path d="M9 14v-2M12 14V9M15 14v-4" />
