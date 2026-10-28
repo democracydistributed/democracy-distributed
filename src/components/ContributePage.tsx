@@ -12,7 +12,7 @@ import { makeFmt } from '@/lib/format';
 import { useTabKeys } from '@/hooks/useTabKeys';
 import styles from './Contribute.module.css';
 
-const APP_URL = 'https://app.democracydistributed.com';
+const DOCS_URL = 'https://democracy-distributed.gitbook.io/democracy-distributed-docs';
 const SLACK_URL = 'http://link.civictech.ca/slack';
 const CONTACT_EMAIL = 'democracydistributed@gmail.com';
 
@@ -221,8 +221,8 @@ export default function ContributePage({ govOrgId }: { govOrgId: string | null }
           </div>
 
           <div className={styles.heroActions}>
-            <a className={styles.btnPrimary} href={APP_URL} target="_blank" rel="noopener noreferrer">
-              Create an account →
+            <a className={styles.btnPrimary} href={DOCS_URL} target="_blank" rel="noopener noreferrer">
+              Learn more →
             </a>
             <Link className={styles.btnSecondary} href="/browse">
               Explore the data first
