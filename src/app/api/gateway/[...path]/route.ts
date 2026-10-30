@@ -6,7 +6,7 @@ import { cache, isCacheEnabled, TTL_MS, type Entry } from '@/lib/gateway-proxy-c
 // Why this exists: the upstream gateway emits a malformed CORS header, so the browser
 // can't call it directly — we proxy server-side (same-origin to the browser).
 //
-// Caching is OFF by default (see GATEWAY_CACHE_ENABLED in .env.example / CACHING.md).
+// Caching is OFF by default (see GATEWAY_CACHE_ENABLED in .env.example / the docs repo's build/caching.md).
 // With it off, every request is a plain pass-through — no Map, no TTL, always current.
 // Flip it on only for a specific endpoint that's a proven, measured slowness problem;
 // when on, this uses a plain TTL (see gateway-proxy-cache.ts) — no stale-while-revalidate,
@@ -58,7 +58,7 @@ function delay(ms: number) {
 
 // `no-store` on every response — this proxy's own cache (or lack of one) is the only
 // caching decision that should exist. The browser must never independently cache a
-// gateway response on top of that (see CACHING.md's "browser cache" writeup).
+// gateway response on top of that (see the docs repo's build/caching.md "browser cache" writeup).
 function respond(body: string, status: number, contentType: string, hit: string): Response {
   return new Response(body, {
     status,

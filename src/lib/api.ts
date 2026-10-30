@@ -27,7 +27,7 @@ export const TORONTO_ORG_ID = '406019364987666433';
 
 /** Every client-side call to our gateway proxy goes through this. `cache: 'no-store'` is
  *  non-negotiable here: whether a response is cacheable is entirely the proxy's decision
- *  (see GATEWAY_CACHE_ENABLED in CACHING.md) — the browser must never independently cache
+ *  (see GATEWAY_CACHE_ENABLED in the docs repo's build/caching.md) — the browser must never independently cache
  *  a gateway response on top of that, or it can end up replaying a response from long
  *  before the proxy's own cache (if any) would have expired. This bit us once already
  *  (see git history on fetchSuggestions) when only one endpoint had this set explicitly. */

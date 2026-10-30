@@ -5,7 +5,7 @@ import { clearGatewayProxyCache } from '@/lib/gateway-proxy-cache';
 import { CACHE_TAG } from '@/lib/server-api';
 
 // Manual escape hatch for the two caches that GATEWAY_CACHE_ENABLED can turn on (see
-// CACHING.md). A no-op in practice while that switch is off, but kept for when it's on —
+// the docs repo's build/caching.md). A no-op in practice while that switch is off, but kept for when it's on —
 // e.g. after a direct edit in Corteza that this app has no way to know about automatically.
 export const dynamic = 'force-dynamic';
 

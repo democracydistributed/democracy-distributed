@@ -17,7 +17,7 @@ Browser → Next.js app (this repo) → Corteza → PostgreSQL
 
 - **Reads** come from Corteza's Integration Gateway. The gateway can't be called directly from the browser, so browser-side reads go through our proxy at `/api/gateway`, and server-rendered pages call it directly.
 - **Writes** (like suggestions) go to Corteza's REST API using the signed-in member's token, or a service account for anonymous visitors. See `src/lib/corteza-write.ts`.
-- **Caching is off by default.** See `CACHING.md`.
+- **Caching is off by default.** See [the Caching docs page](https://github.com/democracydistributed/docs/blob/main/docs/build/caching.md).
 - **The chart** is drawn with D3 in `SankeyChart.tsx`. Its graph-building logic is in `src/lib/sankey.ts`.
 
 ## Getting started

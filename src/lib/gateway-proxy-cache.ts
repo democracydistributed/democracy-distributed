@@ -4,7 +4,7 @@
 // Next.js route files may only export recognized handlers (GET, dynamic, etc.),
 // not arbitrary helper functions.
 //
-// Gated entirely by GATEWAY_CACHE_ENABLED (see .env.example / CACHING.md) — the kill
+// Gated entirely by GATEWAY_CACHE_ENABLED (see .env.example / the docs repo's build/caching.md) — the kill
 // switch defaults OFF, meaning this cache does nothing until someone deliberately turns
 // it on for a proven, measured slowness problem.
 //

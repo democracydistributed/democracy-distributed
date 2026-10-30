@@ -5,7 +5,7 @@
 // restrictions the proxy exists to work around.
 //
 // Caching is gated by the same GATEWAY_CACHE_ENABLED switch as the client proxy (see
-// gateway-proxy-cache.ts / CACHING.md) — off by default, meaning every server-rendered
+// gateway-proxy-cache.ts / the docs repo's build/caching.md) — off by default, meaning every server-rendered
 // page load fetches current data. When enabled, this uses Next's own fetch Data Cache
 // rather than a second hand-rolled store, since Server Components already have it
 // built in; there was never a good reason for this app to run two cache
