@@ -2,8 +2,8 @@
 
 import { Fragment, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import DrawerOverview from './DrawerOverview';
-import { DRAWER_DEMOS } from '@/lib/drawer-demo';
+import LedgerListPanel, { ledgerEntries } from './LedgerListPanel';
+import SubCategoryPanel, { isSubCategoryFrame } from './SubCategoryPanel';
 import type { Formatter } from '@/lib/format';
 import { countLeaves, leafTitle, sumTreeValue } from '@/lib/sankey';
 import type { DrawerCategoryFrame, DrawerFrame, DrawerTraceFrame, RawNode } from '@/lib/types';
@@ -30,15 +30,6 @@ export default function Drawer({ stack, isOpen, fmt, onBack, onClose, onDrill, o
   const hasBack = stack.length > 1;
   const closeRef = useRef<HTMLButtonElement>(null);
 
-  // A top-level category with demo content gets the redesigned overview. It
-  // stays mounted (hidden) while deeper frames sit on top, so its tab and
-  // engagement state survive a drill-down and Back.
-  const root = stack[0];
-  const demo = root?.kind === 'category' ? DRAWER_DEMOS[root.label] : undefined;
-  // Remember the width through the close animation, after the stack empties.
-  const wideRef = useRef(false);
-  if (stack.length) wideRef.current = !!demo;
-
   // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
@@ -62,7 +53,7 @@ export default function Drawer({ stack, isOpen, fmt, onBack, onClose, onDrill, o
     <>
       <div className={`overlay${isOpen ? ' open' : ''}`} onClick={onClose} aria-hidden="true" />
       <div
-        className={`drw${wideRef.current ? ' drw-wide' : ''}${isOpen ? ' open' : ''}`}
+        className={`drw${isOpen ? ' open' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label="Transaction details"
@@ -70,12 +61,13 @@ export default function Drawer({ stack, isOpen, fmt, onBack, onClose, onDrill, o
         <button className="drw-close" ref={closeRef} onClick={onClose} aria-label="Close details">
           ✕
         </button>
-        {demo && root?.kind === 'category' ? (
-          <DrawerOverview key={root.label} frame={root} demo={demo} fmt={fmt} hidden={hasBack} onDrill={onDrill} onTrace={onTrace} />
-        ) : null}
-        {demo && !hasBack ? null : frame ? (
+        {frame ? (
           frame.kind === 'trace' ? (
             <TracePanel frame={frame} fmt={fmt} backBtn={backBtn} />
+          ) : isSubCategoryFrame(frame) ? (
+            <SubCategoryPanel key={stack.length} frame={frame} fmt={fmt} backBtn={backBtn} onDrill={onDrill} onTrace={onTrace} />
+          ) : ledgerEntries(frame).length ? (
+            <LedgerListPanel key={stack.length} frame={frame} fmt={fmt} backBtn={backBtn} onTrace={onTrace} />
           ) : (
             <CategoryPanel frame={frame} fmt={fmt} backBtn={backBtn} onDrill={onDrill} onTrace={onTrace} />
           )
