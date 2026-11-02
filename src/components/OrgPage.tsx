@@ -208,6 +208,8 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
         stack={drawer.stack}
         isOpen={drawer.isOpen}
         fmt={fmt}
+        orgId={orgId}
+        year={year}
         onBack={drawer.back}
         onClose={drawer.close}
         onDrill={drawer.drill}

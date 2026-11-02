@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import DrawerActionBar from './DrawerActionBar';
+import type { ReactionTarget } from '@/lib/api';
 import type { Formatter } from '@/lib/format';
 import { leafTitle } from '@/lib/sankey';
 import type { DrawerCategoryFrame, RawNode } from '@/lib/types';
@@ -16,6 +18,7 @@ interface Props {
   frame: DrawerCategoryFrame;
   fmt: Formatter;
   backBtn: React.ReactNode;
+  target: ReactionTarget;
   onTrace: (idx: number) => void;
 }
 
@@ -32,7 +35,7 @@ function shortDate(dateStr: string | undefined): string | null {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-export default function LedgerListPanel({ frame, fmt, backBtn, onTrace }: Props) {
+export default function LedgerListPanel({ frame, fmt, backBtn, target, onTrace }: Props) {
   const [shown, setShown] = useState(FIRST_BATCH);
   const { label, amount, eyebrow } = frame;
 
@@ -102,6 +105,7 @@ export default function LedgerListPanel({ frame, fmt, backBtn, onTrace }: Props)
             Load {Math.min(BATCH, left)} more
           </button>
         ) : null}
+        <DrawerActionBar target={target} />
       </section>
     </div>
   );

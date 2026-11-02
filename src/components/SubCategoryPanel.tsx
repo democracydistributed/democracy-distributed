@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import DrawerActionBar from './DrawerActionBar';
+import type { ReactionTarget } from '@/lib/api';
 import type { Formatter } from '@/lib/format';
 import { countLeaves, sumTreeValue } from '@/lib/sankey';
 import type { DrawerCategoryFrame, RawNode } from '@/lib/types';
@@ -15,6 +17,7 @@ interface Props {
   frame: DrawerCategoryFrame;
   fmt: Formatter;
   backBtn: React.ReactNode;
+  target: ReactionTarget;
   onDrill: (idx: number) => void;
   onTrace: (idx: number) => void;
 }
@@ -39,7 +42,7 @@ function span(i: number, shown: number): 1 | 2 {
   return j === left - 1 && left % 2 === 1 && (j % 4) % 2 === 0 ? 2 : 1;
 }
 
-export default function SubCategoryPanel({ frame, fmt, backBtn, onDrill, onTrace }: Props) {
+export default function SubCategoryPanel({ frame, fmt, backBtn, target, onDrill, onTrace }: Props) {
   const [shown, setShown] = useState(FIRST_BATCH);
   const { label, amount, eyebrow, dataNode } = frame;
 
@@ -107,6 +110,7 @@ export default function SubCategoryPanel({ frame, fmt, backBtn, onDrill, onTrace
             Load {Math.min(BATCH, left)} more
           </button>
         ) : null}
+        <DrawerActionBar target={target} />
       </section>
     </div>
   );

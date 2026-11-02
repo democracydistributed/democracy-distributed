@@ -21,7 +21,8 @@ import type { NextRequest } from 'next/server';
 const CORTEZA = 'https://app.democracydistributed.com';
 export const DD_NAMESPACE_ID = '375482071595876355';
 
-export type WriteIdentity = { kind: 'member'; token: string } | { kind: 'anonymous'; token: string };
+/** `userId` is the member's Corteza user ID (the login's `sub`), used to find records they created. */
+export type WriteIdentity = { kind: 'member'; token: string; userId?: string } | { kind: 'anonymous'; token: string };
 
 export class ReauthRequired extends Error {
   /** Why — for server logs only, never shown to the user. */
@@ -36,11 +37,19 @@ export class ReauthRequired extends Error {
 
 let anonToken: { value: string; expiresAt: number } | null = null;
 
+// Requests that arrive together (e.g. a drawer's several lookups) share one token
+// request instead of each minting their own.
+let anonTokenInFlight: Promise<string> | null = null;
+
 export async function getAnonymousToken(): Promise<string> {
   // Reuse until a minute before expiry. Per-lambda-instance memory only; a cold
   // start just mints a fresh one, which is cheap.
   if (anonToken && Date.now() < anonToken.expiresAt - 60_000) return anonToken.value;
+  if (!anonTokenInFlight) anonTokenInFlight = mintAnonymousToken().finally(() => { anonTokenInFlight = null; });
+  return anonTokenInFlight;
+}
 
+async function mintAnonymousToken(): Promise<string> {
   const id = process.env.CORTEZA_ANON_CLIENT_ID;
   const secret = process.env.CORTEZA_ANON_CLIENT_SECRET;
   if (!id || !secret) throw new Error('Anonymous write client is not configured');
@@ -86,11 +95,27 @@ export async function getWriteIdentity(req: NextRequest): Promise<WriteIdentity>
     // expired token is normal for a returning member.
     if (jwt.expiresAt && Date.now() / 1000 >= jwt.expiresAt - 30) {
       const renewed = await renewOnce(jwt, req);
-      return { kind: 'member', token: renewed.accessToken as string };
+      const token = renewed.accessToken as string;
+      return { kind: 'member', token, userId: userIdFor(token, renewed.sub) };
     }
-    return { kind: 'member', token: jwt.accessToken };
+    return { kind: 'member', token: jwt.accessToken, userId: userIdFor(jwt.accessToken, jwt.sub) };
   }
   return { kind: 'anonymous', token: await getAnonymousToken() };
+}
+
+/** The Corteza user ID (digits) behind a member's login. Read from the access token's `sub`
+ *  claim first: Corteza issues JWT access tokens whose `sub` is the numeric user ID, and the
+ *  token is the very thing Corteza will act on. The login profile's copy of `sub` is only a
+ *  fallback, since it didn't reliably hold a usable ID. This only decodes the token (it came
+ *  out of our own encrypted cookie); Corteza itself rejects any forged token on use. */
+function userIdFor(accessToken: string, fallback?: string): string | undefined {
+  try {
+    const payload = JSON.parse(Buffer.from(accessToken.split('.')[1] ?? '', 'base64url').toString('utf8'));
+    if (typeof payload?.sub === 'string' && /^\d{1,20}$/.test(payload.sub)) return payload.sub;
+  } catch {
+    /* not a JWT we can read: fall through to the profile's value */
+  }
+  return typeof fallback === 'string' && /^\d{1,20}$/.test(fallback) ? fallback : undefined;
 }
 
 // ---- Member token renewal ----
@@ -210,6 +235,14 @@ export interface RecordValue {
   value: string;
 }
 
+/** Corteza's error message plus, for validation failures, what was wrong with which field
+ *  (e.g. "6 issue(s) found [updateDenied: Reaction, Year]"). For server logs only. */
+function describeError(error: { message?: string; details?: { kind?: string; meta?: { field?: string } }[] } | undefined, fallback: string): string {
+  if (!error) return fallback;
+  const parts = (error.details ?? []).map((d) => `${d.kind ?? 'issue'}: ${d.meta?.field ?? '?'}`);
+  return (error.message || fallback) + (parts.length ? ` [${parts.join(', ')}]` : '');
+}
+
 function recordUrl(moduleId: string, recordId = '') {
   return `${CORTEZA}/api/compose/namespace/${DD_NAMESPACE_ID}/module/${moduleId}/record/${recordId}`;
 }
@@ -227,6 +260,115 @@ export async function recordExists(identity: WriteIdentity, moduleId: string, re
   return !!data?.response?.recordID && !data?.error;
 }
 
+export interface FoundRecord {
+  recordID: string;
+  /** Field name to value, first value only (these modules' fields aren't multi-value). */
+  values: Record<string, string>;
+  /** Corteza user ID of whoever created the record. For records made through the anonymous
+   *  service account this is that account's ID, the same for every anonymous visitor. */
+  createdBy: string;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+async function searchRaw(identity: WriteIdentity, moduleId: string, params: Record<string, string>) {
+  const res = await fetch(`${recordUrl(moduleId)}?${new URLSearchParams(params)}`, {
+    headers: { authorization: `Bearer ${identity.token}` },
+    cache: 'no-store',
+  });
+  if (res.status === 401 && identity.kind === 'member') rejectedMemberToken('search');
+  const data = await res.json().catch(() => null);
+  if (!res.ok || data?.error) throw new Error(data?.error?.message || `Record search failed (HTTP ${res.status})`);
+  return data?.response ?? {};
+}
+
+/** Searches a module with a Corteza query expression, e.g. `Year=2024 AND Organization='123'`.
+ *  Corteza's query language can't quote an apostrophe, so only put server-controlled or
+ *  apostrophe-free values in `query`; filter anything else in code. */
+export async function findRecords(
+  identity: WriteIdentity,
+  moduleId: string,
+  query: string,
+  opts: { limit?: number; sort?: string } = {},
+): Promise<FoundRecord[]> {
+  const params: Record<string, string> = { query, limit: String(opts.limit ?? 200) };
+  if (opts.sort) params.sort = opts.sort;
+  const resp = await searchRaw(identity, moduleId, params);
+  const set: { recordID: string; createdBy: string; createdAt?: string; updatedAt?: string; values?: { name: string; value: string }[] }[] = resp.set ?? [];
+  return set.map((r) => ({
+    recordID: r.recordID,
+    values: Object.fromEntries((r.values ?? []).map((v) => [v.name, v.value])),
+    createdBy: r.createdBy,
+    createdAt: r.createdAt ?? null,
+    updatedAt: r.updatedAt ?? null,
+  }));
+}
+
+/** How many records match, without fetching them. */
+export async function countRecords(identity: WriteIdentity, moduleId: string, query: string): Promise<number> {
+  const resp = await searchRaw(identity, moduleId, { query, limit: '1', incTotal: 'true' });
+  return Number(resp.filter?.total ?? 0);
+}
+
+// ---- Users ----
+
+const HANDLE_TTL_MS = 10 * 60_000;
+const handleCache = new Map<string, { handle: string | null; expiresAt: number }>();
+
+/** A member's public handle, or null if they have none or it can't be read. Only the
+ *  handle is ever returned: the user record also holds their email, which must never
+ *  reach a page. Cached per server instance for 10 minutes. */
+export async function lookupUserHandle(identity: WriteIdentity, userId: string): Promise<string | null> {
+  if (!/^\d{1,20}$/.test(userId)) return null;
+  const hit = handleCache.get(userId);
+  if (hit && hit.expiresAt > Date.now()) return hit.handle;
+
+  let handle: string | null = null;
+  try {
+    const res = await fetch(`${CORTEZA}/api/system/users/${userId}`, {
+      headers: { authorization: `Bearer ${identity.token}` },
+      cache: 'no-store',
+    });
+    if (res.ok) {
+      const data = await res.json().catch(() => null);
+      const h = data?.response?.handle;
+      handle = typeof h === 'string' && h.trim() ? h.trim().slice(0, 64) : null;
+    }
+  } catch {
+    /* a failed lookup falls back to a generic label; don't fail the whole panel */
+  }
+  handleCache.set(userId, { handle, expiresAt: Date.now() + HANDLE_TTL_MS });
+  return handle;
+}
+
+/** Replaces a record's values. Send every field you want kept, not just the changed ones.
+ *  Corteza's compose API updates with POST on the record's own URL (PUT is refused with 405). */
+export async function updateRecord(identity: WriteIdentity, moduleId: string, recordId: string, values: RecordValue[]): Promise<void> {
+  const res = await fetch(recordUrl(moduleId, recordId), {
+    method: 'POST',
+    headers: { authorization: `Bearer ${identity.token}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ values }),
+    cache: 'no-store',
+  });
+  if (res.status === 401 && identity.kind === 'member') rejectedMemberToken('update');
+  const data = await res.json().catch(() => null);
+  if (!res.ok || data?.error) throw new Error(describeError(data?.error, `Record update failed (HTTP ${res.status})`));
+}
+
+/** One record's values (first value per field), or null if it doesn't exist or this identity can't read it. */
+export async function readRecord(identity: WriteIdentity, moduleId: string, recordId: string): Promise<Record<string, string> | null> {
+  if (!/^\d{1,20}$/.test(recordId)) return null;
+  const res = await fetch(recordUrl(moduleId, recordId), {
+    headers: { authorization: `Bearer ${identity.token}` },
+    cache: 'no-store',
+  });
+  if (res.status === 401 && identity.kind === 'member') rejectedMemberToken('read');
+  if (!res.ok) return null;
+  const data = await res.json().catch(() => null);
+  if (!data?.response?.recordID || data?.error) return null;
+  return Object.fromEntries(((data.response.values ?? []) as { name: string; value: string }[]).map((v) => [v.name, v.value]));
+}
+
 /** Creates a record and returns its ID. Throws with Corteza's own message on failure. */
 export async function createRecord(identity: WriteIdentity, moduleId: string, values: RecordValue[]): Promise<string> {
   const res = await fetch(recordUrl(moduleId), {
@@ -239,7 +381,7 @@ export async function createRecord(identity: WriteIdentity, moduleId: string, va
   const data = await res.json().catch(() => null);
   // Corteza returns 200 with an `error` object for many failures, so check both.
   if (!res.ok || data?.error || !data?.response?.recordID) {
-    throw new Error(data?.error?.message || `Record create failed (HTTP ${res.status})`);
+    throw new Error(describeError(data?.error, `Record create failed (HTTP ${res.status})`));
   }
   return data.response.recordID as string;
 }

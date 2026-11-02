@@ -21,17 +21,22 @@ function sign(id: string): string {
   return createHmac('sha256', secret).update(`dd_anon_id:${id}`).digest('base64url');
 }
 
+/** This browser's anon ID if it has a validly signed one, otherwise null. Never sets a cookie. */
+export function peekAnonId(req: NextRequest): string | null {
+  const raw = req.cookies.get(ANON_COOKIE)?.value;
+  if (!raw) return null;
+  const dot = raw.lastIndexOf('.');
+  const id = raw.slice(0, dot);
+  const sig = Buffer.from(raw.slice(dot + 1));
+  const expected = Buffer.from(sign(id));
+  return dot > 0 && sig.length === expected.length && timingSafeEqual(sig, expected) ? id : null;
+}
+
 /** Returns this browser's anon ID, minting one (and setting the cookie) if the
  *  browser doesn't have a validly signed one yet. */
 export function getAnonId(req: NextRequest): string {
-  const raw = req.cookies.get(ANON_COOKIE)?.value;
-  if (raw) {
-    const dot = raw.lastIndexOf('.');
-    const id = raw.slice(0, dot);
-    const sig = Buffer.from(raw.slice(dot + 1));
-    const expected = Buffer.from(sign(id));
-    if (dot > 0 && sig.length === expected.length && timingSafeEqual(sig, expected)) return id;
-  }
+  const existing = peekAnonId(req);
+  if (existing) return existing;
 
   const id = randomUUID();
   cookies().set(ANON_COOKIE, `${id}.${sign(id)}`, {

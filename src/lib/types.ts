@@ -3,6 +3,8 @@
 /** A node in the nested revenue/spending tree returned by the API. */
 export interface RawNode {
   name: string;
+  /** Budget Category record ID. Set by the /sankey workflow on category nodes (not on ledger entries). */
+  categoryID?: string;
   amount?: number;
   children?: RawNode[];
   entries?: RawNode[];

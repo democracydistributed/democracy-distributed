@@ -12,6 +12,8 @@ interface Props {
   stack: DrawerFrame[];
   isOpen: boolean;
   fmt: Formatter;
+  orgId: string;
+  year: number | null;
   onBack: () => void;
   onClose: () => void;
   onDrill: (idx: number) => void;
@@ -25,7 +27,7 @@ interface ChainStep {
   link?: React.ReactNode;
 }
 
-export default function Drawer({ stack, isOpen, fmt, onBack, onClose, onDrill, onTrace }: Props) {
+export default function Drawer({ stack, isOpen, fmt, orgId, year, onBack, onClose, onDrill, onTrace }: Props) {
   const frame = stack[stack.length - 1];
   const hasBack = stack.length > 1;
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -65,9 +67,9 @@ export default function Drawer({ stack, isOpen, fmt, onBack, onClose, onDrill, o
           frame.kind === 'trace' ? (
             <TracePanel frame={frame} fmt={fmt} backBtn={backBtn} />
           ) : isSubCategoryFrame(frame) ? (
-            <SubCategoryPanel key={stack.length} frame={frame} fmt={fmt} backBtn={backBtn} onDrill={onDrill} onTrace={onTrace} />
+            <SubCategoryPanel key={stack.length} frame={frame} fmt={fmt} backBtn={backBtn} target={{ orgId, year, relatedTo: frame.dataNode.name, amount: frame.amount, categoryId: frame.dataNode.categoryID }} onDrill={onDrill} onTrace={onTrace} />
           ) : ledgerEntries(frame).length ? (
-            <LedgerListPanel key={stack.length} frame={frame} fmt={fmt} backBtn={backBtn} onTrace={onTrace} />
+            <LedgerListPanel key={stack.length} frame={frame} fmt={fmt} backBtn={backBtn} target={{ orgId, year, relatedTo: frame.dataNode.name, amount: frame.amount, categoryId: frame.dataNode.categoryID }} onTrace={onTrace} />
           ) : (
             <CategoryPanel frame={frame} fmt={fmt} backBtn={backBtn} onDrill={onDrill} onTrace={onTrace} />
           )

@@ -142,3 +142,47 @@ export async function postSuggestion(payload: NewSuggestion): Promise<{ ok: bool
   if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
   return data;
 }
+
+/** What a reaction is attached to. `relatedTo` is the category's full path (dataNode.name). */
+export interface ReactionTarget {
+  orgId: string;
+  year: number | null;
+  relatedTo: string;
+  /** The amount shown in the drawer header when the visitor reacted. */
+  amount?: number;
+  /** The category's Budget Category record ID, when the data carries one. */
+  categoryId?: string;
+}
+
+/** Saves a reaction. Reacting again to the same item changes the earlier one. */
+export async function postReaction(t: ReactionTarget, reaction: string): Promise<void> {
+  const res = await fetch('/api/reactions', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ orgId: t.orgId, year: t.year, relatedTo: t.relatedTo, reaction, amountSeen: t.amount, categoryId: t.categoryId }),
+    cache: 'no-store',
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+}
+
+export interface ReactionSummary {
+  total: number;
+  /** Count per face, keyed by the face's name (Reasonable, Surprised, Confused, Concerned). */
+  counts: Record<string, number>;
+  /** Most recent first. `who` is a member's handle or an anonymous handle like anon_7f3a9c. */
+  latest: { reaction: string; who: string; when: string | null }[];
+  /** This visitor's own reaction to the item, or null. */
+  mine: string | null;
+}
+
+/** Everything a drawer needs about reactions to one item, in one request: totals, recent
+ *  responses, and this visitor's own reaction. Goes through our own server route. */
+export async function fetchReactionSummary(t: ReactionTarget): Promise<ReactionSummary> {
+  const qs = new URLSearchParams({ orgId: t.orgId, relatedTo: t.relatedTo });
+  if (t.year !== null) qs.set('year', String(t.year));
+  const res = await fetch(`/api/reactions/summary?${qs}`, { cache: 'no-store' });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+  return { total: data.total, counts: data.counts, latest: data.latest, mine: data.mine ?? null };
+}
