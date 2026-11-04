@@ -118,7 +118,7 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
         <div className={`tab-pane${activeTab === 'finances' ? ' active' : ''}`} role="tabpanel" id="panel-finances" aria-labelledby="tab-finances">
           <div className="fin-top">
             <div>
-              <div className="fin-title">See where Toronto money goes, and share your voice</div>
+              <div className="fin-title">Follow the money. Have your say.</div>
             </div>
           </div>
           {data ? (
