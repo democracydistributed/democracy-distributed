@@ -112,6 +112,12 @@ export interface OrgSummary {
   province?: string;
   state?: string;
   country?: string;
+  /** From /orgs: 'community' (native: Community Group, DD Government), else 'government' (observed). */
+  category?: 'government' | 'community';
+  /** Province / state / union territory, walked up from the org's Jurisdiction. */
+  region?: string | null;
+  /** The Country jurisdiction's Code (e.g. CA, IN); null until that Code is filled in. */
+  countryCode?: string | null;
 }
 
 export interface OrgsResponse {
