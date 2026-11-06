@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import ThemeToggle from './ThemeToggle';
+import AccountMenu from './AccountMenu';
 import { Logo } from './Logo';
 
 export default function Nav() {
@@ -15,7 +15,7 @@ export default function Nav() {
         <Link href="/browse" className="nav-cta">
           Explore →
         </Link>
-        <ThemeToggle />
+        <AccountMenu />
       </div>
     </nav>
   );

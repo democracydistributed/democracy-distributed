@@ -17,7 +17,6 @@ export default function Footer() {
         <a href="https://github.com/democracydistributed/democracy-distributed" target="_blank" rel="noopener noreferrer">
           GitHub
         </a>
-        <Link href="/account">Log in</Link>
       </div>
       <div className="f-copy">© {new Date().getFullYear()} Democracy Distributed</div>
     </footer>

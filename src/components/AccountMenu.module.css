@@ -1,0 +1,250 @@
+.root {
+  position: relative;
+}
+
+/* ── Avatar button (also the big one inside the menu) ── */
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-up);
+  border: 1px solid var(--bhi);
+  color: var(--th);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.avatar:hover {
+  border-color: var(--amber);
+}
+.avatar:focus-visible,
+.row:focus-visible,
+.segBtn:focus-visible,
+.primary:focus-visible,
+.secondary:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+.avatarIn {
+  background: var(--amber-dim);
+  border-color: var(--amber);
+  color: var(--amber-text, var(--amber));
+}
+.avatarLg {
+  width: 52px;
+  height: 52px;
+  font-size: 17px;
+  cursor: default;
+}
+
+/* ── Menu ── */
+.menu {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 296px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+  padding: 8px 16px;
+  z-index: 60;
+}
+:global(html.light) .menu {
+  box-shadow: 0 14px 32px rgba(17, 24, 39, 0.14);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+.who {
+  min-width: 0;
+}
+.name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--th);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.email {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--tm);
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--th);
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+}
+.row:hover {
+  color: var(--amber-text, var(--amber));
+}
+.signOut {
+  border-bottom: 0;
+  color: var(--tm);
+}
+.row:disabled,
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ── Logged out ── */
+.guest {
+  padding: 12px 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+.guestTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--th);
+  margin-bottom: 4px;
+}
+.guestSub {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--tm);
+  margin-bottom: 12px;
+}
+.guestActions {
+  display: flex;
+  gap: 8px;
+}
+.guestActions > * {
+  flex: 1;
+}
+.primary,
+.secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+  min-height: 40px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.primary {
+  background: var(--amber);
+  border: 1px solid var(--amber);
+  color: #111827;
+}
+.primary:hover:not(:disabled) {
+  background: var(--amber-l);
+}
+.secondary {
+  background: transparent;
+  border: 1px solid var(--bhi);
+  color: var(--th);
+  font-weight: 500;
+}
+.secondary:hover:not(:disabled) {
+  border-color: var(--amber);
+}
+
+/* ── Appearance ── */
+.appearance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  border-bottom: 1px solid var(--border);
+}
+.appearance:last-child {
+  border-bottom: 0;
+}
+.appearanceLabel {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--tm);
+}
+.seg {
+  display: flex;
+  gap: 2px;
+  background: var(--cdim);
+  border-radius: 9px;
+  padding: 3px;
+}
+.segBtn {
+  min-height: 34px;
+  min-width: 44px;
+  padding: 0 12px;
+  font-size: 16px;
+  border-radius: 7px;
+  border: 0;
+  background: transparent;
+  color: var(--tm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.segOn {
+  background: var(--bg-up);
+  color: var(--th);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+:global(html.light) .segOn {
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* Phones: the avatar is the only thing left in the nav, so make it a proper touch
+   target and let the menu span the screen instead of hanging off the right edge. */
+@media (max-width: 679px) {
+  .avatar:not(.avatarLg) {
+    width: 44px;
+    height: 44px;
+  }
+  .segBtn {
+    min-height: 40px;
+    min-width: 48px;
+  }
+  .menu {
+    position: fixed;
+    top: 68px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+}

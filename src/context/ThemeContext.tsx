@@ -7,9 +7,11 @@ type Theme = 'light' | 'dark';
 interface ThemeContextValue {
   theme: Theme;
   toggle: () => void;
+  /** Sets one specific theme (the Light / Dark control in the account menu). */
+  setTheme: (t: Theme) => void;
 }
 
-const ThemeContext = createContext<ThemeContextValue>({ theme: 'dark', toggle: () => {} });
+const ThemeContext = createContext<ThemeContextValue>({ theme: 'dark', toggle: () => {}, setTheme: () => {} });
 
 /**
  * Reads the class set by the blocking inline script in layout.tsx (see
@@ -22,20 +24,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(document.documentElement.classList.contains('light') ? 'light' : 'dark');
   }, []);
 
-  const toggle = useCallback(() => {
-    setTheme((prev) => {
-      const next: Theme = prev === 'light' ? 'dark' : 'light';
-      document.documentElement.classList.toggle('light', next === 'light');
-      try {
-        localStorage.setItem('dd-theme', next);
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
+  const apply = useCallback((next: Theme) => {
+    document.documentElement.classList.toggle('light', next === 'light');
+    try {
+      localStorage.setItem('dd-theme', next);
+    } catch {
+      /* ignore */
+    }
+    setTheme(next);
   }, []);
 
-  return <ThemeContext.Provider value={{ theme, toggle }}>{children}</ThemeContext.Provider>;
+  const toggle = useCallback(() => {
+    apply(document.documentElement.classList.contains('light') ? 'dark' : 'light');
+  }, [apply]);
+
+  return <ThemeContext.Provider value={{ theme, toggle, setTheme: apply }}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {
