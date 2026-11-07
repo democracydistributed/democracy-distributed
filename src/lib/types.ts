@@ -199,6 +199,15 @@ export interface Suggestion {
   category?: string;
   status?: string;
   createdAt?: string;
+  updatedAt?: string | null;
+  /** Reference number like SUG-01; blank on older records. */
+  ref?: string | null;
+  /** True for anonymous submissions. The fingerprint itself is never sent. */
+  anonymous?: boolean;
+  /** Member handle, anon_xxxxxx, or member_xxxx. Null for records with no owner. */
+  author?: string | null;
+  /** Vote total. Returned by the workflow but not shown until voting is designed. */
+  score?: number;
 }
 
 export interface SuggestionsResponse {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRecord, getWriteIdentity, recordExists, ReauthRequired, type RecordValue } from '@/lib/corteza-write';
+import { createRecord, findRecords, getWriteIdentity, recordExists, ReauthRequired, type RecordValue } from '@/lib/corteza-write';
+import { authorLabel } from '@/lib/reactions-server';
 import { getAnonId } from '@/lib/anon-id';
 
 // The one write path for new Suggestions, logged in or not
@@ -75,6 +76,59 @@ export async function POST(req: NextRequest) {
       return fail(e.message, 401, { reauth: true });
     }
     console.error('[api/suggestions] create failed:', e);
+    return fail('Something went wrong, please try again.', 502);
+  }
+}
+
+// Reading suggestions for one org. Runs as the visitor's own identity (a member, or the
+// anonymous service account), so Corteza's permissions apply, and builds each card from an
+// allow-list: Email and Anon_Fingerprint never leave the server. Authors are shown the same
+// way as reactions: a member's handle, an anon_xxxxxx label, or member_xxxx as a fallback.
+
+const MAX_SUGGESTIONS = 500;
+
+export async function GET(req: NextRequest) {
+  const orgId = (req.nextUrl.searchParams.get('orgId') ?? '').trim();
+  // Digits only, so it can't break out of the quotes in the search query below.
+  if (!/^\d{1,20}$/.test(orgId)) return fail('Unknown organization', 400);
+
+  try {
+    const identity = await getWriteIdentity(req);
+    const records = await findRecords(identity, SUGGESTION_MODULE_ID, `Organization='${orgId}'`, {
+      limit: MAX_SUGGESTIONS,
+      sort: 'createdAt DESC',
+    });
+
+    // One lookup per distinct author, not per suggestion.
+    const labels = new Map<string, Promise<string | null>>();
+    const labelFor = (rec: (typeof records)[number]) => {
+      const fingerprint = rec.values.Anon_Fingerprint;
+      // Records with no owner (made through the old public gateway) have creator 0: show no author.
+      if (!fingerprint && (!rec.createdBy || rec.createdBy === '0')) return Promise.resolve(null);
+      const key = fingerprint ? `a:${fingerprint}` : `u:${rec.createdBy}`;
+      if (!labels.has(key)) labels.set(key, authorLabel(identity, rec));
+      return labels.get(key)!;
+    };
+
+    const suggestions = await Promise.all(
+      records.map(async (r) => ({
+        suggestionId: r.recordID,
+        subject: r.values.Subject || null,
+        text: r.values.Description || null,
+        category: r.values.Category || null,
+        status: r.values.Status || null,
+        ref: r.values.Reference_Number || null,
+        score: Number(r.values.Score) || 0,
+        anonymous: !!r.values.Anon_Fingerprint,
+        author: await labelFor(r),
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+      })),
+    );
+    return NextResponse.json({ suggestions, total: suggestions.length }, { headers: { 'cache-control': 'no-store' } });
+  } catch (e) {
+    if (e instanceof ReauthRequired) return fail(e.message, 401, { reauth: true });
+    console.error('[api/suggestions] list failed:', e);
     return fail('Something went wrong, please try again.', 502);
   }
 }

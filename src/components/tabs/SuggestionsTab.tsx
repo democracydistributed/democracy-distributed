@@ -48,12 +48,17 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
 
   // Drop any optimistic entry the real fetch already returned, so it isn't shown twice.
   const dedupedJustPosted = justPosted.filter((jp) => !suggestions.some((s) => s.suggestionId === jp.suggestionId));
-  const list = [...dedupedJustPosted, ...suggestions];
+  // Newest first. Records posted this session stay pinned at the top.
+  const byNewest = [...suggestions].sort((a, b) => Date.parse(b.createdAt || '') - Date.parse(a.createdAt || '') || 0);
+  const list = [...dedupedJustPosted, ...byNewest];
 
   return (
     <>
       {!composerOpen ? (
-        <div className="sugg-top" style={{ justifyContent: 'flex-end' }}>
+        <div className="sugg-top">
+          <div className="sugg-count">
+            {list.length} suggestion{list.length === 1 ? '' : 's'}
+          </div>
           <button className="sugg-new-btn" onClick={() => setComposerOpen(true)}>
             + New
           </button>
@@ -83,7 +88,18 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
             {preview ? <div className="sugg-text sugg-preview">{preview}</div> : null}
             <div className="sugg-meta-row">
               <div className="sugg-meta">
-                {[s.category, s.createdAt ? fmtRelativeTime(s.createdAt) : null].filter(Boolean).join(' · ')}
+                {s.author ? (
+                  <span className="sugg-author">
+                    <span className={s.anonymous ? 'sugg-avatar-anon' : 'sugg-avatar'} aria-hidden="true">
+                      {s.anonymous ? '?' : s.author[0].toUpperCase()}
+                    </span>
+                    {s.author}
+                  </span>
+                ) : null}
+                {s.createdAt ? <span>{fmtRelativeTime(s.createdAt)}</span> : null}
+                {s.category ? <span className="sugg-chip">{s.category}</span> : null}
+                {s.status ? <span className="sugg-chip sugg-status">{s.status}</span> : null}
+                {s.ref ? <span>{s.ref}</span> : null}
               </div>
             </div>
           </div>

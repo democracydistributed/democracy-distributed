@@ -14,7 +14,6 @@ export const ITEM_ENDPOINT = `${BASE}/item`;
 export const PROJECTS_ENDPOINT = `${BASE}/projects`;
 export const PROJECT_ENDPOINT = `${BASE}/project`;
 export const PEOPLE_ENDPOINT = `${BASE}/people`;
-export const SUGGESTIONS_ENDPOINT = `${BASE}/suggestions`;
 export const PILOT_COUNTS_ENDPOINT = `${BASE}/pilot/counts`;
 export const PILOT_SIGNUP_ENDPOINT = `${BASE}/pilot/signup`;
 
@@ -110,8 +109,11 @@ export async function fetchProjects(orgId: string): Promise<ProjectsResponse> {
   return data;
 }
 
+/** Reads suggestions through our own server route (src/app/api/suggestions), the same way
+ *  reactions work, not the gateway: the server adds the author's handle and keeps Email and
+ *  the anonymous fingerprint out of the response. */
 export async function fetchSuggestions(orgId: string): Promise<SuggestionsResponse> {
-  const res = await gatewayFetch(`${SUGGESTIONS_ENDPOINT}?orgId=${encodeURIComponent(orgId)}`);
+  const res = await gatewayFetch(`/api/suggestions?orgId=${encodeURIComponent(orgId)}`);
   if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
   const data = await res.json();
   if (!data || !Array.isArray(data.suggestions)) throw new Error('Unexpected response shape');
