@@ -110,3 +110,44 @@ export function fmtRelativeTime(dateStr: string | null | undefined): string {
   if (months < 12) return `${months}mo ago`;
   return `${Math.floor(months / 12)}y ago`;
 }
+
+/**
+ * One headline rule for a Suggestion, so every record has a title even when
+ * Subject or Description is blank (older records often have only one).
+ *  - Subject set: Subject is the title, Description is the body.
+ *  - Description only, <= 120 chars: Description is the title, no body.
+ *  - Description only, longer: first sentence (or ~110 chars + "…") is the title,
+ *    the full Description is the body.
+ *  - Neither: "Untitled suggestion".
+ * `preview` is the body flattened to one line ("* " bullets joined with " · ").
+ */
+export function suggestionHeadline(s: { subject?: string | null; text?: string | null }): {
+  title: string;
+  body: string;
+  preview: string;
+} {
+  const subject = (s.subject ?? '').trim();
+  const desc = (s.text ?? '').trim();
+  let title: string;
+  let body = '';
+  if (subject) {
+    title = subject;
+    body = desc;
+  } else if (desc) {
+    if (desc.length <= 120) {
+      title = desc;
+    } else {
+      const m = desc.match(/^.{20,120}?[.!?](\s|$)/);
+      title = m ? m[0].trim() : desc.slice(0, 110).replace(/\s+\S*$/, '') + '…';
+      body = desc;
+    }
+  } else {
+    title = 'Untitled suggestion';
+  }
+  const preview = body
+    .split('\n')
+    .map((t) => t.trim().replace(/^\*\s+/, ''))
+    .filter(Boolean)
+    .join(' · ');
+  return { title, body, preview };
+}

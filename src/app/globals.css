@@ -356,6 +356,7 @@ html:not(.light) .sub-tile.hero { border-color:color-mix(in srgb, var(--amber) 4
 .sugg-card.mine { border-color:rgba(232,160,32,.45); }
 .sugg-yours-tag { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.12em; color:var(--amber-text, var(--amber)); text-transform:uppercase; margin-bottom:8px; }
 .sugg-text { font-size:14px; color:var(--text); line-height:1.45; }
+.sugg-preview { color:var(--tm); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .sugg-meta-row { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap; }
 .sugg-meta { font-family:'DM Mono',monospace; font-size:10px; color:var(--tm); }
 

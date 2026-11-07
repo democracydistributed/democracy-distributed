@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchSuggestions } from '@/lib/api';
-import { fmtRelativeTime } from '@/lib/text';
+import { fmtRelativeTime, suggestionHeadline } from '@/lib/text';
 import type { Suggestion } from '@/lib/types';
 import OrgSuggestionComposer from '../OrgSuggestionComposer';
 
@@ -74,18 +74,21 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
       {list.length === 0 ? (
         <div className="items-state">No suggestions yet — be the first.</div>
       ) : (
-        list.map((s, i) => (
+        list.map((s, i) => {
+          const { title, preview } = suggestionHeadline(s);
+          return (
           <div className={`sugg-card${dedupedJustPosted.includes(s) ? ' mine' : ''}`} key={s.suggestionId || i}>
             {dedupedJustPosted.includes(s) ? <div className="sugg-yours-tag">Yours</div> : null}
-            {s.subject ? <div className="sugg-subject-line">{s.subject}</div> : null}
-            <div className="sugg-text">{s.text}</div>
+            <div className="sugg-subject-line">{title}</div>
+            {preview ? <div className="sugg-text sugg-preview">{preview}</div> : null}
             <div className="sugg-meta-row">
               <div className="sugg-meta">
                 {[s.category, s.createdAt ? fmtRelativeTime(s.createdAt) : null].filter(Boolean).join(' · ')}
               </div>
             </div>
           </div>
-        ))
+          );
+        })
       )}
     </>
   );
