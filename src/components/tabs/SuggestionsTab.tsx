@@ -84,7 +84,9 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
           return (
           <div className={`sugg-card${dedupedJustPosted.includes(s) ? ' mine' : ''}`} key={s.suggestionId || i}>
             {dedupedJustPosted.includes(s) ? <div className="sugg-yours-tag">Yours</div> : null}
-            <div className="sugg-subject-line">{title}</div>
+            {s.status ? <span className="sugg-status">{s.status}</span> : null}
+            {s.category ? <div className="sugg-cat">{s.category}</div> : null}
+            <div className={`sugg-subject-line${s.status ? ' has-status' : ''}`}>{title}</div>
             {preview ? <div className="sugg-text sugg-preview">{preview}</div> : null}
             <div className="sugg-meta-row">
               <div className="sugg-meta">
@@ -97,8 +99,6 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
                   </span>
                 ) : null}
                 {s.createdAt ? <span>{fmtRelativeTime(s.createdAt)}</span> : null}
-                {s.category ? <span className="sugg-chip">{s.category}</span> : null}
-                {s.status ? <span className="sugg-chip sugg-status">{s.status}</span> : null}
                 {s.ref ? <span>{s.ref}</span> : null}
               </div>
             </div>
