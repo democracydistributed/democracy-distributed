@@ -5,6 +5,7 @@ import { fetchSuggestions } from '@/lib/api';
 import { fmtRelativeTime, suggestionHeadline } from '@/lib/text';
 import type { Suggestion } from '@/lib/types';
 import OrgSuggestionComposer from '../OrgSuggestionComposer';
+import SuggestionPanel from '../SuggestionPanel';
 
 export default function SuggestionsTab({ orgId }: { orgId: string }) {
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
@@ -12,6 +13,8 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
   const [composerOpen, setComposerOpen] = useState(false);
   // Suggestions posted this session, shown immediately without waiting on a refetch.
   const [justPosted, setJustPosted] = useState<Suggestion[]>([]);
+  // Which suggestion's detail panel is open (by key; see keyOf).
+  const [openKey, setOpenKey] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -51,6 +54,8 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
   // Newest first. Records posted this session stay pinned at the top.
   const byNewest = [...suggestions].sort((a, b) => Date.parse(b.createdAt || '') - Date.parse(a.createdAt || '') || 0);
   const list = [...dedupedJustPosted, ...byNewest];
+  const keyOf = (s: Suggestion, i: number) => s.suggestionId || `#${i}`;
+  const openIndex = openKey === null ? -1 : list.findIndex((s, i) => keyOf(s, i) === openKey);
 
   return (
     <>
@@ -82,7 +87,19 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
         list.map((s, i) => {
           const { title, preview } = suggestionHeadline(s);
           return (
-          <div className={`sugg-card${dedupedJustPosted.includes(s) ? ' mine' : ''}`} key={s.suggestionId || i}>
+          <div
+            className={`sugg-card clickable${dedupedJustPosted.includes(s) ? ' mine' : ''}`}
+            key={s.suggestionId || i}
+            role="button"
+            tabIndex={0}
+            onClick={() => setOpenKey(keyOf(s, i))}
+            onKeyDown={(e) => {
+              if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                setOpenKey(keyOf(s, i));
+              }
+            }}
+          >
             {dedupedJustPosted.includes(s) ? <div className="sugg-yours-tag">Yours</div> : null}
             {s.status ? <span className="sugg-status">{s.status}</span> : null}
             {s.category ? <div className="sugg-cat">{s.category}</div> : null}
@@ -106,6 +123,18 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
           );
         })
       )}
+
+      {openIndex >= 0 ? (
+        <SuggestionPanel
+          list={list}
+          index={openIndex}
+          onClose={() => setOpenKey(null)}
+          onStep={(d) => {
+            const n = list[openIndex + d];
+            if (n) setOpenKey(keyOf(n, openIndex + d));
+          }}
+        />
+      ) : null}
     </>
   );
 }

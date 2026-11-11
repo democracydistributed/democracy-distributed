@@ -361,11 +361,27 @@ html:not(.light) .sub-tile.hero { border-color:color-mix(in srgb, var(--amber) 4
 .sugg-meta { display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; font-family:'DM Mono',monospace; font-size:10px; color:var(--tm); }
 .sugg-count { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--tm); align-self:center; }
 .sugg-card { position:relative; }
+.sugg-card.clickable { cursor:pointer; transition:border-color .15s; }
+.sugg-card.clickable:hover, .sugg-card.clickable:focus-visible { border-color:var(--accent); outline:none; }
+.sugg-panel-meta { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin:-6px 0 24px; font-family:'DM Mono',monospace; font-size:12px; color:var(--tm); }
+.sugg-panel-meta .sugg-status { position:static; }
+.sugg-panel-meta .sugg-chip { padding:2px 8px; border-radius:4px; border:1px solid var(--border); }
+.sugg-panel-desc { margin:0 0 14px; font-size:16px; line-height:1.7; color:var(--text); max-width:62ch; text-wrap:pretty; }
+.sugg-corteza-link { display:inline-flex; align-items:center; gap:6px; font-family:'DM Mono',monospace; font-size:13px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--amber-text, var(--amber)); border:1px solid rgba(232,160,32,.35); border-radius:20px; padding:9px 18px; text-decoration:none; transition:border-color .2s, background .2s, gap .2s; }
+.sugg-corteza-link:hover { border-color:var(--amber); background:var(--amber-dim, rgba(232,160,32,.06)); gap:10px; }
+/* Phone bottom sheet: as tall as its content, up to the usual 88vh, so a short suggestion
+   doesn't leave a big empty gap. (On wider screens it's the full-height side panel.) */
+@media (max-width:767px) { .pj-panel.sugg-panel { height:auto; min-height:50vh; max-height:88vh; } }
+.sugg-panel-rule { border-top:1px solid var(--border); margin:26px 0 20px; }
+.sugg-panel-row { display:flex; align-items:baseline; gap:18px; margin-top:14px; font-size:14px; color:var(--text); }
+.sugg-panel-row .pj-lbl { flex:none; width:96px; }
+.sugg-panel-bullet { display:flex; gap:10px; margin:0 0 8px 4px; font-size:16px; line-height:1.7; color:var(--text); max-width:62ch; }
+.sugg-panel-bullet > span:first-child { flex:none; width:5px; height:5px; border-radius:50%; background:var(--tm); margin-top:10px; }
 .sugg-cat { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--tm); margin-bottom:6px; }
-.sugg-status { position:absolute; top:12px; right:16px; padding:2px 10px; border-radius:12px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; font-weight:500; color:var(--teal-text, var(--accent)); background:var(--teal-dim, var(--cdim)); }
+.sugg-status { position:absolute; top:12px; right:16px; padding:2px 10px; border-radius:12px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; font-weight:500; color:var(--teal-text, var(--teal)); background:var(--teal-dim, var(--cdim)); }
 .sugg-subject-line.has-status { padding-right:80px; }
 .sugg-author { display:inline-flex; align-items:center; gap:8px; color:var(--text); }
-.sugg-avatar { width:22px; height:22px; border-radius:50%; box-sizing:border-box; display:inline-grid; place-items:center; background:var(--teal-dim, var(--cdim)); color:var(--teal-text, var(--accent)); font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; }
+.sugg-avatar { width:22px; height:22px; border-radius:50%; box-sizing:border-box; display:inline-grid; place-items:center; background:var(--teal-dim, var(--cdim)); color:var(--teal-text, var(--teal)); font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; }
 .sugg-avatar-anon { width:22px; height:22px; border-radius:50%; box-sizing:border-box; display:inline-grid; place-items:center; border:1.5px dashed var(--tm); color:var(--tm); font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; }
 
 /* ── PROJECTS ─────────────────────────────────────────── */
