@@ -123,6 +123,8 @@ export async function fetchSuggestions(orgId: string): Promise<SuggestionsRespon
 export interface NewSuggestion {
   /** Omitted for site-wide (footer) feedback — the server files it under DD Central Government. */
   orgId?: string;
+  /** The org the suggestion is about, when it is filed under a different one (e.g. DD Central). */
+  sourceOrgId?: string;
   /** Org-page suggestions have a subject; footer feedback has a category instead. */
   subject?: string;
   text: string;

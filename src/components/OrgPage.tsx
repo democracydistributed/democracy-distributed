@@ -7,6 +7,7 @@ import Footer from './Footer';
 import PageHeader from './PageHeader';
 import Drawer from './Drawer';
 import MobileSankeySummary from './MobileSankeySummary';
+import FinancesEmptyState from './FinancesEmptyState';
 import { useTheme } from '@/context/ThemeContext';
 import { useDrawer } from '@/hooks/useDrawer';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -88,9 +89,21 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
   const [year, setYear] = useState<number | null>(() => (initialSankey ? defaultYear(initialSankey) : null));
   const data = useMemo(() => (rawData && year !== null ? filterByYear(rawData, year) : rawData), [rawData, year]);
 
+  // A 200 with nothing to chart (org has no treasury account, no budget
+  // categories, or no categorized entries) is "no data yet", not an error.
+  const noFinancialData = !!rawData && !rawData.revenue && !rawData.spending;
+
   // Scale comes from the unfiltered totals: a near-empty year (e.g. $10 of
   // revenue) would otherwise trip detectScale's "already in billions" guess.
   const fmt = useMemo(() => makeFmt(rawData ? detectScale(rawData.revenue) : false), [rawData]);
+
+  // Deep link (?tab=suggestions): open that tab on arrival.
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get('tab');
+    const match = TABS.find((x) => x.id === t);
+    if (match) openTab(match.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function openTab(id: Tab) {
     setActiveTab(id);
@@ -121,7 +134,7 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
               <div className="fin-title">Follow the money. Have your say.</div>
             </div>
           </div>
-          {data ? (
+          {data && !noFinancialData ? (
             // Plain-text summary of the same totals the chart visualizes — the
             // D3 Sankey below is client-only (it reads `window`), so this is
             // what gives crawlers and AI summarizers an actual number to quote.
@@ -140,7 +153,7 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
                 ))}
               </div>
             ) : null}
-            <div className="sankey-hint">Click any node to trace transactions</div>
+            {error || noFinancialData ? null : <div className="sankey-hint">Click any node to trace transactions</div>}
             {error ? (
               <div className="sankey-error">
                 <span className="err-title">⚠ Failed to load financial data</span>
@@ -149,6 +162,8 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
                 <br />
                 <span className="err-tip">Tip: add ?org=toronto to URL to load demo data</span>
               </div>
+            ) : noFinancialData ? (
+              <FinancesEmptyState orgId={orgId} orgName={org?.name} />
             ) : data ? (
               isMobile && !showFullChart ? (
                 <MobileSankeySummary

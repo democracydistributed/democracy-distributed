@@ -40,10 +40,14 @@ export async function POST(req: NextRequest) {
   const category = typeof body.category === 'string' ? body.category : '';
   const email = typeof body.email === 'string' ? body.email.trim() : '';
   const orgId = (typeof body.orgId === 'string' && body.orgId.trim()) || DD_CENTRAL_ORG_ID;
+  // The org this suggestion is about, when that differs from who handles it
+  // (e.g. a data request from the TTC page is filed under DD Central).
+  const sourceOrgId = typeof body.sourceOrgId === 'string' ? body.sourceOrgId.trim() : '';
 
   if (!text) return fail('Please write a suggestion first.', 400);
   if (text.length > MAX_TEXT) return fail(`Please keep it under ${MAX_TEXT} characters.`, 400);
   if (subject.length > MAX_SUBJECT) return fail(`Please keep the subject under ${MAX_SUBJECT} characters.`, 400);
+  if (sourceOrgId && !/^\d{1,20}$/.test(sourceOrgId)) return fail('Unknown organization', 400);
   if (category && !CATEGORIES.has(category)) return fail('Unknown category', 400);
   if (email && (email.length > 254 || !EMAIL_RE.test(email))) return fail("That email address doesn't look right.", 400);
 
@@ -56,10 +60,15 @@ export async function POST(req: NextRequest) {
       return fail('Unknown organization', 400);
     }
 
+    if (sourceOrgId && !(await recordExists(identity, ORGANIZATION_MODULE_ID, sourceOrgId))) {
+      return fail('Unknown organization', 400);
+    }
+
     const values: RecordValue[] = [
       { name: 'Description', value: text },
       { name: 'Organization', value: orgId },
     ];
+    if (sourceOrgId) values.push({ name: 'Source_Organization', value: sourceOrgId });
     if (subject) values.push({ name: 'Subject', value: subject });
     if (category) values.push({ name: 'Category', value: category });
     // Email is only for anonymous visitors who want a reply — a member's record
