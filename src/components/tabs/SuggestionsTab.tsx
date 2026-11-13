@@ -20,7 +20,11 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
     let alive = true;
     fetchSuggestions(orgId)
       .then((d) => {
-        if (alive) setSuggestions(d.suggestions);
+        if (!alive) return;
+        setSuggestions(d.suggestions);
+        // Deep link (?suggestion=<id>), e.g. from a "View your request" link: open that one.
+        const want = new URLSearchParams(window.location.search).get('suggestion');
+        if (want && /^\d{1,20}$/.test(want) && d.suggestions.some((s) => s.suggestionId === want)) setOpenKey(want);
       })
       .catch((e: Error) => {
         if (alive) setError(e.message);

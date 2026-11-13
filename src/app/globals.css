@@ -440,6 +440,45 @@ footer { background:var(--bg-card); border-top:1px solid var(--border); padding:
 .sankey-error .err-msg { color:var(--tm); font-size:11px; }
 .sankey-error .err-tip { color:var(--tm); font-size:10px; opacity:0.7; }
 
+/* Finances empty state (replaces the chart when there's no financial data) */
+.fin-empty { position:relative; min-height:400px; }
+.fin-empty { background:var(--bg); } /* page colour, so the card (bg-card) stands out and the stage reads as dimmed */
+.fin-empty-bg { position:absolute; inset:0; filter:blur(3px); opacity:.6; }
+.fin-empty-wrap { position:relative; display:flex; justify-content:center; padding:56px 24px; }
+.fin-empty-card { background:var(--bg-card); border:1px solid var(--bhi); border-radius:10px; box-shadow:0 18px 50px rgba(0,0,0,.45); max-width:520px; width:100%; box-sizing:border-box; padding:36px 36px 32px; text-align:left; }
+.fin-empty-card h2 { font-family:'Playfair Display',serif; font-weight:700; font-size:28px; line-height:1.2; margin:0 0 14px; color:var(--text); }
+.fin-empty-card p { font-size:16px; line-height:1.6; color:var(--tm); margin:0 0 24px; }
+.fin-empty-actions { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.fin-empty-primary, .fin-empty-secondary { display:inline-flex; align-items:center; gap:8px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; border:2px solid var(--accent); border-radius:6px; padding:11px 22px; cursor:pointer; text-decoration:none; transition:background .2s; }
+.fin-empty-primary { background:var(--accent); color:#0c1428; }
+.fin-empty-primary:hover { background:var(--accent-l); border-color:var(--accent-l); }
+.fin-empty-secondary { background:transparent; color:var(--accent-text, var(--accent)); padding:11px 20px; }
+.fin-empty-secondary:hover { background:var(--accent-dim); }
+.fin-empty-primary:focus-visible, .fin-empty-secondary:focus-visible, .fin-empty-demo a:focus-visible { outline:3px solid var(--text); outline-offset:3px; }
+.fin-empty-primary:disabled { opacity:.6; cursor:default; }
+.fin-empty-back { background:none; border:none; padding:0; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; color:var(--accent-text, var(--accent)); text-decoration:underline; text-underline-offset:3px; }
+.fin-empty-back:focus-visible { outline:3px solid var(--text); outline-offset:3px; }
+.fin-empty-requested { background:transparent; color:var(--accent-text, var(--accent)); }
+.fin-empty-requested:hover { background:var(--accent-dim); border-color:var(--accent); }
+.fin-empty-btnwrap { position:relative; display:inline-flex; }
+.fin-empty-plus { position:absolute; left:82%; top:-4px; font-family:'DM Sans',sans-serif; font-weight:800; font-size:18px; line-height:1; color:var(--green); text-shadow:0 0 10px color-mix(in srgb, var(--green) 50%, transparent); pointer-events:none; animation:fin-plus 1.1s ease-out forwards; }
+@keyframes fin-plus {
+  0% { opacity:0; transform:translate(-50%,6px) scale(.6); }
+  20% { opacity:1; transform:translate(-50%,-10px) scale(1.15); }
+  100% { opacity:0; transform:translate(-50%,-46px) scale(1); }
+}
+@keyframes fin-plus-still { 0% { opacity:0; transform:translate(-50%,-12px); } 15%, 70% { opacity:1; transform:translate(-50%,-12px); } 100% { opacity:0; transform:translate(-50%,-12px); } }
+@media (prefers-reduced-motion: reduce) { .fin-empty-plus { animation-name:fin-plus-still; } }
+.fin-empty-check { display:block; margin-bottom:18px; }
+.fin-empty-after { padding-top:18px; border-top:1px solid var(--border); }
+.fin-empty-after .fin-empty-secondary { padding:9px 18px; }
+.fin-empty-err { color:var(--red); font-size:14px !important; margin:14px 0 0 !important; }
+.fin-empty-demo { margin-top:14px; }
+.fin-empty-demo a { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; color:var(--accent-text, var(--accent)); text-decoration:underline; text-underline-offset:3px; }
+/* On phones the card fills the area, so the ghost Sankey would only peek out as a stray sliver. */
+html.light .fin-empty-card { box-shadow:0 18px 50px rgba(15,26,48,.14); }
+@media (max-width:600px) { .fin-empty { min-height:0; } .fin-empty-bg { display:none; } .fin-empty-wrap { padding:16px 12px; } .fin-empty-card { padding:24px 20px; box-shadow:none; } }
+
 /* ── Projects tab: domain chips, progress, nested tasks ── */
 .pj-chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
 .pj-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border-radius:16px; border:1px solid var(--border); background:var(--cdim); color:var(--text); font-family:'DM Sans',sans-serif; font-size:12px; cursor:pointer; white-space:nowrap; transition:all .15s; }
@@ -544,3 +583,5 @@ html.light .pj-scrim { background:rgba(12,20,40,.38); }
 /* Long unbroken strings (URLs in descriptions) must wrap, or they widen the whole page on phones. */
 #projects-list, .pj-panel { overflow-wrap:anywhere; }
 .pj-task-btn, .pj-panel-body, .pj-pcard-name { min-width:0; }
+
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
