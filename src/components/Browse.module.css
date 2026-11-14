@@ -97,88 +97,40 @@
   background: var(--amber);
   transition: height 0.4s ease;
 }
-.orgCard:hover { border-color: color-mix(in srgb, var(--cat) 40%, transparent); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.orgCard:hover { border-color: color-mix(in srgb, var(--amber) 45%, transparent); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
 .government { --cat: var(--teal); --cat-text: var(--teal-text, var(--teal)); }
 .community  { --cat: var(--green); --cat-text: var(--green); }
 .orgCard:hover::before { height: 100%; }
 
-.cardBanner {
-  height: 120px;
-  background: linear-gradient(135deg, var(--bg-up) 0%, var(--bg) 100%);
-  position: relative;
-  overflow: hidden;
+/* Logo beside the name. Mirrors the org page's seal (white tile, image fills edge to edge),
+   scaled down. With no image it falls back to an initials tile. */
+.orgIdRow { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
+.orgIdText { min-width: 0; flex: 1; }
+.orgLogo {
+  width: 56px; height: 56px;
   flex-shrink: 0;
-}
-.cardBannerPattern {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-.cardBannerGlow {
-  position: absolute;
-  width: 200px; height: 200px;
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--cat, var(--amber)) 12%, transparent) 0%, transparent 70%);
-  top: -60px; right: -40px;
-}
-.orgTypeBadge {
-  position: absolute;
-  top: 12px; left: 12px;
-  /* Leaves room for the Live Data badge; long types wrap instead of running under it. */
-  max-width: calc(100% - 130px);
-  line-height: 1.5;
+  border-radius: 12px;
+  border: 1px solid var(--bhi);
+  background: var(--bg-up);
+  color: var(--tm);
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 2px;
-  background: rgba(12,20,40,0.7);
-  border: 1px solid color-mix(in srgb, var(--cat, var(--tm)) 35%, transparent);
-  color: var(--cat, var(--tm));
-  backdrop-filter: blur(8px);
+  font-weight: 500;
+  font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
 }
-.dataBadge {
-  position: absolute;
-  top: 12px; right: 12px;
-  display: flex; align-items: center; gap: 5px;
-  font-family: 'DM Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 2px;
-  background: rgba(45,212,191,0.15);
-  border: 1px solid rgba(45,212,191,0.25);
-  color: var(--teal);
-  backdrop-filter: blur(8px);
-}
-.dataBadgeDot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--teal);
-  animation: pulseDot 2s infinite;
-}
-@keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.orgLogoLong { font-size: 15px; }
+.orgLogoImg { background: #fff; }
+.orgLogo img { width: 100%; height: 100%; object-fit: contain; }
 
 .cardBody { padding: 20px 24px 24px; flex: 1; display: flex; flex-direction: column; }
-.orgJurisdiction {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--tm);
-  margin-bottom: 6px;
-}
 .orgName {
   font-family: 'Playfair Display', serif;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
   color: var(--th);
   line-height: 1.2;
-  margin-bottom: 8px;
+  padding-top: 4px;
 }
 .orgDesc {
   font-size: 13px;
@@ -187,7 +139,7 @@
   margin-bottom: 20px;
   flex: 1;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -206,6 +158,52 @@
 .orgCard:hover .ctaLink { gap: 10px; }
 .ctaLink svg { width: 14px; height: 14px; }
 
+.groups { display: block; }
+.group { margin-bottom: 12px; }
+.groupOpen { margin-bottom: 28px; }
+.groupName { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--th); margin: 0; }
+.groupMeta { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tm); white-space: nowrap; }
+.groupOnly {
+  background: none; border: none; padding: 0; cursor: pointer; flex-shrink: 0;
+  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--amber-text, var(--amber)); white-space: nowrap;
+}
+.groupOnly:hover { text-decoration: underline; }
+.groupRow {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  padding-right: 16px;
+  transition: border-color 0.2s;
+}
+.groupRow:hover, .groupRowOpen { border-color: var(--bhi); }
+.groupToggle {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px;
+  background: none; border: none; cursor: pointer; text-align: left;
+  padding: 12px 0 12px 16px; color: inherit;
+}
+/* On desktop the two lines flow as one; on phones they stack (see the media query below). */
+.groupLine { display: contents; }
+.groupArrow { width: 12px; font-size: 13px; color: var(--amber-text, var(--amber)); flex-shrink: 0; }
+.groupTiles { display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; }
+.groupMore { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--tm); margin-left: 2px; }
+.orgLogoSm { width: 28px; height: 28px; border-radius: 7px; font-size: 10px; }
+.orgLogoSm.orgLogoLong { font-size: 8px; }
+.showMore {
+  display: inline-block; margin-top: 12px; padding: 0;
+  background: none; border: none; cursor: pointer;
+  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--amber-text, var(--amber));
+}
+.showMore:hover { text-decoration: underline; }
+.addRow {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px;
+  margin-top: 12px; padding: 14px 16px;
+  border: 1px dashed var(--bhi); border-radius: 8px;
+}
+.addRowTitle { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--th); }
+.addRowBody { flex: 1; min-width: 0; font-size: 13px; color: var(--tm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 640px) { .addRowBody { white-space: normal; flex-basis: 100%; } }
 .gridStatus {
   grid-column: 1 / -1;
   padding: 56px 24px;
@@ -240,28 +238,6 @@
 }
 .fadeUp { opacity: 0; animation: fadeUp 0.6s ease forwards; }
 
-/* Light mode: the dark-glass badges and white grid lines are built for the navy
-   ground. On cream they turn into dark slabs and an empty block, so swap them for
-   light glass, darker accent text, and a faint tinted banner. */
-:global(html.light) .cardBanner {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--cat, var(--amber)) 9%, var(--bg-card)) 0%, var(--bg-up) 100%);
-}
-:global(html.light) .cardBannerPattern {
-  background-image:
-    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
-}
-:global(html.light) .orgTypeBadge {
-  background: rgba(255,255,255,0.85);
-  border-color: color-mix(in srgb, var(--cat-text, var(--tm)) 35%, transparent);
-  color: var(--cat-text, var(--tm));
-}
-:global(html.light) .dataBadge {
-  background: rgba(255,255,255,0.85);
-  border-color: color-mix(in srgb, var(--teal-text) 35%, transparent);
-  color: var(--teal-text);
-}
-:global(html.light) .dataBadgeDot { background: var(--teal-text); }
 :global(html.light) .orgCard:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
 
 /* ---- Controls: search, country, category, view ---- */
@@ -300,12 +276,14 @@
   position: absolute;
   top: calc(100% + 6px); left: 0;
   z-index: 40;
-  min-width: 220px;
+  min-width: 260px;
+  max-height: 70vh;
+  overflow-y: auto;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: 0 12px 28px rgba(0,0,0,0.22);
-  overflow: hidden;
+  overflow-x: hidden;
 }
 .countryOption {
   width: 100%;
@@ -320,6 +298,13 @@
   cursor: pointer;
 }
 .countryOption:hover, .countryOptionActive { background: var(--cdim); }
+.countryOptionTop { font-weight: 600; }
+.countryOptionNested { padding-left: 28px; }
+.countryOptionDeep { padding-left: 44px; }
+.menuDivider { height: 1px; background: var(--border); margin: 4px 0; }
+.pillTrail { color: var(--tm); }
+.pillLast { color: var(--text); }
+.pillSep { color: var(--tm); margin: 0 6px; opacity: 0.7; }
 .countryOptionAll { border-top: 1px solid var(--border); color: var(--amber-text, var(--amber)); font-family: 'DM Mono', monospace; font-size: 12px; }
 .countryCount { color: var(--tm); font-family: 'DM Mono', monospace; font-size: 11px; }
 
@@ -403,15 +388,6 @@
   color: var(--th);
 }
 
-.addCard {
-  display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 10px;
-  min-height: 220px;
-  padding: 24px;
-  border: 1px dashed var(--bhi);
-  border-radius: 8px;
-}
-.addCardTitle { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--th); }
-.addCardBody { font-size: 13px; color: var(--tm); line-height: 1.6; }
 .addCardLink {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
@@ -422,6 +398,7 @@
   text-decoration: none;
 }
 .addCardLinkCommunity { color: var(--green); }
+.addCardLink:hover { text-decoration: underline; }
 
 /* Search results */
 .searchEyebrow {
@@ -550,5 +527,20 @@
   .content { padding: 0 16px 60px; }
   .orgGrid { grid-template-columns: 1fr; }
   .searchWrap { max-width: 100%; }
-  .addCard { min-height: 0; }
+}
+
+/* ---- Phones: stacked group rows and thumb-sized targets ---- */
+@media (max-width: 640px) {
+  .groupRow { align-items: flex-start; gap: 8px; }
+  .groupToggle { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; gap: 6px; padding: 14px 0 14px 14px; }
+  .groupLine { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .groupRow { position: relative; }
+  /* Only X sits in the row's top-right corner, so the second line (label and tiles) can use the full width. */
+  .groupOnly { position: absolute; top: 0; right: 16px; padding: 14px 0; }
+  .groupToggleOnly .groupLine:first-child { padding-right: 120px; }
+  .showMore { padding: 14px 0; margin-top: 0; }
+  .chip { min-height: 38px; }
+  .viewBtn { min-height: 36px; }
+  .countryPill { min-height: 40px; }
+  .addCardLink { padding: 12px 0; }
 }

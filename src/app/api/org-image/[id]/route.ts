@@ -36,7 +36,9 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       headers: {
         'content-type': type,
         // Attachment IDs are immutable (a new upload gets a new ID), so cache hard.
-        'cache-control': 'public, max-age=86400, stale-while-revalidate=604800',
+        // max-age is the browser; s-maxage lets Vercel's CDN keep a shared copy too, so
+        // Corteza isn't hit again for every new visitor.
+        'cache-control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
       },
     });
   } catch {
