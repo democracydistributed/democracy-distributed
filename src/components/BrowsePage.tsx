@@ -214,13 +214,13 @@ function OrgList({
         const extra = g.orgs.length - tileCount;
         return (
           <div key={g.key} className={`${styles.group} ${isOpen ? styles.groupOpen : ''}`}>
-            <div className={`${styles.groupRow} ${isOpen ? styles.groupRowOpen : ''}`}>
+            <div id={`row-${panelId}`} style={{ scrollMarginTop: 80 }} className={`${styles.groupRow} ${isOpen ? styles.groupRowOpen : ''}`}>
               <button
                 type="button"
                 className={`${styles.groupToggle} ${g.shortcut ? styles.groupToggleOnly : ''}`}
                 onClick={() => setFlipped((prev) => flip(prev, g.key))}
                 aria-expanded={isOpen}
-                aria-controls={panelId}
+                aria-controls={isOpen ? panelId : undefined}
               >
                 <span className={styles.groupLine}>
                   <span className={styles.groupArrow} aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
@@ -252,7 +252,16 @@ function OrgList({
                   ))}
                 </div>
                 {starts && g.orgs.length > preview ? (
-                  <button type="button" className={styles.showMore} onClick={() => setFull((prev) => flip(prev, g.key))}>
+                  <button
+                    type="button"
+                    className={styles.showMore}
+                    onClick={() => {
+                      const collapsing = full.has(g.key);
+                      setFull((prev) => flip(prev, g.key));
+                      // After collapsing, the list is much shorter; put the group's row back on screen.
+                      if (collapsing) requestAnimationFrame(() => document.getElementById(`row-${panelId}`)?.scrollIntoView({ block: 'start' }));
+                    }}
+                  >
                     {full.has(g.key) ? 'Show fewer ↑' : `Show ${g.orgs.length - preview} more ↓`}
                   </button>
                 ) : null}
@@ -385,6 +394,10 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
       if (e.key === 'Escape') {
         setPickerOpen(false);
         pillRef.current?.focus();
+        return;
+      }
+      if (e.key === 'Tab') {
+        setPickerOpen(false);
         return;
       }
       const list = options();

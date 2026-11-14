@@ -87,10 +87,29 @@ export function placeRows(orgs: OrgSummary[], country: CountryOption): PlaceRow[
   return rows;
 }
 
-/** Keeps a place only if some org in the country actually sits there (guards stale links). */
+/**
+ * Cleans a place that came from a link or a stale state: matches case-insensitively, uses the orgs'
+ * own spelling, drops only the part that matches nothing (a bad city keeps its region), and fills in
+ * the region when a link gave just a city.
+ */
 export function validPlace(place: PlaceScope, orgs: OrgSummary[], country: CountryOption | null): PlaceScope {
   if (!country || !isPlaceActive(place)) return NO_PLACE;
-  return orgs.some((o) => orgInCountry(o, country) && orgInPlace(o, place)) ? place : NO_PLACE;
+  const inCountry = orgs.filter((o) => orgInCountry(o, country));
+
+  let region: string | null = null;
+  if (place.region) region = inCountry.find((o) => o.region && norm(o.region) === norm(place.region))?.region ?? null;
+
+  let city: string | null = null;
+  if (place.city) {
+    const hit = inCountry.find(
+      (o) => o.city && norm(o.city) === norm(place.city) && (!region || norm(o.region) === norm(region)),
+    );
+    if (hit) {
+      city = hit.city ?? null;
+      if (!region && hit.region) region = hit.region;
+    }
+  }
+  return region || city ? { region, city } : NO_PLACE;
 }
 
 /** A heading plus the orgs under it, when the list is grouped by place. */
