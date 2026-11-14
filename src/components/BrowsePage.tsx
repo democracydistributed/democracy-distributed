@@ -50,11 +50,35 @@ function Arrow() {
   );
 }
 
+/** Up to two initials from the org name, for the logo tile when there's no image. */
+function initialsOf(name?: string): string {
+  const words = (name || '').split(/\s+/).filter((w) => /^[\p{L}\p{N}]/u.test(w) && !/^(of|the|and|for|de|la)$/i.test(w));
+  return (words.length > 1 ? words[0][0] + words[1][0] : (words[0] || '?').slice(0, 2)).toUpperCase();
+}
+
+function OrgLogo({ photoId, name }: { photoId?: string | null; name?: string }) {
+  const [failed, setFailed] = useState(false);
+  const showImg = !!photoId && !failed;
+  return (
+    <div className={`${styles.orgLogo} ${showImg ? styles.orgLogoImg : ''}`} aria-hidden={showImg ? undefined : true}>
+      {showImg ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`/api/org-image/${encodeURIComponent(photoId)}`}
+          alt={`${name ?? 'Organization'} logo`}
+          loading="lazy"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        initialsOf(name)
+      )}
+    </div>
+  );
+}
+
 function OrgCard({ org, index }: { org: OrgSummary; index: number }) {
   const id = orgKey(org);
-  const isLive = org.status === 'Active';
   const isCommunity = categoryOf(org) === 'community';
-  const badge = [org.type, org.subType].filter(Boolean).join(' · ') || 'Organization';
   const jurisdiction = jurisdictionOf(org);
   return (
     <Link
@@ -62,20 +86,14 @@ function OrgCard({ org, index }: { org: OrgSummary; index: number }) {
       className={`${styles.orgCard} ${isCommunity ? styles.community : styles.government} ${styles.fadeUp}`}
       style={{ animationDelay: `${(index % 5) * 0.05}s` }}
     >
-      <div className={styles.cardBanner}>
-        <div className={styles.cardBannerPattern} />
-        <div className={styles.cardBannerGlow} />
-        <div className={styles.orgTypeBadge}>{badge}</div>
-        {isLive ? (
-          <div className={styles.dataBadge}>
-            <span className={styles.dataBadgeDot} />
-            Live Data
-          </div>
-        ) : null}
-      </div>
       <div className={styles.cardBody}>
-        {jurisdiction ? <div className={styles.orgJurisdiction}>{jurisdiction}</div> : null}
-        <div className={styles.orgName}>{org.name || 'Unknown Organization'}</div>
+        <div className={styles.orgIdRow}>
+          <OrgLogo photoId={org.coverPhoto} name={org.name} />
+          <div className={styles.orgIdText}>
+            {jurisdiction ? <div className={styles.orgJurisdiction}>{jurisdiction}</div> : null}
+            <div className={styles.orgName}>{org.name || 'Unknown Organization'}</div>
+          </div>
+        </div>
         {org.description ? <div className={styles.orgDesc}>{org.description}</div> : null}
         <div className={styles.cardCta}>
           <span className={styles.ctaLink}>

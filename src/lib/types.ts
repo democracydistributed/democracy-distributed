@@ -118,6 +118,8 @@ export interface OrgSummary {
   region?: string | null;
   /** The Country jurisdiction's Code (e.g. CA, IN); null until that Code is filled in. */
   countryCode?: string | null;
+  /** Corteza File attachment id of the org's logo (served by /api/org-image/[id]). */
+  coverPhoto?: string | null;
 }
 
 export interface OrgsResponse {
