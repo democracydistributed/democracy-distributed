@@ -10,11 +10,15 @@ import {
   COUNTRY_COOKIE,
   countryOptions,
   isGlobalOrg,
+  matchCountry,
   orgInCountry,
+  regionsFromLocales,
   resolveCountry,
   type CountryChoice,
   type CountryResolution,
 } from '@/lib/country';
+import { regionNameFromCode } from '@/lib/regions';
+import { DEFAULT_LANDING, NO_PLACE, groupOrgs, isPlaceActive, orgInPlace, placeRows, samePlace, validPlace, type OrgGroup, type PlaceScope } from '@/lib/place';
 import type { OrgSummary } from '@/lib/types';
 import styles from './Browse.module.css';
 
@@ -50,17 +54,24 @@ function Arrow() {
   );
 }
 
-/** Up to two initials from the org name, for the logo tile when there's no image. */
+const SMALL_WORDS = /^(of|the|and|for|de|la|a|an|in|on|to)$/i;
+
+/** Acronym for the logo tile when there's no image: first letter of each significant word, up to 4. */
 function initialsOf(name?: string): string {
-  const words = (name || '').split(/\s+/).filter((w) => /^[\p{L}\p{N}]/u.test(w) && !/^(of|the|and|for|de|la)$/i.test(w));
-  return (words.length > 1 ? words[0][0] + words[1][0] : (words[0] || '?').slice(0, 2)).toUpperCase();
+  const words = (name || '').split(/\s+/).filter((w) => /^[\p{L}\p{N}]/u.test(w) && !SMALL_WORDS.test(w));
+  const letters = words.length > 1 ? words.slice(0, 4).map((w) => w[0]).join('') : (words[0] || '?').slice(0, 2);
+  return letters.toUpperCase();
 }
 
 function OrgLogo({ photoId, name }: { photoId?: string | null; name?: string }) {
   const [failed, setFailed] = useState(false);
   const showImg = !!photoId && !failed;
+  const initials = initialsOf(name);
   return (
-    <div className={`${styles.orgLogo} ${showImg ? styles.orgLogoImg : ''}`} aria-hidden={showImg ? undefined : true}>
+    <div
+      className={`${styles.orgLogo} ${showImg ? styles.orgLogoImg : ''} ${!showImg && initials.length > 3 ? styles.orgLogoLong : ''}`}
+      aria-hidden={showImg ? undefined : true}
+    >
       {showImg ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -70,7 +81,7 @@ function OrgLogo({ photoId, name }: { photoId?: string | null; name?: string }) 
           onError={() => setFailed(true)}
         />
       ) : (
-        initialsOf(name)
+        initials
       )}
     </div>
   );
@@ -79,7 +90,6 @@ function OrgLogo({ photoId, name }: { photoId?: string | null; name?: string }) 
 function OrgCard({ org, index }: { org: OrgSummary; index: number }) {
   const id = orgKey(org);
   const isCommunity = categoryOf(org) === 'community';
-  const jurisdiction = jurisdictionOf(org);
   return (
     <Link
       href={`/org/${encodeURIComponent(id)}`}
@@ -90,7 +100,6 @@ function OrgCard({ org, index }: { org: OrgSummary; index: number }) {
         <div className={styles.orgIdRow}>
           <OrgLogo photoId={org.coverPhoto} name={org.name} />
           <div className={styles.orgIdText}>
-            {jurisdiction ? <div className={styles.orgJurisdiction}>{jurisdiction}</div> : null}
             <div className={styles.orgName}>{org.name || 'Unknown Organization'}</div>
           </div>
         </div>
@@ -103,6 +112,120 @@ function OrgCard({ org, index }: { org: OrgSummary; index: number }) {
         </div>
       </div>
     </Link>
+  );
+}
+
+type Shortcut = NonNullable<OrgGroup['shortcut']>;
+
+/** How many cards the first group shows before "Show N more". Later groups start collapsed. */
+const PREVIEW = 3;
+
+/**
+ * Org cards. With more than one place group: the first group is open with a short preview,
+ * the rest are one-line rows you tap open. With a single group it's a plain grid.
+ */
+function OrgList({
+  orgs,
+  groups,
+  addCard,
+  onShortcut,
+}: {
+  orgs: OrgSummary[];
+  groups: OrgGroup[];
+  addCard: React.ReactNode;
+  onShortcut: (s: Shortcut) => void;
+}) {
+  // Keys of groups opened in full. Callers remount this component (key) when the scope changes.
+  const [opened, setOpened] = useState<Set<string>>(() => new Set());
+  const toggle = (key: string) =>
+    setOpened((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  if (groups.length < 2) {
+    return (
+      <div className={styles.orgGrid}>
+        {orgs.map((org, i) => (
+          <OrgCard key={orgKey(org) || i} org={org} index={i} />
+        ))}
+        {addCard}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {groups.map((g, gi) => {
+        const first = gi === 0;
+        const isOpen = opened.has(g.key);
+        const meta = g.label ? `${g.label} · ${g.orgs.length}` : String(g.orgs.length);
+        const only = g.shortcut ? (
+          <button type="button" className={styles.groupOnly} onClick={() => onShortcut(g.shortcut as Shortcut)}>
+            Only {g.name} →
+          </button>
+        ) : null;
+        const last = gi === groups.length - 1;
+
+        if (first) {
+          const shown = isOpen ? g.orgs : g.orgs.slice(0, PREVIEW);
+          const hidden = g.orgs.length - shown.length;
+          return (
+            <div key={g.key} className={styles.group}>
+              <div className={styles.groupHead}>
+                <h3 className={styles.groupName}>{g.name}</h3>
+                <span className={styles.groupMeta}>{meta}</span>
+                <span className={styles.groupRule} />
+                {only}
+              </div>
+              <div className={styles.orgGrid}>
+                {shown.map((org, i) => (
+                  <OrgCard key={orgKey(org) || i} org={org} index={i} />
+                ))}
+              </div>
+              {g.orgs.length > PREVIEW ? (
+                <button type="button" className={styles.showMore} onClick={() => toggle(g.key)} aria-expanded={isOpen}>
+                  {isOpen ? 'Show fewer ↑' : `Show ${hidden} more ↓`}
+                </button>
+              ) : null}
+            </div>
+          );
+        }
+
+        const panelId = `group-${g.key.replace(/[^a-z0-9]+/gi, '-')}`;
+        return (
+          <div key={g.key} className={styles.group}>
+            <div className={`${styles.groupRow} ${isOpen ? styles.groupRowOpen : ''}`}>
+              <button
+                type="button"
+                className={styles.groupToggle}
+                onClick={() => toggle(g.key)}
+                aria-expanded={isOpen}
+                aria-controls={panelId}
+              >
+                <span className={styles.groupName}>{g.name}</span>
+                <span className={styles.groupMeta}>{meta}</span>
+                <span className={`${styles.groupChevron} ${isOpen ? styles.groupChevronOpen : ''}`} aria-hidden="true">
+                  ›
+                </span>
+              </button>
+              {only}
+            </div>
+            {isOpen ? (
+              <div id={panelId} className={styles.orgGrid} style={{ marginTop: 14 }}>
+                {g.orgs.map((org, i) => (
+                  <OrgCard key={orgKey(org) || i} org={org} index={i} />
+                ))}
+                {last ? addCard : null}
+              </div>
+            ) : null}
+            {last && !isOpen ? <div className={styles.orgGrid} style={{ marginTop: 14 }}>{addCard}</div> : null}
+          </div>
+        );
+      })}
+    </>
   );
 }
 
@@ -130,13 +253,18 @@ function SectionHead({ eyebrow, title, community }: { eyebrow: string; title: st
   );
 }
 
-function rememberCountry(key: string) {
+/** The cookie only remembers the country; region and city live in the link, so a drill-down is shareable but not sticky. */
+function rememberCountry(key: string, place: PlaceScope) {
   try {
     document.cookie = `${COUNTRY_COOKIE}=${encodeURIComponent(key)}; path=/; max-age=31536000; samesite=lax`;
   } catch {}
   try {
     const url = new URL(window.location.href);
     url.searchParams.set('country', key);
+    if (place.region) url.searchParams.set('region', place.region);
+    else url.searchParams.delete('region');
+    if (place.city) url.searchParams.set('city', place.city);
+    else url.searchParams.delete('city');
     url.searchParams.delete('simulateCountry');
     window.history.replaceState(null, '', url.toString());
   } catch {}
@@ -144,17 +272,25 @@ function rememberCountry(key: string) {
 
 interface Props {
   ipCountry: string | null;
+  ipRegion: string | null;
   savedCountry: string | null;
   urlCountry: string | null;
+  urlRegion: string | null;
+  urlCity: string | null;
 }
 
-export default function BrowsePage({ ipCountry, savedCountry, urlCountry }: Props) {
+export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCountry, urlRegion, urlCity }: Props) {
   const [orgs, setOrgs] = useState<OrgSummary[]>([]);
   const [state, setState] = useState<LoadState>('loading');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category>('all');
   const [view, setView] = useState<View>('list');
   const [resolution, setResolution] = useState<CountryResolution | null>(null);
+  const [rawPlace, setRawPlace] = useState<PlaceScope>({ region: urlRegion, city: urlCity });
+  /** Set when we narrowed to the visitor's province / state on our own, so we can say so and offer a way out. */
+  const [autoRegion, setAutoRegion] = useState<string | null>(null);
+  /** True when we had no location signal and landed on the default place. */
+  const [usedDefault, setUsedDefault] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
   const pillRef = useRef<HTMLButtonElement>(null);
@@ -179,8 +315,38 @@ export default function BrowsePage({ ipCountry, savedCountry, urlCountry }: Prop
   useEffect(() => {
     if (state !== 'ready' || resolution) return;
     const locales = typeof navigator !== 'undefined' ? navigator.languages || [navigator.language] : [];
-    setResolution(resolveCountry({ url: urlCountry, saved: savedCountry, ip: ipCountry, locales }, countries));
-  }, [state, resolution, countries, urlCountry, savedCountry, ipCountry]);
+    // No signal at all (no link, saved pick, IP country or browser region): start on the default
+    // place rather than the busiest country, as long as we actually have orgs there.
+    if (!urlCountry && !savedCountry && !ipCountry && regionsFromLocales(locales).length === 0) {
+      const country = matchCountry(DEFAULT_LANDING.country, countries);
+      const landing = { region: DEFAULT_LANDING.region as string | null, city: DEFAULT_LANDING.city as string | null };
+      if (country && orgs.some((o) => orgInCountry(o, country) && orgInPlace(o, landing))) {
+        setResolution({ choice: { kind: 'country', key: country.key }, auto: true, fallbackFrom: null, emptyCountry: null });
+        setRawPlace(landing);
+        setUsedDefault(true);
+        return;
+      }
+    }
+
+    const resolved = resolveCountry({ url: urlCountry, saved: savedCountry, ip: ipCountry, locales }, countries);
+    setResolution(resolved);
+
+    // Go one level deeper only when the country itself came from the visitor's IP (not a link,
+    // a saved pick, or a fallback) and we have orgs in their province / state. Never the city:
+    // IP cities are too often wrong. A wrong guess is one tap away from undone (see the note).
+    if (resolved.auto && !resolved.fallbackFrom && resolved.choice.kind === 'country' && ipCountry && ipRegion) {
+      const country = matchCountry(ipCountry, countries);
+      const name = country && country.key === resolved.choice.key ? regionNameFromCode(country.code, ipRegion) : null;
+      const fold = (v: string) => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+      const hit = name && country
+        ? orgs.find((o) => o.region && orgInCountry(o, country) && fold(o.region) === fold(name))
+        : null;
+      if (hit?.region) {
+        setRawPlace({ region: hit.region, city: null });
+        setAutoRegion(hit.region);
+      }
+    }
+  }, [state, resolution, countries, orgs, urlCountry, savedCountry, ipCountry, ipRegion]);
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -217,18 +383,32 @@ export default function BrowsePage({ ipCountry, savedCountry, urlCountry }: Prop
     };
   }, [pickerOpen]);
 
-  const choose = (choice: CountryChoice) => {
+  const choose = (choice: CountryChoice, place: PlaceScope = NO_PLACE) => {
     setResolution({ choice, auto: false, fallbackFrom: null, emptyCountry: null });
+    setRawPlace(place);
+    setAutoRegion(null);
+    setUsedDefault(false);
     setPickerOpen(false);
     pillRef.current?.focus();
-    rememberCountry(choice.kind === 'all' ? ALL_COUNTRIES : choice.key);
+    rememberCountry(choice.kind === 'all' ? ALL_COUNTRIES : choice.key, place);
   };
 
   const choice = resolution?.choice ?? { kind: 'all' as const };
   const selected = choice.kind === 'country' ? countries.find((c) => c.key === choice.key) || null : null;
-  const inScope = selected ? orgs.filter((o) => isGlobalOrg(o) || orgInCountry(o, selected)) : orgs;
+  const place = useMemo(() => validPlace(rawPlace, orgs, selected), [rawPlace, orgs, selected]);
+  const placeActive = isPlaceActive(place);
+  const rows = useMemo(() => (selected ? placeRows(orgs, selected) : []), [orgs, selected]);
+  // Worldwide orgs ride along with a country, but not once you've drilled into a place.
+  const inScope = selected
+    ? orgs.filter((o) => (isGlobalOrg(o) ? !placeActive : orgInCountry(o, selected) && orgInPlace(o, place)))
+    : orgs;
   const gov = inScope.filter((o) => categoryOf(o) === 'government').sort(byName);
   const community = inScope.filter((o) => categoryOf(o) === 'community').sort(byName);
+
+  const govGroups = useMemo(() => groupOrgs(gov, selected, place, countries), [gov, selected, place, countries]);
+  const communityGroups = useMemo(() => groupOrgs(community, selected, place, countries), [community, selected, place, countries]);
+  const scopeKey = `${selected ? selected.key : 'all'}|${place.region ?? ''}|${place.city ?? ''}`;
+  const shortcut = (s: Shortcut) => choose({ kind: 'country', key: s.country }, s.place);
 
   const q = query.toLowerCase().trim();
   const searchResults = q
@@ -240,7 +420,8 @@ export default function BrowsePage({ ipCountry, savedCountry, urlCountry }: Prop
     : [];
 
   const ready = state === 'ready' && resolution !== null;
-  const pillLabel = selected ? selected.name : 'All countries';
+  const pillPath = selected ? [selected.name, place.region, place.city].filter((p): p is string => !!p) : ['All countries'];
+  const pillLabel = pillPath[pillPath.length - 1];
   const showGov = category !== 'community';
   const showCommunity = category !== 'government';
 
@@ -298,24 +479,67 @@ export default function BrowsePage({ ipCountry, savedCountry, urlCountry }: Prop
                   aria-expanded={pickerOpen}
                   disabled={!ready}
                 >
-                  <span className={styles.countryPillName}>{ready ? pillLabel : 'Finding your country…'}</span>
-                  <span className={styles.countryPillCaret} aria-hidden="true">▾</span>
+                  <span className={styles.countryPillName}>
+                    {ready ? (
+                      pillPath.map((seg, i) => (
+                        <span key={i}>
+                          {i > 0 ? <span className={styles.pillSep} aria-hidden="true">›</span> : null}
+                          <span className={i === pillPath.length - 1 ? styles.pillLast : styles.pillTrail}>{seg}</span>
+                        </span>
+                      ))
+                    ) : (
+                      'Finding your country…'
+                    )}
+                  </span>
                 </button>
                 {pickerOpen ? (
                   <div className={styles.countryMenu} role="listbox" aria-label="Country">
-                    {countries.map((c) => (
-                      <button
-                        key={c.key}
-                        type="button"
-                        role="option"
-                        aria-selected={selected?.key === c.key}
-                        className={`${styles.countryOption} ${selected?.key === c.key ? styles.countryOptionActive : ''}`}
-                        onClick={() => choose({ kind: 'country', key: c.key })}
-                      >
-                        <span>{c.name}</span>
-                        <span className={styles.countryCount}>{c.count}</span>
-                      </button>
-                    ))}
+                    {selected ? (
+                      <>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={!placeActive}
+                          className={`${styles.countryOption} ${styles.countryOptionTop} ${!placeActive ? styles.countryOptionActive : ''}`}
+                          onClick={() => choose({ kind: 'country', key: selected.key })}
+                        >
+                          <span>{selected.name}</span>
+                          <span className={styles.countryCount}>{selected.count}</span>
+                        </button>
+                        {rows.map((r) => {
+                          const active = placeActive && samePlace(r, place);
+                          return (
+                            <button
+                              key={`${r.region ?? ''}/${r.city ?? ''}`}
+                              type="button"
+                              role="option"
+                              aria-selected={active}
+                              className={`${styles.countryOption} ${r.depth === 2 ? styles.countryOptionDeep : styles.countryOptionNested} ${active ? styles.countryOptionActive : ''}`}
+                              onClick={() => choose({ kind: 'country', key: selected.key }, { region: r.region, city: r.city })}
+                            >
+                              <span>{r.name}</span>
+                              <span className={styles.countryCount}>{r.count}</span>
+                            </button>
+                          );
+                        })}
+                        {countries.length > 1 ? <div className={styles.menuDivider} role="separator" /> : null}
+                      </>
+                    ) : null}
+                    {countries
+                      .filter((c) => c.key !== selected?.key)
+                      .map((c) => (
+                        <button
+                          key={c.key}
+                          type="button"
+                          role="option"
+                          aria-selected={false}
+                          className={styles.countryOption}
+                          onClick={() => choose({ kind: 'country', key: c.key })}
+                        >
+                          <span>{c.name}</span>
+                          <span className={styles.countryCount}>{c.count}</span>
+                        </button>
+                      ))}
                     <button
                       type="button"
                       role="option"
@@ -358,6 +582,24 @@ export default function BrowsePage({ ipCountry, savedCountry, urlCountry }: Prop
               No organizations for {resolution.fallbackFrom} yet, so we&apos;re showing {pillLabel}, where there&apos;s the most to see.{' '}
               <button type="button" className={styles.inlineLink} onClick={() => setPickerOpen(true)}>
                 Change country
+              </button>
+            </div>
+          ) : null}
+
+          {ready && usedDefault && place.city ? (
+            <div className={styles.notice}>
+              We couldn&apos;t tell where you are, so we&apos;re showing {place.city}.{' '}
+              <button type="button" className={styles.inlineLink} onClick={() => setPickerOpen(true)}>
+                Change place
+              </button>
+            </div>
+          ) : null}
+
+          {ready && autoRegion && place.region === autoRegion && !place.city && selected ? (
+            <div className={styles.notice}>
+              Showing {autoRegion}, based on your location.{' '}
+              <button type="button" className={styles.inlineLink} onClick={() => choose({ kind: 'country', key: selected.key })}>
+                Show all of {selected.name}
               </button>
             </div>
           ) : null}
@@ -433,16 +675,19 @@ export default function BrowsePage({ ipCountry, savedCountry, urlCountry }: Prop
               {showGov ? (
                 <section className={styles.section}>
                   <SectionHead eyebrow={`Government · ${gov.length} on file`} title="Public bodies you can look into." />
-                  <div className={styles.orgGrid}>
-                    {gov.map((org, i) => (
-                      <OrgCard key={orgKey(org) || i} org={org} index={i} />
-                    ))}
-                    <AddCard
-                      title="Missing an organization?"
-                      body="Government agencies, boards, and departments can be added to the database."
-                      cta="Contribute data"
-                    />
-                  </div>
+                  <OrgList
+                    key={`gov|${scopeKey}`}
+                    orgs={gov}
+                    groups={govGroups}
+                    onShortcut={shortcut}
+                    addCard={
+                      <AddCard
+                        title="Missing an organization?"
+                        body="Government agencies, boards, and departments can be added to the database."
+                        cta="Contribute data"
+                      />
+                    }
+                  />
                 </section>
               ) : null}
 
@@ -450,17 +695,20 @@ export default function BrowsePage({ ipCountry, savedCountry, urlCountry }: Prop
                 <section className={styles.section}>
                   <SectionHead eyebrow={`Community · ${community.length} ${community.length === 1 ? 'group' : 'groups'}`} title="Groups organizing in the open." community />
                   {community.length ? (
-                    <div className={styles.orgGrid}>
-                      {community.map((org, i) => (
-                        <OrgCard key={orgKey(org) || i} org={org} index={i} />
-                      ))}
-                      <AddCard
-                        title="Don't see your group?"
-                        body="Neighbourhood associations, tenant groups, and co-ops can run their votes and budgets here."
-                        cta="Add your group"
-                        community
-                      />
-                    </div>
+                    <OrgList
+                      key={`community|${scopeKey}`}
+                      orgs={community}
+                      groups={communityGroups}
+                      onShortcut={shortcut}
+                      addCard={
+                        <AddCard
+                          title="Don't see your group?"
+                          body="Neighbourhood associations, tenant groups, and co-ops can run their votes and budgets here."
+                          cta="Add your group"
+                          community
+                        />
+                      }
+                    />
                   ) : (
                     <div className={styles.communityEmpty}>
                       <div className={styles.bigEmptyTitle}>No community groups yet.</div>

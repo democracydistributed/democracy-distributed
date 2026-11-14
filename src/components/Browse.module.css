@@ -97,7 +97,7 @@
   background: var(--amber);
   transition: height 0.4s ease;
 }
-.orgCard:hover { border-color: color-mix(in srgb, var(--cat) 40%, transparent); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.orgCard:hover { border-color: color-mix(in srgb, var(--amber) 45%, transparent); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
 .government { --cat: var(--teal); --cat-text: var(--teal-text, var(--teal)); }
 .community  { --cat: var(--green); --cat-text: var(--green); }
 .orgCard:hover::before { height: 100%; }
@@ -113,29 +113,24 @@
   border: 1px solid var(--bhi);
   background: var(--bg-up);
   color: var(--tm);
-  font-family: 'Playfair Display', serif;
-  font-size: 20px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  font-size: 17px;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
 }
+.orgLogoLong { font-size: 15px; }
 .orgLogoImg { background: #fff; }
 .orgLogo img { width: 100%; height: 100%; object-fit: contain; }
 
 .cardBody { padding: 20px 24px 24px; flex: 1; display: flex; flex-direction: column; }
-.orgJurisdiction {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--tm);
-  margin-bottom: 4px;
-}
 .orgName {
   font-family: 'Playfair Display', serif;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
   color: var(--th);
   line-height: 1.2;
+  padding-top: 4px;
 }
 .orgDesc {
   font-size: 13px;
@@ -144,7 +139,7 @@
   margin-bottom: 20px;
   flex: 1;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -163,6 +158,44 @@
 .orgCard:hover .ctaLink { gap: 10px; }
 .ctaLink svg { width: 14px; height: 14px; }
 
+.group { margin-bottom: 40px; }
+.group:last-child { margin-bottom: 0; }
+.groupHead { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.groupName { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--th); margin: 0; }
+.groupMeta { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tm); white-space: nowrap; }
+.groupRule { flex: 1; height: 1px; background: var(--border); }
+.groupOnly {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--amber-text, var(--amber)); white-space: nowrap;
+}
+.groupOnly:hover { text-decoration: underline; }
+.showMore {
+  display: block; width: 100%; margin-top: 12px; padding: 10px;
+  background: transparent; border: 1px dashed var(--bhi); border-radius: 8px; cursor: pointer;
+  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--amber-text, var(--amber));
+}
+.showMore:hover { border-color: var(--amber); }
+.groupRow {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 0 16px 0 0;
+  transition: border-color 0.2s;
+}
+.groupRow:hover, .groupRowOpen { border-color: var(--bhi); }
+.groupToggle {
+  flex: 1; min-width: 0;
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px;
+  background: none; border: none; cursor: pointer; text-align: left;
+  padding: 14px 0 14px 16px; color: inherit;
+}
+.groupChevron {
+  margin-left: auto; align-self: center;
+  font-size: 20px; line-height: 1; color: var(--amber-text, var(--amber));
+  transition: transform 0.2s;
+}
+.groupChevronOpen { transform: rotate(90deg); }
 .gridStatus {
   grid-column: 1 / -1;
   padding: 56px 24px;
@@ -235,7 +268,9 @@
   position: absolute;
   top: calc(100% + 6px); left: 0;
   z-index: 40;
-  min-width: 220px;
+  min-width: 260px;
+  max-height: 70vh;
+  overflow-y: auto;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -255,6 +290,13 @@
   cursor: pointer;
 }
 .countryOption:hover, .countryOptionActive { background: var(--cdim); }
+.countryOptionTop { font-weight: 600; }
+.countryOptionNested { padding-left: 28px; }
+.countryOptionDeep { padding-left: 44px; }
+.menuDivider { height: 1px; background: var(--border); margin: 4px 0; }
+.pillTrail { color: var(--tm); }
+.pillLast { color: var(--text); }
+.pillSep { color: var(--tm); margin: 0 6px; opacity: 0.7; }
 .countryOptionAll { border-top: 1px solid var(--border); color: var(--amber-text, var(--amber)); font-family: 'DM Mono', monospace; font-size: 12px; }
 .countryCount { color: var(--tm); font-family: 'DM Mono', monospace; font-size: 11px; }
 
