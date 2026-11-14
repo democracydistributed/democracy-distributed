@@ -158,44 +158,52 @@
 .orgCard:hover .ctaLink { gap: 10px; }
 .ctaLink svg { width: 14px; height: 14px; }
 
-.group { margin-bottom: 40px; }
-.group:last-child { margin-bottom: 0; }
-.groupHead { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-.groupName { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--th); margin: 0; }
+.groups { display: block; }
+.group { margin-bottom: 12px; }
+.groupOpen { margin-bottom: 28px; }
+.groupName { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--th); margin: 0; }
 .groupMeta { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tm); white-space: nowrap; }
-.groupRule { flex: 1; height: 1px; background: var(--border); }
 .groupOnly {
-  background: none; border: none; padding: 0; cursor: pointer;
+  background: none; border: none; padding: 0; cursor: pointer; flex-shrink: 0;
   font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--amber-text, var(--amber)); white-space: nowrap;
 }
 .groupOnly:hover { text-decoration: underline; }
-.showMore {
-  display: block; width: 100%; margin-top: 12px; padding: 10px;
-  background: transparent; border: 1px dashed var(--bhi); border-radius: 8px; cursor: pointer;
-  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--amber-text, var(--amber));
-}
-.showMore:hover { border-color: var(--amber); }
 .groupRow {
   display: flex; align-items: center; gap: 14px;
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
-  padding: 0 16px 0 0;
+  padding-right: 16px;
   transition: border-color 0.2s;
 }
 .groupRow:hover, .groupRowOpen { border-color: var(--bhi); }
 .groupToggle {
   flex: 1; min-width: 0;
-  display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px;
   background: none; border: none; cursor: pointer; text-align: left;
-  padding: 14px 0 14px 16px; color: inherit;
+  padding: 12px 0 12px 16px; color: inherit;
 }
-.groupChevron {
-  margin-left: auto; align-self: center;
-  font-size: 20px; line-height: 1; color: var(--amber-text, var(--amber));
-  transition: transform 0.2s;
+/* On desktop the two lines flow as one; on phones they stack (see the media query below). */
+.groupLine { display: contents; }
+.groupArrow { width: 12px; font-size: 13px; color: var(--amber-text, var(--amber)); flex-shrink: 0; }
+.groupTiles { display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; }
+.groupMore { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--tm); margin-left: 2px; }
+.orgLogoSm { width: 28px; height: 28px; border-radius: 7px; font-size: 10px; }
+.orgLogoSm.orgLogoLong { font-size: 8px; }
+.showMore {
+  display: inline-block; margin-top: 12px; padding: 0;
+  background: none; border: none; cursor: pointer;
+  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--amber-text, var(--amber));
 }
-.groupChevronOpen { transform: rotate(90deg); }
+.showMore:hover { text-decoration: underline; }
+.addRow {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px;
+  margin-top: 12px; padding: 14px 16px;
+  border: 1px dashed var(--bhi); border-radius: 8px;
+}
+.addRowTitle { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--th); }
+.addRowBody { flex: 1; min-width: 0; font-size: 13px; color: var(--tm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 640px) { .addRowBody { white-space: normal; flex-basis: 100%; } }
 .gridStatus {
   grid-column: 1 / -1;
   padding: 56px 24px;
@@ -380,15 +388,6 @@
   color: var(--th);
 }
 
-.addCard {
-  display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 10px;
-  min-height: 220px;
-  padding: 24px;
-  border: 1px dashed var(--bhi);
-  border-radius: 8px;
-}
-.addCardTitle { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--th); }
-.addCardBody { font-size: 13px; color: var(--tm); line-height: 1.6; }
 .addCardLink {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
@@ -527,5 +526,19 @@
   .content { padding: 0 16px 60px; }
   .orgGrid { grid-template-columns: 1fr; }
   .searchWrap { max-width: 100%; }
-  .addCard { min-height: 0; }
+}
+
+/* ---- Phones: stacked group rows and thumb-sized targets ---- */
+@media (max-width: 640px) {
+  .groupRow { align-items: flex-start; gap: 8px; }
+  .groupToggle { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; gap: 6px; padding: 14px 0 14px 14px; }
+  .groupLine { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .groupRow { position: relative; }
+  /* Only X sits in the row's top-right corner, so the second line (label and tiles) can use the full width. */
+  .groupOnly { position: absolute; top: 0; right: 16px; padding: 14px 0; }
+  .groupToggleOnly .groupLine:first-child { padding-right: 120px; }
+  .showMore { padding: 14px 0; margin-top: 0; }
+  .chip { min-height: 38px; }
+  .viewBtn { min-height: 36px; }
+  .countryPill { min-height: 40px; }
 }

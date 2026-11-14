@@ -101,6 +101,8 @@ export interface OrgGroup {
   label: string;
   /** Where "Only X →" goes; null when the group already is the current scope. */
   shortcut: { country: string; place: PlaceScope } | null;
+  /** True when this group is the visitor's current place, so it should start open. */
+  current: boolean;
   orgs: OrgSummary[];
 }
 
@@ -132,14 +134,14 @@ export function groupOrgs(
     for (const c of countries) {
       const members = local.filter((o) => orgInCountry(o, c));
       if (members.length) {
-        groups.push({ key: `c:${c.key}`, name: c.name, label: '', shortcut: { country: c.key, place: NO_PLACE }, orgs: members });
+        groups.push({ key: `c:${c.key}`, name: c.name, label: '', shortcut: { country: c.key, place: NO_PLACE }, current: false, orgs: members });
       }
     }
   } else {
     if (!place.region) {
       const national = local.filter((o) => orgInCountry(o, selected) && !o.region && !o.city);
       if (national.length) {
-        groups.push({ key: 'national', name: selected.name, label: 'Federal', shortcut: null, orgs: national });
+        groups.push({ key: 'national', name: selected.name, label: 'Federal', shortcut: null, current: false, orgs: national });
       }
     }
     for (const r of placeRows(local, selected)) {
@@ -156,11 +158,12 @@ export function groupOrgs(
         name: r.name,
         label: r.city ? 'Municipal' : regionLabel(selected.code),
         shortcut: here ? null : { country: selected.key, place: { region: r.region, city: r.city } },
+        current: here,
         orgs: members,
       });
     }
   }
 
-  if (worldwide.length) groups.push({ key: 'world', name: 'Worldwide', label: 'Global', shortcut: null, orgs: worldwide });
+  if (worldwide.length) groups.push({ key: 'world', name: 'Worldwide', label: 'Global', shortcut: null, current: false, orgs: worldwide });
   return groups;
 }

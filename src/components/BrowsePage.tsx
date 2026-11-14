@@ -63,13 +63,13 @@ function initialsOf(name?: string): string {
   return letters.toUpperCase();
 }
 
-function OrgLogo({ photoId, name }: { photoId?: string | null; name?: string }) {
+function OrgLogo({ photoId, name, small }: { photoId?: string | null; name?: string; small?: boolean }) {
   const [failed, setFailed] = useState(false);
   const showImg = !!photoId && !failed;
   const initials = initialsOf(name);
   return (
     <div
-      className={`${styles.orgLogo} ${showImg ? styles.orgLogoImg : ''} ${!showImg && initials.length > 3 ? styles.orgLogoLong : ''}`}
+      className={`${styles.orgLogo} ${small ? styles.orgLogoSm : ''} ${showImg ? styles.orgLogoImg : ''} ${!showImg && initials.length > 3 ? styles.orgLogoLong : ''}`}
       aria-hidden={showImg ? undefined : true}
     >
       {showImg ? (
@@ -117,126 +117,151 @@ function OrgCard({ org, index }: { org: OrgSummary; index: number }) {
 
 type Shortcut = NonNullable<OrgGroup['shortcut']>;
 
-/** How many cards the first group shows before "Show N more". Later groups start collapsed. */
-const PREVIEW = 3;
+interface AddProps {
+  title: string;
+  body: string;
+  cta: string;
+  community?: boolean;
+}
+
+/** Full-width dashed prompt under a list: title, one line of text and a link on one line. */
+function AddCard({ title, body, cta, community }: AddProps) {
+  return (
+    <div className={styles.addRow}>
+      <span className={styles.addRowTitle}>{title}</span>
+      <span className={styles.addRowBody}>{body}</span>
+      <a href="/contribute" className={`${styles.addCardLink} ${community ? styles.addCardLinkCommunity : ''}`}>
+        {cta} →
+      </a>
+    </div>
+  );
+}
+
+/** True on phones, where previews and tile strips are shorter so the page doesn't just get longer. */
+function useCompact(): boolean {
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const m = window.matchMedia('(max-width: 640px)');
+    const update = () => setCompact(m.matches);
+    update();
+    m.addEventListener('change', update);
+    return () => m.removeEventListener('change', update);
+  }, []);
+  return compact;
+}
 
 /**
- * Org cards. With more than one place group: the first group is open with a short preview,
- * the rest are one-line rows you tap open. With a single group it's a plain grid.
+ * Org cards. With more than one place group, each group is a row you tap open. The group that
+ * matches the visitor's place starts open (else the biggest one) with a short preview; the
+ * others start collapsed to a row showing a few of the orgs inside. One group is a plain grid.
  */
 function OrgList({
   orgs,
   groups,
-  addCard,
+  add,
   onShortcut,
 }: {
   orgs: OrgSummary[];
   groups: OrgGroup[];
-  addCard: React.ReactNode;
+  add: AddProps;
   onShortcut: (s: Shortcut) => void;
 }) {
-  // Keys of groups opened in full. Callers remount this component (key) when the scope changes.
-  const [opened, setOpened] = useState<Set<string>>(() => new Set());
-  const toggle = (key: string) =>
-    setOpened((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+  const compact = useCompact();
+  const preview = compact ? 3 : 6;
+  const tileCount = compact ? 3 : 4;
+
+  const defaultOpen = useMemo(() => {
+    const current = groups.find((g) => g.current);
+    if (current) return current.key;
+    return groups.reduce<OrgGroup | null>((best, g) => (!best || g.orgs.length > best.orgs.length ? g : best), null)?.key ?? null;
+  }, [groups]);
+
+  // Groups the visitor flipped from their starting state, and the starting group once shown in full.
+  // Callers remount this component (key) when the scope changes, which resets both.
+  const [flipped, setFlipped] = useState<Set<string>>(() => new Set());
+  const [full, setFull] = useState<Set<string>>(() => new Set());
+  const flip = (set: Set<string>, key: string) => {
+    const next = new Set(set);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    return next;
+  };
 
   if (groups.length < 2) {
     return (
-      <div className={styles.orgGrid}>
-        {orgs.map((org, i) => (
-          <OrgCard key={orgKey(org) || i} org={org} index={i} />
-        ))}
-        {addCard}
+      <div>
+        <div className={styles.orgGrid}>
+          {orgs.map((org, i) => (
+            <OrgCard key={orgKey(org) || i} org={org} index={i} />
+          ))}
+        </div>
+        <AddCard {...add} />
       </div>
     );
   }
 
   return (
-    <>
-      {groups.map((g, gi) => {
-        const first = gi === 0;
-        const isOpen = opened.has(g.key);
-        const meta = g.label ? `${g.label} · ${g.orgs.length}` : String(g.orgs.length);
-        const only = g.shortcut ? (
-          <button type="button" className={styles.groupOnly} onClick={() => onShortcut(g.shortcut as Shortcut)}>
-            Only {g.name} →
-          </button>
-        ) : null;
-        const last = gi === groups.length - 1;
-
-        if (first) {
-          const shown = isOpen ? g.orgs : g.orgs.slice(0, PREVIEW);
-          const hidden = g.orgs.length - shown.length;
-          return (
-            <div key={g.key} className={styles.group}>
-              <div className={styles.groupHead}>
-                <h3 className={styles.groupName}>{g.name}</h3>
-                <span className={styles.groupMeta}>{meta}</span>
-                <span className={styles.groupRule} />
-                {only}
-              </div>
-              <div className={styles.orgGrid}>
-                {shown.map((org, i) => (
-                  <OrgCard key={orgKey(org) || i} org={org} index={i} />
-                ))}
-              </div>
-              {g.orgs.length > PREVIEW ? (
-                <button type="button" className={styles.showMore} onClick={() => toggle(g.key)} aria-expanded={isOpen}>
-                  {isOpen ? 'Show fewer ↑' : `Show ${hidden} more ↓`}
-                </button>
-              ) : null}
-            </div>
-          );
-        }
-
+    <div className={styles.groups}>
+      {groups.map((g) => {
+        const starts = g.key === defaultOpen;
+        const isOpen = starts !== flipped.has(g.key);
+        // Only the starting group previews; a group the visitor opens themselves shows everything.
+        const previewing = isOpen && starts && !full.has(g.key) && g.orgs.length > preview;
+        const shown = previewing ? g.orgs.slice(0, preview) : g.orgs;
+        const count = previewing ? `${shown.length} of ${g.orgs.length}` : String(g.orgs.length);
+        const meta = g.label ? `${g.label} · ${count}` : count;
         const panelId = `group-${g.key.replace(/[^a-z0-9]+/gi, '-')}`;
+        const extra = g.orgs.length - tileCount;
         return (
-          <div key={g.key} className={styles.group}>
+          <div key={g.key} className={`${styles.group} ${isOpen ? styles.groupOpen : ''}`}>
             <div className={`${styles.groupRow} ${isOpen ? styles.groupRowOpen : ''}`}>
               <button
                 type="button"
-                className={styles.groupToggle}
-                onClick={() => toggle(g.key)}
+                className={`${styles.groupToggle} ${g.shortcut ? styles.groupToggleOnly : ''}`}
+                onClick={() => setFlipped((prev) => flip(prev, g.key))}
                 aria-expanded={isOpen}
                 aria-controls={panelId}
               >
-                <span className={styles.groupName}>{g.name}</span>
-                <span className={styles.groupMeta}>{meta}</span>
-                <span className={`${styles.groupChevron} ${isOpen ? styles.groupChevronOpen : ''}`} aria-hidden="true">
-                  ›
+                <span className={styles.groupLine}>
+                  <span className={styles.groupArrow} aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
+                  <span className={styles.groupName}>{g.name}</span>
+                </span>
+                <span className={styles.groupLine}>
+                  <span className={styles.groupMeta}>{meta}</span>
+                  {!isOpen ? (
+                    <span className={styles.groupTiles} aria-hidden="true">
+                      {g.orgs.slice(0, tileCount).map((o, i) => (
+                        <OrgLogo key={orgKey(o) || i} photoId={o.coverPhoto} name={o.name} small />
+                      ))}
+                      {extra > 0 ? <span className={styles.groupMore}>+{extra}</span> : null}
+                    </span>
+                  ) : null}
                 </span>
               </button>
-              {only}
+              {g.shortcut ? (
+                <button type="button" className={styles.groupOnly} onClick={() => onShortcut(g.shortcut as Shortcut)}>
+                  Only {g.name} →
+                </button>
+              ) : null}
             </div>
             {isOpen ? (
-              <div id={panelId} className={styles.orgGrid} style={{ marginTop: 14 }}>
-                {g.orgs.map((org, i) => (
-                  <OrgCard key={orgKey(org) || i} org={org} index={i} />
-                ))}
-                {last ? addCard : null}
+              <div id={panelId}>
+                <div className={styles.orgGrid} style={{ marginTop: 12 }}>
+                  {shown.map((org, i) => (
+                    <OrgCard key={orgKey(org) || i} org={org} index={i} />
+                  ))}
+                </div>
+                {starts && g.orgs.length > preview ? (
+                  <button type="button" className={styles.showMore} onClick={() => setFull((prev) => flip(prev, g.key))}>
+                    {full.has(g.key) ? 'Show fewer ↑' : `Show ${g.orgs.length - preview} more ↓`}
+                  </button>
+                ) : null}
               </div>
             ) : null}
-            {last && !isOpen ? <div className={styles.orgGrid} style={{ marginTop: 14 }}>{addCard}</div> : null}
           </div>
         );
       })}
-    </>
-  );
-}
-
-function AddCard({ title, body, cta, community }: { title: string; body: string; cta: string; community?: boolean }) {
-  return (
-    <div className={styles.addCard}>
-      <div className={styles.addCardTitle}>{title}</div>
-      <div className={styles.addCardBody}>{body}</div>
-      <a href="/contribute" className={`${styles.addCardLink} ${community ? styles.addCardLinkCommunity : ''}`}>
-        {cta} →
-      </a>
+      <AddCard {...add} />
     </div>
   );
 }
@@ -680,13 +705,11 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
                     orgs={gov}
                     groups={govGroups}
                     onShortcut={shortcut}
-                    addCard={
-                      <AddCard
-                        title="Missing an organization?"
-                        body="Government agencies, boards, and departments can be added to the database."
-                        cta="Contribute data"
-                      />
-                    }
+                    add={{
+                      title: 'Missing an organization?',
+                      body: 'Government agencies, boards, and departments can be added to the database.',
+                      cta: 'Contribute data',
+                    }}
                   />
                 </section>
               ) : null}
@@ -700,14 +723,12 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
                       orgs={community}
                       groups={communityGroups}
                       onShortcut={shortcut}
-                      addCard={
-                        <AddCard
-                          title="Don't see your group?"
-                          body="Neighbourhood associations, tenant groups, and co-ops can run their votes and budgets here."
-                          cta="Add your group"
-                          community
-                        />
-                      }
+                      add={{
+                        title: "Don't see your group?",
+                        body: 'Neighbourhood associations, tenant groups, and co-ops can run their votes and budgets here.',
+                        cta: 'Add your group',
+                        community: true,
+                      }}
                     />
                   ) : (
                     <div className={styles.communityEmpty}>
