@@ -112,20 +112,32 @@ export function validPlace(place: PlaceScope, orgs: OrgSummary[], country: Count
   return region || city ? { region, city } : NO_PLACE;
 }
 
-/** A heading plus the orgs under it, when the list is grouped by place. */
-export interface OrgGroup {
+/** One row that opens the next level down: a country, a state / province, or a city / district. */
+export interface ChildRow {
   key: string;
   name: string;
-  /** Level, e.g. "Federal" or "Municipal". Empty when the group is a whole country. */
+  /** Level, e.g. "State" or "Municipal". */
   label: string;
-  /** Where "Only X →" goes; null when the group already is the current scope. */
-  shortcut: { country: string; place: PlaceScope } | null;
-  /** True when this group is the visitor's current place, so it should start open. */
-  current: boolean;
-  orgs: OrgSummary[];
+  /** Orgs in this place, including everything nested under it. */
+  count: number;
+  /** Where the row goes when opened. */
+  scope: { country: string; place: PlaceScope };
 }
 
-/** What to call the level below a country. Only the countries we know are worded specifically. */
+/** What the browse list shows for the current place: its own bodies, then one row per direct child. */
+export interface LevelView {
+  /** Heading for the place's own bodies ("India"), or '' when there are none to head. */
+  ownName: string;
+  /** Level of those bodies, e.g. "Federal". */
+  ownLabel: string;
+  own: OrgSummary[];
+  /** Heading for the rows ("States and union territories"). */
+  childHeading: string;
+  children: ChildRow[];
+  /** Worldwide orgs, shown after the rows. Only at the top two levels (never inside a place). */
+  worldwide: OrgSummary[];
+}
+
 function regionLabel(code: string | null): string {
   const c = (code || '').toUpperCase();
   if (c === 'CA') return 'Provincial';
@@ -133,56 +145,83 @@ function regionLabel(code: string | null): string {
   return 'Regional';
 }
 
+function regionHeading(code: string | null): string {
+  const c = (code || '').toUpperCase();
+  if (c === 'CA') return 'Provinces and territories';
+  if (c === 'IN') return 'States and union territories';
+  if (['US', 'AU', 'MX', 'BR', 'NG', 'DE'].includes(c)) return 'States';
+  return 'Regions';
+}
+
+function cityHeading(code: string | null): string {
+  return (code || '').toUpperCase() === 'IN' ? 'Districts' : 'Cities';
+}
+
 /**
- * Splits a list into place groups, top-down: the country's own bodies, then each region's,
- * then each city's. With no country picked, groups are countries. A single place (a city)
- * returns [] and callers show a flat list. Worldwide orgs go last.
+ * One level at a time. The place's own bodies (a country's federal bodies, a state's, a city's)
+ * plus one row per direct child, each counting everything beneath it. Never lists grandchildren:
+ * a country shows states, not their districts. Inside a city there is nothing left to group.
  */
-export function groupOrgs(
+export function levelView(
   orgs: OrgSummary[],
   selected: CountryOption | null,
   place: PlaceScope,
   countries: CountryOption[],
-): OrgGroup[] {
-  if (place.city) return [];
+): LevelView {
   const local = orgs.filter((o) => !isGlobalOrg(o));
   const worldwide = orgs.filter(isGlobalOrg);
-  const groups: OrgGroup[] = [];
+  const empty = { ownName: '', ownLabel: '', own: [] as OrgSummary[], childHeading: '', children: [] as ChildRow[], worldwide };
+
+  if (place.city) return { ...empty, own: local, worldwide: [] };
 
   if (!selected) {
+    const children: ChildRow[] = [];
     for (const c of countries) {
-      const members = local.filter((o) => orgInCountry(o, c));
-      if (members.length) {
-        groups.push({ key: `c:${c.key}`, name: c.name, label: '', shortcut: { country: c.key, place: NO_PLACE }, current: false, orgs: members });
-      }
+      const count = local.filter((o) => orgInCountry(o, c)).length;
+      if (count) children.push({ key: `c:${c.key}`, name: c.name, label: 'Country', count, scope: { country: c.key, place: NO_PLACE } });
     }
-  } else {
-    if (!place.region) {
-      const national = local.filter((o) => orgInCountry(o, selected) && !o.region && !o.city);
-      if (national.length) {
-        groups.push({ key: 'national', name: selected.name, label: 'Federal', shortcut: null, current: false, orgs: national });
-      }
-    }
-    for (const r of placeRows(local, selected)) {
-      if (place.region && norm(r.region) !== norm(place.region)) continue;
-      const members = local.filter((o) => {
-        if (!orgInCountry(o, selected)) return false;
-        if (r.city) return norm(o.city) === norm(r.city) && (r.region ? norm(o.region) === norm(r.region) : !o.region);
-        return norm(o.region) === norm(r.region) && !o.city;
-      });
-      if (!members.length) continue;
-      const here = !r.city && !!place.region && norm(place.region) === norm(r.region);
-      groups.push({
-        key: `p:${r.region ?? ''}/${r.city ?? ''}`,
-        name: r.name,
-        label: r.city ? 'Municipal' : regionLabel(selected.code),
-        shortcut: here ? null : { country: selected.key, place: { region: r.region, city: r.city } },
-        current: here,
-        orgs: members,
-      });
-    }
+    return { ...empty, childHeading: 'Countries', children };
   }
 
-  if (worldwide.length) groups.push({ key: 'world', name: 'Worldwide', label: 'Global', shortcut: null, current: false, orgs: worldwide });
-  return groups;
+  const inCountry = local.filter((o) => orgInCountry(o, selected));
+
+  if (!place.region) {
+    const own = inCountry.filter((o) => !o.region && !o.city);
+    const children: ChildRow[] = placeRows(inCountry, selected)
+      .filter((r) => r.depth === 1)
+      .map((r) => ({
+        key: `p:${r.region ?? ''}/${r.city ?? ''}`,
+        name: r.name,
+        label: r.city && !r.region ? 'Municipal' : regionLabel(selected.code),
+        count: r.count,
+        scope: { country: selected.key, place: { region: r.region, city: r.city } },
+      }));
+    return {
+      ownName: selected.name,
+      ownLabel: 'Federal',
+      own,
+      childHeading: regionHeading(selected.code),
+      children,
+      worldwide,
+    };
+  }
+
+  const inRegion = inCountry.filter((o) => norm(o.region) === norm(place.region));
+  const children: ChildRow[] = placeRows(inRegion, selected)
+    .filter((r) => r.depth === 2)
+    .map((r) => ({
+      key: `p:${r.region ?? ''}/${r.city ?? ''}`,
+      name: r.name,
+      label: 'Municipal',
+      count: r.count,
+      scope: { country: selected.key, place: { region: r.region, city: r.city } },
+    }));
+  return {
+    ownName: place.region,
+    ownLabel: regionLabel(selected.code),
+    own: inRegion.filter((o) => !o.city),
+    childHeading: cityHeading(selected.code),
+    children,
+    worldwide: [],
+  };
 }

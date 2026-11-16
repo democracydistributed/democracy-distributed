@@ -158,35 +158,25 @@
 .orgCard:hover .ctaLink { gap: 10px; }
 .ctaLink svg { width: 14px; height: 14px; }
 
-.groups { display: block; }
-.group { margin-bottom: 12px; }
-.groupOpen { margin-bottom: 28px; }
+.ghead { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.gheadGap { margin-top: 36px; }
+.gRule { flex: 1; height: 1px; background: var(--border); }
 .groupName { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--th); margin: 0; }
 .groupMeta { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tm); white-space: nowrap; }
-.groupOnly {
-  background: none; border: none; padding: 0; cursor: pointer; flex-shrink: 0;
-  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--amber-text, var(--amber)); white-space: nowrap;
-}
-.groupOnly:hover { text-decoration: underline; }
-.groupRow {
-  display: flex; align-items: center; gap: 14px;
+.placeRows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.placeRow {
+  display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; color: inherit;
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
-  padding-right: 16px;
-  transition: border-color 0.2s;
+  padding: 12px 16px; transition: border-color 0.2s;
 }
-.groupRow:hover, .groupRowOpen { border-color: var(--bhi); }
-.groupToggle {
-  flex: 1; min-width: 0;
-  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px;
-  background: none; border: none; cursor: pointer; text-align: left;
-  padding: 12px 0 12px 16px; color: inherit;
+.placeRow:hover { border-color: var(--bhi); }
+.placeRow:focus-visible { outline: 3px solid var(--teal, #2dd4bf); outline-offset: 3px; }
+.placeOpen {
+  margin-left: auto; white-space: nowrap;
+  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--amber-text, var(--amber));
 }
-/* On desktop the two lines flow as one; on phones they stack (see the media query below). */
-.groupLine { display: contents; }
-.groupArrow { width: 12px; font-size: 13px; color: var(--amber-text, var(--amber)); flex-shrink: 0; }
-.groupTiles { display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; }
-.groupMore { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--tm); margin-left: 2px; }
+@media (max-width: 720px) { .placeRows { grid-template-columns: minmax(0, 1fr); } }
 .orgLogoSm { width: 28px; height: 28px; border-radius: 7px; font-size: 10px; }
 .orgLogoSm.orgLogoLong { font-size: 8px; }
 .showMore {
@@ -529,15 +519,8 @@
   .searchWrap { max-width: 100%; }
 }
 
-/* ---- Phones: stacked group rows and thumb-sized targets ---- */
+/* ---- Phones: thumb-sized targets ---- */
 @media (max-width: 640px) {
-  .groupRow { align-items: flex-start; gap: 8px; }
-  .groupToggle { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; gap: 6px; padding: 14px 0 14px 14px; }
-  .groupLine { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .groupRow { position: relative; }
-  /* Only X sits in the row's top-right corner, so the second line (label and tiles) can use the full width. */
-  .groupOnly { position: absolute; top: 0; right: 16px; padding: 14px 0; }
-  .groupToggleOnly .groupLine:first-child { padding-right: 120px; }
   .showMore { padding: 14px 0; margin-top: 0; }
   .chip { min-height: 38px; }
   .viewBtn { min-height: 36px; }
