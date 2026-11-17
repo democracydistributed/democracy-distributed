@@ -122,6 +122,8 @@ export interface ChildRow {
   count: number;
   /** Where the row goes when opened. */
   scope: { country: string; place: PlaceScope };
+  /** The orgs under it (anything nested too), for the logo strip. */
+  orgs: OrgSummary[];
 }
 
 /** What the browse list shows for the current place: its own bodies, then one row per direct child. */
@@ -178,7 +180,7 @@ export function levelView(
     const children: ChildRow[] = [];
     for (const c of countries) {
       const count = local.filter((o) => orgInCountry(o, c)).length;
-      if (count) children.push({ key: `c:${c.key}`, name: c.name, label: 'Country', count, scope: { country: c.key, place: NO_PLACE } });
+      if (count) children.push({ key: `c:${c.key}`, name: c.name, label: 'Country', count, scope: { country: c.key, place: NO_PLACE }, orgs: local.filter((o) => orgInCountry(o, c)) });
     }
     return { ...empty, childHeading: 'Countries', children };
   }
@@ -195,6 +197,7 @@ export function levelView(
         label: r.city && !r.region ? 'Municipal' : regionLabel(selected.code),
         count: r.count,
         scope: { country: selected.key, place: { region: r.region, city: r.city } },
+        orgs: inCountry.filter((o) => (r.region ? norm(o.region) === norm(r.region) : !o.region && norm(o.city) === norm(r.city))),
       }));
     return {
       ownName: selected.name,
@@ -215,6 +218,7 @@ export function levelView(
       label: 'Municipal',
       count: r.count,
       scope: { country: selected.key, place: { region: r.region, city: r.city } },
+      orgs: inRegion.filter((o) => norm(o.city) === norm(r.city)),
     }));
   return {
     ownName: place.region,

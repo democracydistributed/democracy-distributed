@@ -87,14 +87,13 @@ function OrgLogo({ photoId, name, small }: { photoId?: string | null; name?: str
   );
 }
 
-function OrgCard({ org, index }: { org: OrgSummary; index: number }) {
+function OrgCard({ org }: { org: OrgSummary }) {
   const id = orgKey(org);
   const isCommunity = categoryOf(org) === 'community';
   return (
     <Link
       href={`/org/${encodeURIComponent(id)}`}
-      className={`${styles.orgCard} ${isCommunity ? styles.community : styles.government} ${styles.fadeUp}`}
-      style={{ animationDelay: `${(index % 5) * 0.05}s` }}
+      className={`${styles.orgCard} ${isCommunity ? styles.community : styles.government}`}
     >
       <div className={styles.cardBody}>
         <div className={styles.orgIdRow}>
@@ -137,9 +136,13 @@ function AddCard({ title, body, cta, community }: AddProps) {
   );
 }
 
-/** True on phones, where the preview of a place's own bodies is shorter so the page doesn't just get longer. */
+/**
+ * True on phones, where the preview of a place's own bodies is shorter so the page doesn't just get longer.
+ * Starts from the real screen width, so a phone never renders one frame of the desktop batch first. That is safe
+ * here because OrgList only renders after the org list has loaded in the browser, never during server render.
+ */
 function useCompact(): boolean {
-  const [compact, setCompact] = useState(false);
+  const [compact, setCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches);
   useEffect(() => {
     const m = window.matchMedia('(max-width: 640px)');
     const update = () => setCompact(m.matches);
@@ -169,11 +172,15 @@ function GroupHead({ name, meta, first }: { name: string; meta: string; first?: 
 function OrgList({ view, add, onOpen }: { view: LevelView; add: AddProps; onOpen: (s: Scope) => void }) {
   const compact = useCompact();
   const preview = compact ? 3 : 6;
+  const tileCount = compact ? 3 : 4;
   // Callers remount this component (key) when the scope changes, which resets this.
-  const [showAll, setShowAll] = useState(false);
+  // How many batches of cards are showing; each "Show more" adds one more batch of the initial size.
+  const [batches, setBatches] = useState(1);
+  // The place's own bodies can be folded away to get to the rows beneath them.
+  const [ownOpen, setOwnOpen] = useState(true);
   const { own, children, worldwide } = view;
-  const previewing = !showAll && own.length > preview;
-  const shown = previewing ? own.slice(0, preview) : own;
+  const shown = own.slice(0, preview * batches);
+  const previewing = shown.length < own.length;
   const childTotal = children.reduce((n, c) => n + c.count, 0);
   // Cards sit directly under the section heading when the place has no name of its own to show.
   const flatOwn = !view.ownName;
@@ -183,17 +190,53 @@ function OrgList({ view, add, onOpen }: { view: LevelView; add: AddProps; onOpen
       {own.length ? (
         <>
           {!flatOwn ? (
-            <GroupHead first name={view.ownName} meta={`${view.ownLabel} · ${previewing ? `${shown.length} of ${own.length}` : own.length}`} />
-          ) : null}
-          <div className={styles.orgGrid}>
-            {shown.map((org, i) => (
-              <OrgCard key={orgKey(org) || i} org={org} index={i} />
-            ))}
-          </div>
-          {own.length > preview ? (
-            <button type="button" className={styles.showMore} onClick={() => setShowAll((v) => !v)}>
-              {showAll ? 'Show fewer ↑' : `Show ${own.length - preview} more ↓`}
+            <button
+              type="button"
+              className={`${styles.ownRow} ${ownOpen ? styles.ownRowOpen : ''}`}
+              onClick={() => setOwnOpen((v) => !v)}
+              aria-expanded={ownOpen}
+              aria-controls="own-bodies"
+            >
+              <span className={styles.groupArrow} aria-hidden="true">{ownOpen ? '▾' : '▸'}</span>
+              <span className={styles.groupName}>{view.ownName}</span>
+              <span className={styles.groupMeta}>
+                {view.ownLabel} · {ownOpen && previewing ? `${shown.length} of ${own.length}` : own.length}
+              </span>
+              {!ownOpen ? (
+                <span className={styles.placeTiles} aria-hidden="true">
+                  {own.slice(0, tileCount).map((o, i) => (
+                    <OrgLogo key={orgKey(o) || i} photoId={o.coverPhoto} name={o.name} small />
+                  ))}
+                  {own.length > tileCount ? <span className={styles.placeMore}>+{own.length - tileCount}</span> : null}
+                </span>
+              ) : null}
             </button>
+          ) : null}
+          {ownOpen || flatOwn ? (
+            <div id="own-bodies" style={{ scrollMarginTop: 80 }} className={!flatOwn ? styles.ownBody : undefined}>
+              <div className={styles.orgGrid}>
+                {shown.map((org, i) => (
+                  <OrgCard key={orgKey(org) || i} org={org} />
+                ))}
+              </div>
+              {own.length > preview ? (
+                <button
+                  type="button"
+                  className={styles.showMore}
+                  onClick={() => {
+                    if (previewing) {
+                      setBatches((b) => b + 1);
+                      return;
+                    }
+                    // Back to the first batch; the list is much shorter, so bring its top back on screen.
+                    setBatches(1);
+                    requestAnimationFrame(() => document.getElementById('own-bodies')?.scrollIntoView({ block: 'start' }));
+                  }}
+                >
+                  {previewing ? `Show ${Math.min(preview, own.length - shown.length)} more ↓` : 'Show fewer ↑'}
+                </button>
+              ) : null}
+            </div>
           ) : null}
         </>
       ) : null}
@@ -205,12 +248,19 @@ function OrgList({ view, add, onOpen }: { view: LevelView; add: AddProps; onOpen
             name={view.childHeading}
             meta={`${children.length} · ${childTotal} ${childTotal === 1 ? 'body' : 'bodies'}`}
           />
-          <div className={styles.placeRows}>
+          {/* A lone row spans the width (like the add bar under it); two or more share two columns. */}
+          <div className={`${styles.placeRows} ${children.length === 1 ? styles.placeRowsOne : ''}`}>
             {children.map((c) => (
               <button key={c.key} type="button" className={styles.placeRow} onClick={() => onOpen(c.scope)}>
                 <span className={styles.groupName}>{c.name}</span>
                 <span className={styles.groupMeta}>
                   {c.label} · {c.count}
+                </span>
+                <span className={styles.placeTiles} aria-hidden="true">
+                  {c.orgs.slice(0, tileCount).map((o, i) => (
+                    <OrgLogo key={orgKey(o) || i} photoId={o.coverPhoto} name={o.name} small />
+                  ))}
+                  {c.count > tileCount ? <span className={styles.placeMore}>+{c.count - tileCount}</span> : null}
                 </span>
                 <span className={styles.placeOpen}>Open →</span>
               </button>
@@ -224,7 +274,7 @@ function OrgList({ view, add, onOpen }: { view: LevelView; add: AddProps; onOpen
           <GroupHead name="Worldwide" meta={`Global · ${worldwide.length}`} first={!own.length && !children.length} />
           <div className={styles.orgGrid}>
             {worldwide.map((org, i) => (
-              <OrgCard key={orgKey(org) || i} org={org} index={i} />
+              <OrgCard key={orgKey(org) || i} org={org} />
             ))}
           </div>
         </>
@@ -235,19 +285,18 @@ function OrgList({ view, add, onOpen }: { view: LevelView; add: AddProps; onOpen
   );
 }
 
-function SectionHead({ eyebrow, title, community }: { eyebrow: string; title: string; community?: boolean }) {
+function SectionHead({ title }: { title: string }) {
   return (
     <div className={styles.sectionHead}>
-      <div className={`${styles.sectionEyebrow} ${community ? styles.sectionEyebrowCommunity : ''}`}>
-        <span className={styles.sectionRule} />
-        {eyebrow}
-      </div>
       <h2 className={styles.sectionTitle}>{title}</h2>
     </div>
   );
 }
 
-/** The cookie only remembers the country; region and city live in the link, so a drill-down is shareable but not sticky. */
+/**
+ * The cookie only remembers the country; region and city live in the link, so a drill-down is shareable but not sticky.
+ * Each deliberate pick adds a history entry, so Back steps up one level (the popstate listener below follows the link).
+ */
 function rememberCountry(key: string, place: PlaceScope) {
   try {
     document.cookie = `${COUNTRY_COOKIE}=${encodeURIComponent(key)}; path=/; max-age=31536000; samesite=lax`;
@@ -260,7 +309,7 @@ function rememberCountry(key: string, place: PlaceScope) {
     if (place.city) url.searchParams.set('city', place.city);
     else url.searchParams.delete('city');
     url.searchParams.delete('simulateCountry');
-    window.history.replaceState(null, '', url.toString());
+    if (url.toString() !== window.location.href) window.history.pushState(null, '', url.toString());
   } catch {}
 }
 
@@ -380,6 +429,34 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
       document.removeEventListener('keydown', onKey);
     };
   }, [pickerOpen]);
+
+  // Back / Forward: the link is the source of truth, so rebuild the scope from it. A link with no
+  // country means the page's own starting point, so resolve again from the signals we started with.
+  useEffect(() => {
+    const onPop = () => {
+      const q = new URLSearchParams(window.location.search);
+      const c = q.get('country');
+      setPickerOpen(false);
+      setAutoRegion(null);
+      setUsedDefault(false);
+      const scope = (kind: CountryChoice) => setResolution({ choice: kind, auto: false, fallbackFrom: null, emptyCountry: null });
+      if (c === ALL_COUNTRIES) {
+        scope({ kind: 'all' });
+        setRawPlace(NO_PLACE);
+        return;
+      }
+      const match = c ? matchCountry(c, countries) : null;
+      if (match) {
+        scope({ kind: 'country', key: match.key });
+        setRawPlace({ region: q.get('region'), city: q.get('city') });
+        return;
+      }
+      setRawPlace({ region: urlRegion, city: urlCity });
+      setResolution(null);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [countries, urlRegion, urlCity]);
 
   const choose = (choice: CountryChoice, place: PlaceScope = NO_PLACE) => {
     setResolution({ choice, auto: false, fallbackFrom: null, emptyCountry: null });
@@ -691,7 +768,7 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
             <>
               {showGov ? (
                 <section className={styles.section}>
-                  <SectionHead eyebrow={`Government · ${gov.length} on file`} title="Public bodies you can look into." />
+                  <SectionHead title="Public bodies you can look into." />
                   <OrgList
                     key={`gov|${scopeKey}`}
                     view={govView}
@@ -707,7 +784,7 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
 
               {showCommunity ? (
                 <section className={styles.section}>
-                  <SectionHead eyebrow={`Community · ${community.length} ${community.length === 1 ? 'group' : 'groups'}`} title="Groups organizing in the open." community />
+                  <SectionHead title="Groups organizing in the open." />
                   {community.length ? (
                     <OrgList
                       key={`community|${scopeKey}`}
