@@ -18,7 +18,7 @@ import {
   type CountryResolution,
 } from '@/lib/country';
 import { regionNameFromCode } from '@/lib/regions';
-import { DEFAULT_LANDING, NO_PLACE, groupOrgs, isPlaceActive, orgInPlace, placeRows, samePlace, validPlace, type OrgGroup, type PlaceScope } from '@/lib/place';
+import { DEFAULT_LANDING, NO_PLACE, isPlaceActive, levelView, orgInPlace, placeRows, samePlace, validPlace, type ChildRow, type LevelView, type PlaceScope } from '@/lib/place';
 import type { OrgSummary } from '@/lib/types';
 import styles from './Browse.module.css';
 
@@ -87,14 +87,13 @@ function OrgLogo({ photoId, name, small }: { photoId?: string | null; name?: str
   );
 }
 
-function OrgCard({ org, index }: { org: OrgSummary; index: number }) {
+function OrgCard({ org }: { org: OrgSummary }) {
   const id = orgKey(org);
   const isCommunity = categoryOf(org) === 'community';
   return (
     <Link
       href={`/org/${encodeURIComponent(id)}`}
-      className={`${styles.orgCard} ${isCommunity ? styles.community : styles.government} ${styles.fadeUp}`}
-      style={{ animationDelay: `${(index % 5) * 0.05}s` }}
+      className={`${styles.orgCard} ${isCommunity ? styles.community : styles.government}`}
     >
       <div className={styles.cardBody}>
         <div className={styles.orgIdRow}>
@@ -115,7 +114,7 @@ function OrgCard({ org, index }: { org: OrgSummary; index: number }) {
   );
 }
 
-type Shortcut = NonNullable<OrgGroup['shortcut']>;
+type Scope = ChildRow['scope'];
 
 interface AddProps {
   title: string;
@@ -137,9 +136,13 @@ function AddCard({ title, body, cta, community }: AddProps) {
   );
 }
 
-/** True on phones, where previews and tile strips are shorter so the page doesn't just get longer. */
+/**
+ * True on phones, where the preview of a place's own bodies is shorter so the page doesn't just get longer.
+ * Starts from the real screen width, so a phone never renders one frame of the desktop batch first. That is safe
+ * here because OrgList only renders after the org list has loaded in the browser, never during server render.
+ */
 function useCompact(): boolean {
-  const [compact, setCompact] = useState(false);
+  const [compact, setCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches);
   useEffect(() => {
     const m = window.matchMedia('(max-width: 640px)');
     const update = () => setCompact(m.matches);
@@ -150,144 +153,150 @@ function useCompact(): boolean {
   return compact;
 }
 
+function GroupHead({ name, meta, first }: { name: string; meta: string; first?: boolean }) {
+  return (
+    <div className={`${styles.ghead} ${first ? '' : styles.gheadGap}`}>
+      <h3 className={styles.groupName}>{name}</h3>
+      <span className={styles.groupMeta}>{meta}</span>
+      <span className={styles.gRule} />
+    </div>
+  );
+}
+
 /**
- * Org cards. With more than one place group, each group is a row you tap open. The group that
- * matches the visitor's place starts open (else the biggest one) with a short preview; the
- * others start collapsed to a row showing a few of the orgs inside. One group is a plain grid.
+ * One level at a time. The current place's own bodies are cards (a short preview, with "Show N
+ * more"); each direct child is a single row that opens the next level, counting everything
+ * beneath it. Rows never expand in place, so the page stays the same length however many
+ * states, districts or cities there are.
  */
-function OrgList({
-  orgs,
-  groups,
-  add,
-  onShortcut,
-}: {
-  orgs: OrgSummary[];
-  groups: OrgGroup[];
-  add: AddProps;
-  onShortcut: (s: Shortcut) => void;
-}) {
+function OrgList({ view, add, onOpen }: { view: LevelView; add: AddProps; onOpen: (s: Scope) => void }) {
   const compact = useCompact();
   const preview = compact ? 3 : 6;
   const tileCount = compact ? 3 : 4;
-
-  const defaultOpen = useMemo(() => {
-    const current = groups.find((g) => g.current);
-    if (current) return current.key;
-    return groups.reduce<OrgGroup | null>((best, g) => (!best || g.orgs.length > best.orgs.length ? g : best), null)?.key ?? null;
-  }, [groups]);
-
-  // Groups the visitor flipped from their starting state, and the starting group once shown in full.
-  // Callers remount this component (key) when the scope changes, which resets both.
-  const [flipped, setFlipped] = useState<Set<string>>(() => new Set());
-  const [full, setFull] = useState<Set<string>>(() => new Set());
-  const flip = (set: Set<string>, key: string) => {
-    const next = new Set(set);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    return next;
-  };
-
-  if (groups.length < 2) {
-    return (
-      <div>
-        <div className={styles.orgGrid}>
-          {orgs.map((org, i) => (
-            <OrgCard key={orgKey(org) || i} org={org} index={i} />
-          ))}
-        </div>
-        <AddCard {...add} />
-      </div>
-    );
-  }
+  // Callers remount this component (key) when the scope changes, which resets this.
+  // How many batches of cards are showing; each "Show more" adds one more batch of the initial size.
+  const [batches, setBatches] = useState(1);
+  // The place's own bodies can be folded away to get to the rows beneath them.
+  const [ownOpen, setOwnOpen] = useState(true);
+  const { own, children, worldwide } = view;
+  const shown = own.slice(0, preview * batches);
+  const previewing = shown.length < own.length;
+  const childTotal = children.reduce((n, c) => n + c.count, 0);
+  // Cards sit directly under the section heading when the place has no name of its own to show.
+  const flatOwn = !view.ownName;
 
   return (
-    <div className={styles.groups}>
-      {groups.map((g) => {
-        const starts = g.key === defaultOpen;
-        const isOpen = starts !== flipped.has(g.key);
-        // Only the starting group previews; a group the visitor opens themselves shows everything.
-        const previewing = isOpen && starts && !full.has(g.key) && g.orgs.length > preview;
-        const shown = previewing ? g.orgs.slice(0, preview) : g.orgs;
-        const count = previewing ? `${shown.length} of ${g.orgs.length}` : String(g.orgs.length);
-        const meta = g.label ? `${g.label} · ${count}` : count;
-        const panelId = `group-${g.key.replace(/[^a-z0-9]+/gi, '-')}`;
-        const extra = g.orgs.length - tileCount;
-        return (
-          <div key={g.key} className={`${styles.group} ${isOpen ? styles.groupOpen : ''}`}>
-            <div id={`row-${panelId}`} style={{ scrollMarginTop: 80 }} className={`${styles.groupRow} ${isOpen ? styles.groupRowOpen : ''}`}>
-              <button
-                type="button"
-                className={`${styles.groupToggle} ${g.shortcut ? styles.groupToggleOnly : ''}`}
-                onClick={() => setFlipped((prev) => flip(prev, g.key))}
-                aria-expanded={isOpen}
-                aria-controls={isOpen ? panelId : undefined}
-              >
-                <span className={styles.groupLine}>
-                  <span className={styles.groupArrow} aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
-                  <span className={styles.groupName}>{g.name}</span>
+    <div>
+      {own.length ? (
+        <>
+          {!flatOwn ? (
+            <button
+              type="button"
+              className={`${styles.ownRow} ${ownOpen ? styles.ownRowOpen : ''}`}
+              onClick={() => setOwnOpen((v) => !v)}
+              aria-expanded={ownOpen}
+              aria-controls="own-bodies"
+            >
+              <span className={styles.groupArrow} aria-hidden="true">{ownOpen ? '▾' : '▸'}</span>
+              <span className={styles.groupName}>{view.ownName}</span>
+              <span className={styles.groupMeta}>
+                {view.ownLabel} · {ownOpen && previewing ? `${shown.length} of ${own.length}` : own.length}
+              </span>
+              {!ownOpen ? (
+                <span className={styles.placeTiles} aria-hidden="true">
+                  {own.slice(0, tileCount).map((o, i) => (
+                    <OrgLogo key={orgKey(o) || i} photoId={o.coverPhoto} name={o.name} small />
+                  ))}
+                  {own.length > tileCount ? <span className={styles.placeMore}>+{own.length - tileCount}</span> : null}
                 </span>
-                <span className={styles.groupLine}>
-                  <span className={styles.groupMeta}>{meta}</span>
-                  {!isOpen ? (
-                    <span className={styles.groupTiles} aria-hidden="true">
-                      {g.orgs.slice(0, tileCount).map((o, i) => (
-                        <OrgLogo key={orgKey(o) || i} photoId={o.coverPhoto} name={o.name} small />
-                      ))}
-                      {extra > 0 ? <span className={styles.groupMore}>+{extra}</span> : null}
-                    </span>
-                  ) : null}
-                </span>
-              </button>
-              {g.shortcut ? (
-                <button type="button" className={styles.groupOnly} onClick={() => onShortcut(g.shortcut as Shortcut)}>
-                  Only {g.name} →
+              ) : null}
+            </button>
+          ) : null}
+          {ownOpen || flatOwn ? (
+            <div id="own-bodies" style={{ scrollMarginTop: 80 }} className={!flatOwn ? styles.ownBody : undefined}>
+              <div className={styles.orgGrid}>
+                {shown.map((org, i) => (
+                  <OrgCard key={orgKey(org) || i} org={org} />
+                ))}
+              </div>
+              {own.length > preview ? (
+                <button
+                  type="button"
+                  className={styles.showMore}
+                  onClick={() => {
+                    if (previewing) {
+                      setBatches((b) => b + 1);
+                      return;
+                    }
+                    // Back to the first batch; the list is much shorter, so bring its top back on screen.
+                    setBatches(1);
+                    requestAnimationFrame(() => document.getElementById('own-bodies')?.scrollIntoView({ block: 'start' }));
+                  }}
+                >
+                  {previewing ? `Show ${Math.min(preview, own.length - shown.length)} more ↓` : 'Show fewer ↑'}
                 </button>
               ) : null}
             </div>
-            {isOpen ? (
-              <div id={panelId}>
-                <div className={styles.orgGrid} style={{ marginTop: 12 }}>
-                  {shown.map((org, i) => (
-                    <OrgCard key={orgKey(org) || i} org={org} index={i} />
+          ) : null}
+        </>
+      ) : null}
+
+      {children.length ? (
+        <>
+          <GroupHead
+            first={!own.length}
+            name={view.childHeading}
+            meta={`${children.length} · ${childTotal} ${childTotal === 1 ? 'body' : 'bodies'}`}
+          />
+          {/* A lone row spans the width (like the add bar under it); two or more share two columns. */}
+          <div className={`${styles.placeRows} ${children.length === 1 ? styles.placeRowsOne : ''}`}>
+            {children.map((c) => (
+              <button key={c.key} type="button" className={styles.placeRow} onClick={() => onOpen(c.scope)}>
+                <span className={styles.groupName}>{c.name}</span>
+                <span className={styles.groupMeta}>
+                  {c.label} · {c.count}
+                </span>
+                <span className={styles.placeTiles} aria-hidden="true">
+                  {c.orgs.slice(0, tileCount).map((o, i) => (
+                    <OrgLogo key={orgKey(o) || i} photoId={o.coverPhoto} name={o.name} small />
                   ))}
-                </div>
-                {starts && g.orgs.length > preview ? (
-                  <button
-                    type="button"
-                    className={styles.showMore}
-                    onClick={() => {
-                      const collapsing = full.has(g.key);
-                      setFull((prev) => flip(prev, g.key));
-                      // After collapsing, the list is much shorter; put the group's row back on screen.
-                      if (collapsing) requestAnimationFrame(() => document.getElementById(`row-${panelId}`)?.scrollIntoView({ block: 'start' }));
-                    }}
-                  >
-                    {full.has(g.key) ? 'Show fewer ↑' : `Show ${g.orgs.length - preview} more ↓`}
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
+                  {c.count > tileCount ? <span className={styles.placeMore}>+{c.count - tileCount}</span> : null}
+                </span>
+                <span className={styles.placeOpen}>Open →</span>
+              </button>
+            ))}
           </div>
-        );
-      })}
+        </>
+      ) : null}
+
+      {worldwide.length ? (
+        <>
+          <GroupHead name="Worldwide" meta={`Global · ${worldwide.length}`} first={!own.length && !children.length} />
+          <div className={styles.orgGrid}>
+            {worldwide.map((org, i) => (
+              <OrgCard key={orgKey(org) || i} org={org} />
+            ))}
+          </div>
+        </>
+      ) : null}
+
       <AddCard {...add} />
     </div>
   );
 }
 
-function SectionHead({ eyebrow, title, community }: { eyebrow: string; title: string; community?: boolean }) {
+function SectionHead({ title }: { title: string }) {
   return (
     <div className={styles.sectionHead}>
-      <div className={`${styles.sectionEyebrow} ${community ? styles.sectionEyebrowCommunity : ''}`}>
-        <span className={styles.sectionRule} />
-        {eyebrow}
-      </div>
       <h2 className={styles.sectionTitle}>{title}</h2>
     </div>
   );
 }
 
-/** The cookie only remembers the country; region and city live in the link, so a drill-down is shareable but not sticky. */
+/**
+ * The cookie only remembers the country; region and city live in the link, so a drill-down is shareable but not sticky.
+ * Each deliberate pick adds a history entry, so Back steps up one level (the popstate listener below follows the link).
+ */
 function rememberCountry(key: string, place: PlaceScope) {
   try {
     document.cookie = `${COUNTRY_COOKIE}=${encodeURIComponent(key)}; path=/; max-age=31536000; samesite=lax`;
@@ -300,7 +309,7 @@ function rememberCountry(key: string, place: PlaceScope) {
     if (place.city) url.searchParams.set('city', place.city);
     else url.searchParams.delete('city');
     url.searchParams.delete('simulateCountry');
-    window.history.replaceState(null, '', url.toString());
+    if (url.toString() !== window.location.href) window.history.pushState(null, '', url.toString());
   } catch {}
 }
 
@@ -421,6 +430,34 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
     };
   }, [pickerOpen]);
 
+  // Back / Forward: the link is the source of truth, so rebuild the scope from it. A link with no
+  // country means the page's own starting point, so resolve again from the signals we started with.
+  useEffect(() => {
+    const onPop = () => {
+      const q = new URLSearchParams(window.location.search);
+      const c = q.get('country');
+      setPickerOpen(false);
+      setAutoRegion(null);
+      setUsedDefault(false);
+      const scope = (kind: CountryChoice) => setResolution({ choice: kind, auto: false, fallbackFrom: null, emptyCountry: null });
+      if (c === ALL_COUNTRIES) {
+        scope({ kind: 'all' });
+        setRawPlace(NO_PLACE);
+        return;
+      }
+      const match = c ? matchCountry(c, countries) : null;
+      if (match) {
+        scope({ kind: 'country', key: match.key });
+        setRawPlace({ region: q.get('region'), city: q.get('city') });
+        return;
+      }
+      setRawPlace({ region: urlRegion, city: urlCity });
+      setResolution(null);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [countries, urlRegion, urlCity]);
+
   const choose = (choice: CountryChoice, place: PlaceScope = NO_PLACE) => {
     setResolution({ choice, auto: false, fallbackFrom: null, emptyCountry: null });
     setRawPlace(place);
@@ -436,6 +473,25 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
   const place = useMemo(() => validPlace(rawPlace, orgs, selected), [rawPlace, orgs, selected]);
   const placeActive = isPlaceActive(place);
   const rows = useMemo(() => (selected ? placeRows(orgs, selected) : []), [orgs, selected]);
+  // The menu shows only the path to where you are (each a way back up) and that place's direct
+  // children, never the whole tree. Everything else is one tap further in, on the page's rows.
+  const menuRows = useMemo(() => {
+    const out: { row: (typeof rows)[number]; indent: 1 | 2 }[] = [];
+    if (!selected) return out;
+    const lc = (s: string | null) => (s || '').toLowerCase();
+    const regionRow = place.region ? rows.find((r) => r.depth === 1 && !r.city && lc(r.region) === lc(place.region)) : null;
+    if (regionRow) out.push({ row: regionRow, indent: 1 });
+    if (place.city) {
+      const cityRow = rows.find((r) => samePlace(r, place));
+      if (cityRow) out.push({ row: cityRow, indent: regionRow ? 2 : 1 });
+      return out;
+    }
+    const kids = place.region
+      ? rows.filter((r) => r.depth === 2 && lc(r.region) === lc(place.region))
+      : rows.filter((r) => r.depth === 1);
+    for (const r of kids) if (r !== regionRow) out.push({ row: r, indent: place.region ? 2 : 1 });
+    return out;
+  }, [rows, place, selected]);
   // Worldwide orgs ride along with a country, but not once you've drilled into a place.
   const inScope = selected
     ? orgs.filter((o) => (isGlobalOrg(o) ? !placeActive : orgInCountry(o, selected) && orgInPlace(o, place)))
@@ -443,10 +499,10 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
   const gov = inScope.filter((o) => categoryOf(o) === 'government').sort(byName);
   const community = inScope.filter((o) => categoryOf(o) === 'community').sort(byName);
 
-  const govGroups = useMemo(() => groupOrgs(gov, selected, place, countries), [gov, selected, place, countries]);
-  const communityGroups = useMemo(() => groupOrgs(community, selected, place, countries), [community, selected, place, countries]);
+  const govView = useMemo(() => levelView(gov, selected, place, countries), [gov, selected, place, countries]);
+  const communityView = useMemo(() => levelView(community, selected, place, countries), [community, selected, place, countries]);
   const scopeKey = `${selected ? selected.key : 'all'}|${place.region ?? ''}|${place.city ?? ''}`;
-  const shortcut = (s: Shortcut) => choose({ kind: 'country', key: s.country }, s.place);
+  const openPlace = (s: Scope) => choose({ kind: 'country', key: s.country }, s.place);
 
   const q = query.toLowerCase().trim();
   const searchResults = q
@@ -544,7 +600,7 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
                           <span>{selected.name}</span>
                           <span className={styles.countryCount}>{selected.count}</span>
                         </button>
-                        {rows.map((r) => {
+                        {menuRows.map(({ row: r, indent }) => {
                           const active = placeActive && samePlace(r, place);
                           return (
                             <button
@@ -552,7 +608,7 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
                               type="button"
                               role="option"
                               aria-selected={active}
-                              className={`${styles.countryOption} ${r.depth === 2 ? styles.countryOptionDeep : styles.countryOptionNested} ${active ? styles.countryOptionActive : ''}`}
+                              className={`${styles.countryOption} ${indent === 2 ? styles.countryOptionDeep : styles.countryOptionNested} ${active ? styles.countryOptionActive : ''}`}
                               onClick={() => choose({ kind: 'country', key: selected.key }, { region: r.region, city: r.city })}
                             >
                               <span>{r.name}</span>
@@ -712,12 +768,11 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
             <>
               {showGov ? (
                 <section className={styles.section}>
-                  <SectionHead eyebrow={`Government · ${gov.length} on file`} title="Public bodies you can look into." />
+                  <SectionHead title="Public bodies you can look into." />
                   <OrgList
                     key={`gov|${scopeKey}`}
-                    orgs={gov}
-                    groups={govGroups}
-                    onShortcut={shortcut}
+                    view={govView}
+                    onOpen={openPlace}
                     add={{
                       title: 'Missing an organization?',
                       body: 'Government agencies, boards, and departments can be added to the database.',
@@ -729,13 +784,12 @@ export default function BrowsePage({ ipCountry, ipRegion, savedCountry, urlCount
 
               {showCommunity ? (
                 <section className={styles.section}>
-                  <SectionHead eyebrow={`Community · ${community.length} ${community.length === 1 ? 'group' : 'groups'}`} title="Groups organizing in the open." community />
+                  <SectionHead title="Groups organizing in the open." />
                   {community.length ? (
                     <OrgList
                       key={`community|${scopeKey}`}
-                      orgs={community}
-                      groups={communityGroups}
-                      onShortcut={shortcut}
+                      view={communityView}
+                      onOpen={openPlace}
                       add={{
                         title: "Don't see your group?",
                         body: 'Neighbourhood associations, tenant groups, and co-ops can run their votes and budgets here.',
