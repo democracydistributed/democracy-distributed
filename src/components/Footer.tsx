@@ -7,6 +7,7 @@ export default function Footer() {
       <div className="f-logo">Democracy Distributed</div>
       <div className="f-links">
         <Link href="/contribute">Contribute</Link>
+        <Link href="/org/394662382766391297">Platform Governance</Link>
         <FeedbackLink />
         <a href="https://democracy-distributed.gitbook.io/democracy-distributed-docs/" target="_blank" rel="noopener noreferrer">
           Documentation
