@@ -358,8 +358,20 @@ export interface PeopleCounts {
   members: number;
 }
 
+/** An active Department (gov orgs) or Team (POD groups) of the org, from /people (API_People Endpoint v2).
+ *  Already ordered; the page shows the top-level ones (no parent) as circles. */
+export interface Department {
+  id: string;
+  name: string | null;
+  number: string | null;
+  type: string | null;
+  parentId: string | null;
+}
+
 export interface PeopleResponse {
   orgId?: string;
+  /** Absent until /people is switched to v2. */
+  departments?: Department[];
   officials: Official[];
   members: OrgMember[];
   counts: PeopleCounts;

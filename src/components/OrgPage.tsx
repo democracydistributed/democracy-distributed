@@ -213,7 +213,7 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
         <div className={`tab-pane${activeTab === 'projects' ? ' active' : ''}`} role="tabpanel" id="panel-projects" aria-labelledby="tab-projects">{visited.has('projects') ? <ProjectsTab orgId={orgId} fmt={fmt} /> : null}</div>
 
         {/* PEOPLE */}
-        <div className={`tab-pane${activeTab === 'people' ? ' active' : ''}`} role="tabpanel" id="panel-people" aria-labelledby="tab-people">{visited.has('people') ? <PeopleTab orgId={orgId} /> : null}</div>
+        <div className={`tab-pane${activeTab === 'people' ? ' active' : ''}`} role="tabpanel" id="panel-people" aria-labelledby="tab-people">{visited.has('people') ? <PeopleTab orgId={orgId} isCommunity={isCommunity} /> : null}</div>
       </div>
 
       <Footer />

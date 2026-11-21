@@ -417,6 +417,26 @@ html:not(.light) .sub-tile.hero { border-color:color-mix(in srgb, var(--amber) 4
 .ppl-viewall:hover { border-bottom-color:var(--teal-text, var(--teal)); }
 .ppl-viewall--disabled { opacity:.4; pointer-events:none; cursor:default; }
 .ppl-sec2 { margin-top:36px; }
+/* Departments / Teams circles (top of the People tab). Plain circles: name only. */
+.dept-sec { margin-bottom:36px; }
+.dept-circles { display:flex; flex-wrap:wrap; gap:14px; }
+/* 108px with 10px side padding leaves ~84px of text width. Names with a very long single word
+   (12+ letters, e.g. "Documentation") get a font that is 1px smaller (set in PeopleTab, never lower)
+   so they stay whole instead of splitting mid-word. */
+.dept-c { width:108px; height:108px; border-radius:50%; background:var(--bg-card); border:2px solid var(--teal-text, var(--teal)); display:flex; align-items:center; justify-content:center; text-align:center; padding:10px 4px; box-sizing:border-box; color:var(--th); font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; line-height:1.25; }
+.dept-c span { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:break-word; hyphens:auto; }
+.dept-c.more { border-style:dashed; border-color:var(--bhi); background:transparent; color:var(--tm); font-weight:500; cursor:pointer; }
+.dept-c.more:hover { border-color:var(--teal-text, var(--teal)); color:var(--text); }
+.dept-c.more:focus-visible { outline:2px solid var(--teal-text, var(--teal)); outline-offset:3px; }
+/* Phones: three circles per row that fill the width (a fixed 108px only fit two and left a blank strip). */
+@media (max-width:520px) {
+  .dept-circles { gap:8px; }
+  .dept-c { width:calc((100% - 16px) / 3); height:auto; aspect-ratio:1 / 1; }
+}
+/* Very narrow phones: two per row so the text keeps enough room. */
+@media (max-width:340px) {
+  .dept-c { width:calc((100% - 8px) / 2); }
+}
 .ppl-empty { border:1px solid var(--border); border-radius:8px; padding:28px 24px; text-align:center; }
 .ppl-empty p { font-size:13px; color:var(--tm); margin-bottom:14px; }
 
