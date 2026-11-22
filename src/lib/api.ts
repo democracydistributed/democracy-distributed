@@ -135,7 +135,7 @@ export interface NewSuggestion {
 /** Posts a new suggestion through our own server route (src/app/api/suggestions),
  *  not the gateway — the server attaches the member's or the anonymous account's
  *  identity so the record has a real owner. */
-export async function postSuggestion(payload: NewSuggestion): Promise<{ ok: boolean; id?: string; error?: string }> {
+export async function postSuggestion(payload: NewSuggestion): Promise<{ ok: boolean; id?: string; autoVoted?: boolean; error?: string }> {
   const res = await fetch('/api/suggestions', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -145,6 +145,20 @@ export async function postSuggestion(payload: NewSuggestion): Promise<{ ok: bool
   const data = await res.json().catch(() => null);
   if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
   return data;
+}
+
+/** Casts, switches or retracts (null) the visitor's vote on a suggestion. Resolves with the
+ *  suggestion's new total, or null if the server couldn't read it back. */
+export async function postVote(suggestionId: string, vote: 'up' | 'down' | null): Promise<number | null> {
+  const res = await fetch('/api/suggestions/vote', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ suggestionId, vote }),
+    cache: 'no-store',
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+  return typeof data.score === 'number' ? data.score : null;
 }
 
 /** What a reaction is attached to. `relatedTo` is the category's full path (dataNode.name). */

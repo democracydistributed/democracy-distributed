@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fmtProjectDate, suggestionHeadline } from '@/lib/text';
 import type { Suggestion } from '@/lib/types';
+import VoteControl from './VoteControl';
 
 /** The progress bar's stages, in order. These are the Suggestion module's Status options
  *  (New, Reviewed, Promoted, Dismissed) minus Dismissed, which ends a suggestion rather than
@@ -24,11 +25,16 @@ export default function SuggestionPanel({
   index,
   onClose,
   onStep,
+  onVote,
+  votingIds,
 }: {
   list: Suggestion[];
   index: number;
   onClose: () => void;
   onStep: (d: number) => void;
+  onVote: (s: Suggestion, dir: 'up' | 'down') => void;
+  /** Suggestions with a vote still being saved. */
+  votingIds: Set<string>;
 }) {
   // Play the exit animation, then unmount.
   const [closing, setClosing] = useState(false);
@@ -111,6 +117,12 @@ export default function SuggestionPanel({
 
         <div className="pj-panel-body">
           <h3 className="pj-panel-title">{title}</h3>
+
+          {s.suggestionId ? (
+            <div className="sugg-panel-vote">
+              <VoteControl horizontal score={s.score ?? 0} myVote={s.myVote} busy={votingIds.has(s.suggestionId)} onVote={(dir) => onVote(s, dir)} />
+            </div>
+          ) : null}
 
           <div className="sugg-panel-meta">
             {s.author ? (
