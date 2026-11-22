@@ -383,6 +383,24 @@ html:not(.light) .sub-tile.hero { border-color:color-mix(in srgb, var(--amber) 4
 .sugg-author { display:inline-flex; align-items:center; gap:8px; color:var(--text); }
 .sugg-avatar { width:22px; height:22px; border-radius:50%; box-sizing:border-box; display:inline-grid; place-items:center; background:var(--teal-dim, var(--cdim)); color:var(--teal-text, var(--teal)); font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; }
 .sugg-avatar-anon { width:22px; height:22px; border-radius:50%; box-sizing:border-box; display:inline-grid; place-items:center; border:1.5px dashed var(--tm); color:var(--tm); font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; }
+/* Votes: the arrows and score on each suggestion card (and, laid out in a row, in its detail panel). */
+.sugg-card.has-vote { display:flex; align-items:flex-start; gap:14px; }
+.sugg-body { flex:1; min-width:0; }
+.vote-col { flex:none; display:flex; flex-direction:column; align-items:center; gap:2px; width:40px; }
+.vote-col.horizontal { flex-direction:row; width:auto; gap:6px; }
+.vote-btn { width:34px; height:30px; border:none; border-radius:8px; background:transparent; color:var(--tm); display:grid; place-items:center; cursor:pointer; transition:background .15s, color .15s; }
+.vote-btn:hover:not(:disabled) { background:var(--cdim); color:var(--text); }
+.vote-btn:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+.vote-btn:disabled { cursor:default; opacity:.6; }
+.vote-btn.up.on { background:var(--teal-dim, var(--cdim)); color:var(--teal-text, var(--teal)); }
+.vote-btn.down.on { background:color-mix(in srgb, var(--red) 14%, transparent); color:var(--red); }
+.vote-score { font-family:'DM Mono',monospace; font-size:13px; font-weight:600; color:var(--tm); min-width:24px; text-align:center; font-variant-numeric:tabular-nums; }
+.vote-score.up { color:var(--teal-text, var(--teal)); }
+.vote-score.down { color:var(--red); }
+.sugg-top-actions { display:flex; align-items:center; gap:10px; }
+.sugg-sort { background:var(--bg-card); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 8px; font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; }
+.sugg-vote-error { margin:0 0 10px; }
+.sugg-panel-vote { margin:-8px 0 14px; }
 
 /* ── PROJECTS ─────────────────────────────────────────── */
 .proj-card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px 18px; margin-bottom:12px; }

@@ -208,8 +208,10 @@ export interface Suggestion {
   anonymous?: boolean;
   /** Member handle, anon_xxxxxx, or member_xxxx. Null for records with no owner. */
   author?: string | null;
-  /** Vote total. Returned by the workflow but not shown until voting is designed. */
+  /** Vote total: upvotes minus downvotes, kept up to date in Corteza by the Reaction workflow. */
   score?: number;
+  /** This visitor's own live vote, if any. */
+  myVote?: 'up' | 'down' | null;
 }
 
 export interface SuggestionsResponse {

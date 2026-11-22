@@ -39,7 +39,16 @@ export default function OrgSuggestionComposer({
         text: t,
         email: memberName ? undefined : email.trim() || undefined,
       });
-      onPosted({ suggestionId: res.id, subject: s, text: t, status: 'New', createdAt: new Date().toISOString() });
+      // The author's own upvote was saved with it (res.autoVoted), so it starts at 1 and highlighted.
+      onPosted({
+        suggestionId: res.id,
+        subject: s,
+        text: t,
+        status: 'New',
+        createdAt: new Date().toISOString(),
+        score: res.autoVoted ? 1 : 0,
+        myVote: res.autoVoted ? 'up' : null,
+      });
     } catch (e) {
       setSubmitError((e as Error).message || 'Something went wrong — try again.');
     } finally {

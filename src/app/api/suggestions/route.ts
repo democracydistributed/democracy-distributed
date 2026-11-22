@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRecord, findRecords, getWriteIdentity, recordExists, ReauthRequired, type RecordValue } from '@/lib/corteza-write';
 import { authorLabel } from '@/lib/reactions-server';
-import { getAnonId } from '@/lib/anon-id';
+import { getAnonId, peekAnonId } from '@/lib/anon-id';
+import { createVote, findMyVotes, SUGGESTION_MODULE_ID } from '@/lib/votes-server';
 
 // The one write path for new Suggestions, logged in or not
 // (Documentation/feedback-write-path-spec_v4.md). Replaces the old public
@@ -9,7 +10,6 @@ import { getAnonId } from '@/lib/anon-id';
 
 export const dynamic = 'force-dynamic';
 
-const SUGGESTION_MODULE_ID = '404433918159355905';
 const ORGANIZATION_MODULE_ID = '387847963242790913';
 // Site-wide feedback (the footer form) has no org page, so it's filed here.
 const DD_CENTRAL_ORG_ID = '394662382766391297';
@@ -75,10 +75,22 @@ export async function POST(req: NextRequest) {
     // is already tied to their account, so ignore it even if one is sent.
     if (email && identity.kind === 'anonymous') values.push({ name: 'Email', value: email });
     // Status is left out on purpose: the module's own default sets it to "New".
-    if (identity.kind === 'anonymous') values.push({ name: 'Anon_Fingerprint', value: getAnonId(req) });
+    const anonId = identity.kind === 'anonymous' ? getAnonId(req) : null;
+    if (anonId) values.push({ name: 'Anon_Fingerprint', value: anonId });
 
     const id = await createRecord(identity, SUGGESTION_MODULE_ID, values);
-    return NextResponse.json({ ok: true, id }, { headers: { 'cache-control': 'no-store' } });
+
+    // Like Reddit, a new suggestion starts with its author's own upvote (so it shows 1, not 0).
+    // It is a real vote the author can take back. The workflow gives no reputation for it, since
+    // writing the suggestion already earned that. A failure here must not lose the suggestion.
+    let autoVoted = false;
+    try {
+      await createVote(identity, anonId, { id, orgId }, 'up');
+      autoVoted = true;
+    } catch (e) {
+      console.error('[api/suggestions] author upvote failed (suggestion was saved):', e);
+    }
+    return NextResponse.json({ ok: true, id, autoVoted }, { headers: { 'cache-control': 'no-store' } });
   } catch (e) {
     if (e instanceof ReauthRequired) {
       console.warn('[api/suggestions] reauth required:', e.reason);
@@ -103,10 +115,14 @@ export async function GET(req: NextRequest) {
 
   try {
     const identity = await getWriteIdentity(req);
-    const records = await findRecords(identity, SUGGESTION_MODULE_ID, `Organization='${orgId}'`, {
-      limit: MAX_SUGGESTIONS,
-      sort: 'createdAt DESC',
-    });
+    // The suggestions and this visitor's own votes on them, fetched together. peekAnonId never sets a cookie.
+    const [records, myVotes] = await Promise.all([
+      findRecords(identity, SUGGESTION_MODULE_ID, `Organization='${orgId}'`, {
+        limit: MAX_SUGGESTIONS,
+        sort: 'createdAt DESC',
+      }),
+      findMyVotes(identity, peekAnonId(req), orgId),
+    ]);
 
     // One lookup per distinct author, not per suggestion.
     const labels = new Map<string, Promise<string | null>>();
@@ -128,6 +144,7 @@ export async function GET(req: NextRequest) {
         status: r.values.Status || null,
         ref: r.values.Reference_Number || null,
         score: Number(r.values.Score) || 0,
+        myVote: myVotes.get(r.recordID) ?? null,
         anonymous: !!r.values.Anon_Fingerprint,
         author: await labelFor(r),
         createdAt: r.createdAt,
