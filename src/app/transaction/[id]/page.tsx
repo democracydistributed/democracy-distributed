@@ -99,7 +99,7 @@ export default async function TransactionPage({ params }: { params: { id: string
         {/* Header — Ledger.Type/Date/Merchant/Amount */}
         <div className={styles.headMeta}>
           <span className="tag tag-amber">{eyebrow}</span>
-          {date ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', color: 'var(--tm)' }}>{date}</span> : null}
+          {date ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '12px', color: 'var(--tm)' }}>{date}</span> : null}
         </div>
         <h1 className={styles.title}>{title}</h1>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '28px', fontWeight: 500, color: 'var(--amber-text, var(--amber))', marginBottom: '30px' }}>

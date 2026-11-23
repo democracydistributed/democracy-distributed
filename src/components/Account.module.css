@@ -17,7 +17,7 @@
 
 .eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--amber-text, var(--amber));
@@ -46,21 +46,21 @@
 }
 
 .sub {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--tm);
   margin-bottom: 18px;
 }
 
 .meta {
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tm);
   margin-bottom: 26px;
 }
 
 .signOut {
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--tm);
@@ -90,7 +90,7 @@
 }
 .placeholderLabel {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--tm);

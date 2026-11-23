@@ -27,7 +27,7 @@
 }
 .itemNum {
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   color: var(--tm);
 }
@@ -64,7 +64,7 @@
   margin-bottom: 12px;
 }
 .subDate {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--tm);
   margin-bottom: 30px;
 }
@@ -107,7 +107,7 @@
 }
 .cardMeta {
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tm);
 }
 .projFoot {
@@ -116,7 +116,7 @@
   margin-top: 9px;
   flex-wrap: wrap;
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tm);
 }
 .projFoot b {
@@ -124,7 +124,7 @@
   font-weight: 500;
 }
 .emptyNote {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--tm);
   font-style: italic;
 }
@@ -158,21 +158,21 @@
 }
 .moneyFlowLabel {
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--tm);
   margin-bottom: 6px;
 }
 .moneyFlowName {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text);
   font-weight: 500;
   margin-bottom: 3px;
 }
 .moneyFlowRef {
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tm);
 }
 .moneyFlowArrow {
@@ -201,14 +201,14 @@
 }
 .detailLabel {
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--tm);
   flex-shrink: 0;
 }
 .detailValue {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text);
   text-align: right;
   word-break: break-word;
@@ -248,14 +248,14 @@
 }
 .linkType {
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--amber-text, var(--amber));
   margin-bottom: 4px;
 }
 .linkText {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text);
   line-height: 1.4;
 }
@@ -287,21 +287,21 @@
 }
 .linkTypeUnavailable {
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--tm);
   margin-bottom: 4px;
 }
 .linkUnavailableText {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--tm);
   font-style: italic;
   margin-bottom: 4px;
 }
 .contributeLink {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--teal-text, var(--teal));
   text-decoration: none;
   letter-spacing: 0.05em;

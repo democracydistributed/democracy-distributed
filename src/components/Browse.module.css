@@ -18,7 +18,7 @@
 }
 .breadcrumb {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--tm);
@@ -133,7 +133,7 @@
   padding-top: 4px;
 }
 .orgDesc {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--tm);
   line-height: 1.6;
   margin-bottom: 20px;
@@ -147,7 +147,7 @@
 .ctaLink {
   display: inline-flex; align-items: center; gap: 6px;
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -162,7 +162,7 @@
 .gheadGap { margin-top: 36px; }
 .gRule { flex: 1; height: 1px; background: var(--border); }
 .groupName { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--th); margin: 0; }
-.groupMeta { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tm); white-space: nowrap; }
+.groupMeta { font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tm); white-space: nowrap; }
 .ownRow {
   display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; width: 100%; text-align: left; cursor: pointer; color: inherit;
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
@@ -182,10 +182,10 @@
 .placeRow:hover { border-color: var(--bhi); }
 .placeRow:focus-visible { outline: 3px solid var(--teal, #2dd4bf); outline-offset: 3px; }
 .placeTiles { display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; }
-.placeMore { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--tm); margin-left: 2px; }
+.placeMore { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--tm); margin-left: 2px; }
 .placeOpen {
   margin-left: auto; white-space: nowrap;
-  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--amber-text, var(--amber));
 }
 @media (max-width: 720px) { .placeRows { grid-template-columns: minmax(0, 1fr); } }
@@ -194,7 +194,7 @@
 .showMore {
   display: inline-block; margin-top: 12px; padding: 0;
   background: none; border: none; cursor: pointer;
-  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--amber-text, var(--amber));
 }
 .showMore:hover { text-decoration: underline; }
@@ -204,14 +204,14 @@
   border: 1px dashed var(--bhi); border-radius: 8px;
 }
 .addRowTitle { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--th); }
-.addRowBody { flex: 1; min-width: 0; font-size: 13px; color: var(--tm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.addRowBody { flex: 1; min-width: 0; font-size: 15px; color: var(--tm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 640px) { .addRowBody { white-space: normal; flex-basis: 100%; } }
 .gridStatus {
   grid-column: 1 / -1;
   padding: 56px 24px;
   text-align: center;
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
@@ -226,7 +226,7 @@
   border-radius: 4px;
   color: var(--tm);
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
@@ -266,7 +266,7 @@
 .countryPill:hover:not(:disabled) { border-color: var(--bhi); }
 .countryPill:disabled { cursor: default; opacity: 0.7; }
 .countryPillChosen { border-color: var(--amber); background: var(--amber-dim); }
-.countryPillName { font-size: 12.5px; font-weight: 500; }
+.countryPillName { font-size: 14px; font-weight: 500; }
 .countryPillCaret { font-size: 10px; opacity: 0.6; }
 .countryMenu {
   position: absolute;
@@ -289,7 +289,7 @@
   border: none;
   color: var(--text);
   font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   text-align: left;
   cursor: pointer;
 }
@@ -302,12 +302,12 @@
 .pillLast { color: var(--text); }
 .pillSep { color: var(--tm); margin: 0 6px; opacity: 0.7; }
 .countryOptionAll { border-top: 1px solid var(--border); color: var(--amber-text, var(--amber)); font-family: 'DM Mono', monospace; font-size: 12px; }
-.countryCount { color: var(--tm); font-family: 'DM Mono', monospace; font-size: 11px; }
+.countryCount { color: var(--tm); font-family: 'DM Mono', monospace; font-size: 12px; }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -333,7 +333,7 @@
   background: transparent;
   color: var(--tm);
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -344,7 +344,7 @@
 .notice {
   margin-top: 14px;
   padding: 9px 14px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--tm);
   background: var(--cdim);
   border: 1px solid var(--border);
@@ -353,7 +353,7 @@
 .inlineLink {
   background: none; border: none; padding: 0;
   color: var(--amber-text, var(--amber));
-  font-family: 'DM Sans', sans-serif; font-size: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -375,7 +375,7 @@
 
 .addCardLink {
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -388,13 +388,13 @@
 /* Search results */
 .searchEyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--tm);
   margin-bottom: 6px;
 }
-.searchCaption { font-size: 13px; color: var(--tm); margin-bottom: 18px; }
+.searchCaption { font-size: 15px; color: var(--tm); margin-bottom: 18px; }
 .resultRows { display: flex; flex-direction: column; gap: 10px; }
 .resultRow {
   display: flex; align-items: center; gap: 14px;
@@ -409,7 +409,7 @@
 .resultText { flex: 1; min-width: 0; }
 .resultMeta {
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--tm);
@@ -419,7 +419,7 @@
 .resultCta {
   flex-shrink: 0;
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--amber-text, var(--amber));
@@ -428,7 +428,7 @@
 .emptyPanel {
   padding: 40px 20px;
   text-align: center;
-  font-size: 13px;
+  font-size: 15px;
   color: var(--tm);
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -451,7 +451,7 @@
   color: var(--th);
   margin-bottom: 12px;
 }
-.bigEmptyBody { max-width: 440px; margin: 0 auto 22px; font-size: 14px; line-height: 1.7; color: var(--tm); }
+.bigEmptyBody { max-width: 440px; margin: 0 auto 22px; font-size: 16px; line-height: 1.7; color: var(--tm); }
 .bigEmptyActions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .switchBtn {
   padding: 9px 18px;
@@ -460,7 +460,7 @@
   background: var(--amber-dim);
   color: var(--amber-text, var(--amber));
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
 }
 .switchBtnGhost { border-color: var(--border); background: transparent; color: var(--tm); }
@@ -470,7 +470,7 @@
   border-radius: 4px;
   background: var(--green);
   color: #0c1428;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-decoration: none;
@@ -499,12 +499,12 @@
   border: 1px solid var(--amber);
   color: var(--amber-text, var(--amber));
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 .mapSoonTitle { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--th); margin-bottom: 8px; }
-.mapSoonBody { font-size: 13px; line-height: 1.7; color: var(--tm); margin-bottom: 20px; }
+.mapSoonBody { font-size: 15px; line-height: 1.7; color: var(--tm); margin-bottom: 20px; }
 
 @media (max-width: 720px) {
   .pageHeader { padding: 100px 16px 24px; }
@@ -522,3 +522,6 @@
   .countryPill { min-height: 40px; }
   .addCardLink { padding: 12px 0; }
 }
+
+/* Form fields: 16px on phones so iOS Safari doesn't zoom the page on focus. */
+@media (max-width: 679px) { .searchWrap input { font-size: 16px; } }

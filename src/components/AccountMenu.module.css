@@ -79,7 +79,7 @@
   white-space: nowrap;
 }
 .email {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   color: var(--tm);
   margin-top: 1px;
@@ -133,7 +133,7 @@
   margin-bottom: 4px;
 }
 .guestSub {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 400;
   color: var(--tm);
   margin-bottom: 12px;
@@ -155,7 +155,7 @@
   min-height: 40px;
   border-radius: 8px;
   font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
@@ -192,7 +192,7 @@
 }
 .appearanceLabel {
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--tm);

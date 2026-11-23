@@ -138,7 +138,7 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
             // Plain-text summary of the same totals the chart visualizes — the
             // D3 Sankey below is client-only (it reads `window`), so this is
             // what gives crawlers and AI summarizers an actual number to quote.
-            <p style={{ fontSize: 14, color: 'var(--tm)', maxWidth: 640, margin: '0 0 20px', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 16, color: 'var(--tm)', maxWidth: 640, margin: '0 0 20px', lineHeight: 1.6 }}>
               {org?.name || 'This organization'} reports {fmt(data.revenue)} in revenue and {fmt(data.spending)} in
               spending across the records below. Explore the flow from each revenue source to where it&apos;s spent.
             </p>

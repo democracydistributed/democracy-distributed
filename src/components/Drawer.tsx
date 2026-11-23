@@ -236,7 +236,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
           <div style={{ padding: '20px 0' }}>
             <span style={{ color: '#e05252', fontFamily: "'DM Mono',monospace", fontSize: '12px' }}>⚠ Failed to load chain</span>
             <br />
-            <span style={{ color: '#8896b3', fontSize: '11px', fontFamily: "'DM Mono',monospace" }}>{traceError}</span>
+            <span style={{ color: '#8896b3', fontSize: '12px', fontFamily: "'DM Mono',monospace" }}>{traceError}</span>
           </div>
         </div>
       </>
@@ -267,10 +267,10 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
         <div className="drw-body">
           {data.legalBasis ? (
             <div style={{ marginBottom: '16px', padding: '12px 14px', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '6px', background: 'rgba(167,139,250,0.06)' }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a78bfa', marginBottom: '6px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a78bfa', marginBottom: '6px' }}>
                 Legal Basis
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.5 }}>{data.legalBasis}</div>
+              <div style={{ fontSize: '15px', color: 'var(--text)', lineHeight: 1.5 }}>{data.legalBasis}</div>
             </div>
           ) : null}
           {partialProject ? (
@@ -299,7 +299,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
                   <div className="chain-type">Project</div>
                   <div className="chain-text">
                     {partialProject.name || ''}
-                    {partialProject.status ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '9px', color: 'var(--tm)' }}> [{partialProject.status}]</span> : null}
+                    {partialProject.status ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', color: 'var(--tm)' }}> [{partialProject.status}]</span> : null}
                   </div>
                   {partialProject.id ? (
                     <Link className="chain-link" href={`/project/${encodeURIComponent(partialProject.id)}`} target="_blank" rel="noopener noreferrer">
@@ -329,7 +329,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
                 No linked decision chain for this transaction.
               </div>
               <div style={{ marginTop: '8px' }}>
-                <a href="/contribute" style={{ fontFamily: "'DM Mono',monospace", fontSize: '10px', color: 'var(--teal)', textDecoration: 'none', letterSpacing: '0.1em' }}>
+                <a href="/contribute" style={{ fontFamily: "'DM Mono',monospace", fontSize: '12px', color: 'var(--teal)', textDecoration: 'none', letterSpacing: '0.1em' }}>
                   Help us link this transaction →
                 </a>
               </div>
@@ -339,7 +339,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
                     href={`/transaction/${encodeURIComponent(entry.ledgerID)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ fontFamily: "'DM Mono',monospace", fontSize: '10px', color: 'var(--teal)', textDecoration: 'none', letterSpacing: '0.1em' }}
+                    style={{ fontFamily: "'DM Mono',monospace", fontSize: '12px', color: 'var(--teal)', textDecoration: 'none', letterSpacing: '0.1em' }}
                   >
                     View transaction →
                   </Link>
@@ -367,7 +367,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
           {count > 1 ? (
             <>
               <br />
-              <span style={{ fontSize: '11px', color: 'var(--tm)', fontFamily: "'DM Mono',monospace" }}>+{count - 1} more</span>
+              <span style={{ fontSize: '12px', color: 'var(--tm)', fontFamily: "'DM Mono',monospace" }}>+{count - 1} more</span>
             </>
           ) : null}
         </>
@@ -431,7 +431,7 @@ function TracePanel({ frame, fmt, backBtn }: { frame: DrawerTraceFrame; fmt: For
       text: (
         <>
           {proj.name || ''}
-          {proj.status ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '9px', color: 'var(--tm)' }}> [{proj.status}]</span> : null}
+          {proj.status ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', color: 'var(--tm)' }}> [{proj.status}]</span> : null}
         </>
       ),
       link: proj.id ? (

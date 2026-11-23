@@ -8,7 +8,7 @@ export default function NotFound() {
       fontFamily: "'DM Sans', sans-serif",
     }}>
       <span style={{
-        fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '0.25em',
+        fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: '0.25em',
         textTransform: 'uppercase', color: 'var(--amber, #e8a020)', marginBottom: 20,
       }}>
         404 · Not found
@@ -30,7 +30,7 @@ export default function NotFound() {
         <Link
           href="/"
           style={{
-            fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: '0.08em',
+            fontFamily: "'DM Mono', monospace", fontSize: 12, letterSpacing: '0.08em',
             textTransform: 'uppercase', background: 'var(--amber, #e8a020)', color: '#0c1428',
             padding: '10px 22px', borderRadius: 3, textDecoration: 'none',
             fontWeight: 500,
@@ -41,7 +41,7 @@ export default function NotFound() {
         <Link
           href="/contribute"
           style={{
-            fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: '0.08em',
+            fontFamily: "'DM Mono', monospace", fontSize: 12, letterSpacing: '0.08em',
             textTransform: 'uppercase', color: 'var(--amber, #e8a020)',
             border: '1px solid rgba(232,160,32,.35)', padding: '10px 22px',
             borderRadius: 3, textDecoration: 'none',

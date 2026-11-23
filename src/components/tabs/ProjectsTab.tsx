@@ -520,7 +520,7 @@ export default function ProjectsTab({ orgId, fmt }: { orgId: string; fmt: Format
                   {meta ? (
                     <div
                       style={{
-                        fontSize: '11px',
+                        fontSize: '13px',
                         color: 'var(--tm)',
                         marginTop: '2px',
                       }}

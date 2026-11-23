@@ -34,7 +34,7 @@
   display: flex; align-items: center; gap: 12px;
   margin-bottom: 22px;
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase;
   color: var(--amber);
 }
 .eyebrowLine {
@@ -95,7 +95,7 @@
   max-width: 600px; margin-bottom: 36px;
 }
 .heroSubdesc {
-  font-size: 14px; color: var(--tm); line-height: 1.7;
+  font-size: 16px; color: var(--tm); line-height: 1.7;
   max-width: 480px; margin-bottom: 32px;
   padding-left: 16px; border-left: 2px solid rgba(232,160,32,0.3);
 }
@@ -104,7 +104,7 @@
 /* ── SECTION LABEL ────────────────────────────────────── */
 .sectionLabel {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase;
   color: var(--amber);
   display: flex; align-items: center; gap: 12px;
   margin-bottom: 18px;
@@ -174,13 +174,13 @@
 .joinCard:hover { border-color: rgba(232,160,32,0.5); }
 .joinCard:first-child:hover { border-color: rgba(45,212,191,0.5); }
 .joinKind {
-  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.18em;
+  font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.18em;
   text-transform: uppercase; color: var(--amber); margin-bottom: 10px;
 }
 .joinKindTeal { color: var(--teal); }
 .joinTitle { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--th); margin-bottom: 4px; }
 .joinTitleEmail { font-size: clamp(17px, 2.4vw, 22px); word-break: break-all; }
-.joinSub { font-size: 14px; color: var(--tm); }
+.joinSub { font-size: 15px; color: var(--tm); }
 
 /* ── LIVE ORG EMBED ───────────────────────────────────── */
 .liveWrap { padding: 0 20px 80px; position: relative; z-index: 1; }
@@ -193,9 +193,9 @@
   display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   padding: 16px 24px; background: var(--bg-card); border-bottom: 1px solid var(--border);
 }
-.liveLabel { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tm); }
+.liveLabel { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tm); }
 .liveName { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--th); }
-.liveOpen { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--teal); text-decoration: none; }
+.liveOpen { font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: var(--teal); text-decoration: none; }
 .liveTabs { display: flex; overflow-x: auto; background: var(--bg-card); border-bottom: 1px solid var(--bhi); }
 .liveTab {
   flex-shrink: 0; padding: 18px 26px; background: transparent; border: none;
@@ -226,10 +226,10 @@
   font-size: 19px; font-weight: 700;
   color: var(--th); margin-bottom: 10px;
 }
-.taskDesc { font-size: 14px; color: var(--tm); line-height: 1.65; margin-bottom: 16px; }
+.taskDesc { font-size: 15px; color: var(--tm); line-height: 1.65; margin-bottom: 16px; }
 .taskProduces {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: 0.04em;
+  font-size: 12px; letter-spacing: 0.04em;
   color: var(--teal);
 }
 
@@ -244,4 +244,4 @@
   color: rgba(232,160,32,0.4); line-height: 1;
 }
 .step h3 { font-size: 15px; font-weight: 600; color: var(--th); margin: 0 0 4px; }
-.step p  { font-size: 13px; color: var(--tm); line-height: 1.65; }
+.step p  { font-size: 15px; color: var(--tm); line-height: 1.65; }

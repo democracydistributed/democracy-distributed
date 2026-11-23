@@ -16,7 +16,7 @@ interface LogoProps {
 export function Logo({ size = 36, className = '', showWordmark = true }: LogoProps) {
   const gap = Math.round(size * 0.33);
   const f1 = Math.round(size * 0.44);
-  const f2 = Math.round(size * 0.22);
+  const f2 = Math.max(10, Math.round(size * 0.22));
 
   return (
     <span className={className} style={{ display:'inline-flex', alignItems:'center', gap:gap+'px', lineHeight:1, textDecoration:'none' }}>

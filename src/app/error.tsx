@@ -15,7 +15,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
       fontFamily: "'DM Sans', sans-serif",
     }}>
       <span style={{
-        fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '0.25em',
+        fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: '0.25em',
         textTransform: 'uppercase', color: 'var(--amber, #e8a020)', marginBottom: 20,
       }}>
         System error
@@ -35,7 +35,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
 
       {error.message && (
         <pre style={{
-          fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'var(--red, #e05252)',
+          fontFamily: "'DM Mono', monospace", fontSize: 12, color: 'var(--red, #e05252)',
           background: 'rgba(224,82,82,0.08)', border: '1px solid rgba(224,82,82,0.18)',
           borderRadius: 6, padding: '10px 16px', marginBottom: 32,
           maxWidth: 480, whiteSpace: 'pre-wrap', textAlign: 'left',
@@ -48,7 +48,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         <button
           onClick={reset}
           style={{
-            fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: '0.08em',
+            fontFamily: "'DM Mono', monospace", fontSize: 12, letterSpacing: '0.08em',
             textTransform: 'uppercase', background: 'var(--amber, #e8a020)', color: '#0c1428',
             padding: '10px 22px', borderRadius: 3, border: 'none', cursor: 'pointer',
             fontWeight: 500, transition: 'opacity .2s',
@@ -59,7 +59,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         <a
           href={`/org/${TORONTO_ORG_ID}?org=toronto`}
           style={{
-            fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: '0.08em',
+            fontFamily: "'DM Mono', monospace", fontSize: 12, letterSpacing: '0.08em',
             textTransform: 'uppercase', color: 'var(--amber, #e8a020)',
             border: '1px solid rgba(232,160,32,.35)', padding: '10px 22px',
             borderRadius: 3, textDecoration: 'none', transition: 'background .2s',
@@ -70,7 +70,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
       </div>
 
       {error.digest && (
-        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: 'var(--tm, #8896b3)', marginTop: 24, opacity: 0.5 }}>
+        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'var(--tm, #8896b3)', marginTop: 24, opacity: 0.5 }}>
           ref: {error.digest}
         </p>
       )}

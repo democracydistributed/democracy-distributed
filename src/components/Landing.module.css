@@ -45,7 +45,7 @@
   align-items: center;
   gap: 8px;
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--amber);
@@ -173,12 +173,12 @@
 }
 .sankeyTitle {
   font-family: 'DM Mono', monospace;
-  font-size: 11px; letter-spacing: 0.15em;
+  font-size: 12px; letter-spacing: 0.15em;
   color: var(--tm); text-transform: uppercase;
 }
 .sankeyCue {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; color: var(--amber); letter-spacing: 0.08em;
+  font-size: 12px; color: var(--amber); letter-spacing: 0.08em;
 }
 
 .sankeySvgWrap { padding: 24px; }
@@ -191,7 +191,7 @@
 .tickerItem { flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; }
 .tickerLabel {
   font-family: 'DM Mono', monospace;
-  font-size: 9px; letter-spacing: 0.15em;
+  font-size: 11px; letter-spacing: 0.15em;
   color: var(--tm); text-transform: uppercase;
 }
 .tickerValue { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--amber); font-weight: 500; }
@@ -209,7 +209,7 @@
 
 .sectionLabel {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase;
   color: var(--amber);
   margin-bottom: 20px;
   display: flex; align-items: center; gap: 12px;
@@ -265,7 +265,7 @@
 
 .chainNodeTag {
   font-family: 'DM Mono', monospace;
-  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
   padding: 4px 9px; border-radius: 2px; display: inline-block;
   margin-bottom: 10px;
 }
@@ -280,7 +280,7 @@
   font-size: 17px; font-weight: 700; color: var(--th);
   margin-bottom: 8px; line-height: 1.25;
 }
-.chainNodeDesc { font-size: 13px; color: var(--tm); line-height: 1.65; }
+.chainNodeDesc { font-size: 15px; color: var(--tm); line-height: 1.65; }
 
 .chainCtaLine {
   margin-top: 48px;
@@ -324,7 +324,7 @@
   margin-bottom: 24px; padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
 }
-.repTitle { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: var(--tm); text-transform: uppercase; }
+.repTitle { font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.15em; color: var(--tm); text-transform: uppercase; }
 .repScore { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: var(--amber); }
 
 .repEvents { display: flex; flex-direction: column; gap: 12px; }
@@ -334,7 +334,7 @@
   background: var(--cdim);
   border-radius: 6px;
   border: 1px solid var(--border);
-  font-size: 13px;
+  font-size: 15px;
 }
 .repEventIcon {
   width: 32px; height: 32px;
@@ -343,7 +343,7 @@
   font-size: 14px; flex-shrink: 0;
 }
 .repEventText { flex: 1; color: var(--text); }
-.repEventText small { display: block; color: var(--tm); font-size: 11px; margin-top: 2px; }
+.repEventText small { display: block; color: var(--tm); font-size: 13px; margin-top: 2px; }
 .repEventPoints { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
 .pos { color: var(--green); }
 
