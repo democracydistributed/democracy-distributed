@@ -3,6 +3,7 @@ import { createRecord, findRecords, getWriteIdentity, recordExists, ReauthRequir
 import { authorLabel } from '@/lib/reactions-server';
 import { getAnonId, peekAnonId } from '@/lib/anon-id';
 import { createVote, findMyVotes, SUGGESTION_MODULE_ID } from '@/lib/votes-server';
+import { guessTeamName } from '@/lib/suggestion-team';
 
 // The one write path for new Suggestions, logged in or not
 // (Documentation/feedback-write-path-spec_v4.md). Replaces the old public
@@ -11,6 +12,25 @@ import { createVote, findMyVotes, SUGGESTION_MODULE_ID } from '@/lib/votes-serve
 export const dynamic = 'force-dynamic';
 
 const ORGANIZATION_MODULE_ID = '387847963242790913';
+const DEPARTMENT_MODULE_ID = '406759284152467457';
+
+type Dept = { id: string; name: string; parentId: string | null };
+
+/** The org's own active Departments/Teams (one query). Used to turn a guessed team name into
+ *  a record ID on create, and record IDs back into names on read. Never throws: the team is a
+ *  nicety, so a failed lookup just means no team shows or gets set. */
+async function loadDepartments(identity: Awaited<ReturnType<typeof getWriteIdentity>>, orgId: string): Promise<Dept[]> {
+  try {
+    const recs = await findRecords(identity, DEPARTMENT_MODULE_ID, `Organization='${orgId}'`, { limit: 200 });
+    return recs
+      .filter((r) => r.values.Department_Name && (!r.values.Status || r.values.Status === 'Active'))
+      .map((r) => ({ id: r.recordID, name: r.values.Department_Name, parentId: r.values.Parent_Department || null }));
+  } catch (e) {
+    if (e instanceof ReauthRequired) throw e;
+    console.error('[api/suggestions] could not load departments (continuing without teams):', e);
+    return [];
+  }
+}
 // Site-wide feedback (the footer form) has no org page, so it's filed here.
 const DD_CENTRAL_ORG_ID = '394662382766391297';
 
@@ -78,7 +98,24 @@ export async function POST(req: NextRequest) {
     const anonId = identity.kind === 'anonymous' ? getAnonId(req) : null;
     if (anonId) values.push({ name: 'Anon_Fingerprint', value: anonId });
 
-    const id = await createRecord(identity, SUGGESTION_MODULE_ID, values);
+    // Rule-based team guess (lib/suggestion-team.ts), matched to one of this org's own top-level
+    // teams. No clear match, or the org has no such team, means the field is left blank.
+    const guess = guessTeamName({ subject, text, category });
+    const dept = guess
+      ? (await loadDepartments(identity, orgId)).find((d) => !d.parentId && d.name.toLowerCase() === guess.toLowerCase())
+      : undefined;
+
+    let id: string;
+    let savedDepartment: string | null = dept?.name ?? null;
+    try {
+      id = await createRecord(identity, SUGGESTION_MODULE_ID, dept ? [...values, { name: 'Department', value: dept.id }] : values);
+    } catch (e) {
+      // If the team couldn't be saved (e.g. a permission on the new field), never lose the suggestion.
+      if (!dept || e instanceof ReauthRequired) throw e;
+      console.error('[api/suggestions] create with Department failed, retrying without it:', e);
+      id = await createRecord(identity, SUGGESTION_MODULE_ID, values);
+      savedDepartment = null;
+    }
 
     // Like Reddit, a new suggestion starts with its author's own upvote (so it shows 1, not 0).
     // It is a real vote the author can take back. The workflow gives no reputation for it, since
@@ -90,7 +127,7 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       console.error('[api/suggestions] author upvote failed (suggestion was saved):', e);
     }
-    return NextResponse.json({ ok: true, id, autoVoted }, { headers: { 'cache-control': 'no-store' } });
+    return NextResponse.json({ ok: true, id, autoVoted, department: savedDepartment }, { headers: { 'cache-control': 'no-store' } });
   } catch (e) {
     if (e instanceof ReauthRequired) {
       console.warn('[api/suggestions] reauth required:', e.reason);
@@ -121,7 +158,13 @@ export async function GET(req: NextRequest) {
         limit: MAX_SUGGESTIONS,
         sort: 'createdAt DESC',
       }),
-      findMyVotes(identity, peekAnonId(req), orgId),
+      // Which arrows to highlight is a nicety: if this lookup fails the list still loads, just
+      // without them. The cause is logged. A lapsed member login is still passed up so they're asked to sign in again.
+      findMyVotes(identity, peekAnonId(req), orgId).catch((e) => {
+        if (e instanceof ReauthRequired) throw e;
+        console.error('[api/suggestions] could not load the visitor’s votes, showing the list without them:', e);
+        return new Map<string, 'up' | 'down'>();
+      }),
     ]);
 
     // One lookup per distinct author, not per suggestion.
@@ -135,12 +178,19 @@ export async function GET(req: NextRequest) {
       return labels.get(key)!;
     };
 
+    // Team names: one lookup for the org's departments, only if some suggestion has one.
+    const deptNames = new Map<string, string>();
+    if (records.some((r) => r.values.Department)) {
+      for (const d of await loadDepartments(identity, orgId)) deptNames.set(d.id, d.name);
+    }
+
     const suggestions = await Promise.all(
       records.map(async (r) => ({
         suggestionId: r.recordID,
         subject: r.values.Subject || null,
         text: r.values.Description || null,
         category: r.values.Category || null,
+        department: deptNames.get(r.values.Department) ?? null,
         status: r.values.Status || null,
         ref: r.values.Reference_Number || null,
         score: Number(r.values.Score) || 0,

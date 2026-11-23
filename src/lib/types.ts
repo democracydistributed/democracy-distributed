@@ -199,6 +199,8 @@ export interface Suggestion {
   subject?: string;
   text?: string;
   category?: string;
+  /** The Team (Department record name) this suggestion was routed to; null/absent when not yet tagged. */
+  department?: string | null;
   status?: string;
   createdAt?: string;
   updatedAt?: string | null;

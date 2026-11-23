@@ -135,7 +135,7 @@ export interface NewSuggestion {
 /** Posts a new suggestion through our own server route (src/app/api/suggestions),
  *  not the gateway — the server attaches the member's or the anonymous account's
  *  identity so the record has a real owner. */
-export async function postSuggestion(payload: NewSuggestion): Promise<{ ok: boolean; id?: string; autoVoted?: boolean; error?: string }> {
+export async function postSuggestion(payload: NewSuggestion): Promise<{ ok: boolean; id?: string; autoVoted?: boolean; department?: string | null; error?: string }> {
   const res = await fetch('/api/suggestions', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
