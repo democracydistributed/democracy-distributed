@@ -121,6 +121,11 @@ export function fmtRelativeTime(dateStr: string | null | undefined): string {
  *  - Neither: "Untitled suggestion".
  * `preview` is the body flattened to one line ("* " bullets joined with " · ").
  */
+/** Whether suggestion cards and the detail panel show the Status (the New badge and the progress
+ *  bar). Off until there's an agreed process for moving suggestions between statuses; the data is
+ *  still read and sent, so turning this on again is the only change needed. */
+export const SHOW_SUGGESTION_STATUS = false;
+
 export function suggestionHeadline(s: { subject?: string | null; text?: string | null }): {
   title: string;
   body: string;

@@ -400,7 +400,8 @@ html:not(.light) .sub-tile.hero { border-color:color-mix(in srgb, var(--amber) 4
 .sugg-top-actions { display:flex; align-items:center; gap:10px; }
 .sugg-sort { background:var(--bg-card); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 8px; font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; }
 .sugg-vote-error { margin:0 0 10px; }
-.sugg-panel-vote { margin:-8px 0 14px; }
+/* Panel footer: the vote on the left, the Corteza link on the right. */
+.pj-panel-foot.sugg-panel-foot { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
 
 /* ── PROJECTS ─────────────────────────────────────────── */
 .proj-card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px 18px; margin-bottom:12px; }

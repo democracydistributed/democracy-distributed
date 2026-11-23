@@ -45,6 +45,7 @@ export default function OrgSuggestionComposer({
         subject: s,
         text: t,
         status: 'New',
+        department: res.department ?? null,
         createdAt: new Date().toISOString(),
         score: res.autoVoted ? 1 : 0,
         myVote: res.autoVoted ? 'up' : null,

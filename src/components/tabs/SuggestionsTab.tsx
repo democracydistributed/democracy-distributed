@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { fetchSuggestions, postVote } from '@/lib/api';
-import { fmtRelativeTime, suggestionHeadline } from '@/lib/text';
+import { fmtRelativeTime, SHOW_SUGGESTION_STATUS, suggestionHeadline } from '@/lib/text';
 import type { Suggestion } from '@/lib/types';
 import OrgSuggestionComposer from '../OrgSuggestionComposer';
 import SuggestionPanel from '../SuggestionPanel';
@@ -20,6 +20,8 @@ const time = (s: Suggestion) => Date.parse(s.createdAt || '') || 0;
 export default function SuggestionsTab({ orgId }: { orgId: string }) {
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
   const [sort, setSort] = useState<SortMode>('top');
+  // Team filter: null shows everything, otherwise only that team's suggestions.
+  const [team, setTeam] = useState<string | null>(null);
   // The scores the list was last ordered by. Ordering reads these, not the live scores, so a
   // card doesn't jump away from under your cursor the moment you vote; it moves next time you
   // load the list or change the sort.
@@ -116,7 +118,12 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
   const ordered = [...suggestions].sort((a, b) =>
     sort === 'old' ? time(a) - time(b) : sort === 'new' ? time(b) - time(a) : rankOf(b) - rankOf(a) || time(b) - time(a),
   );
-  const list = [...dedupedJustPosted, ...ordered];
+  const everything = [...dedupedJustPosted, ...ordered];
+  // Pills for the teams that actually have suggestions, most first. Hidden when none are tagged yet.
+  const teamCounts = new Map<string, number>();
+  for (const s of everything) if (s.department) teamCounts.set(s.department, (teamCounts.get(s.department) ?? 0) + 1);
+  const teamPills = [...teamCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const list = team ? everything.filter((s) => s.department === team) : everything;
   const keyOf = (s: Suggestion, i: number) => s.suggestionId || `#${i}`;
   const openIndex = openKey === null ? -1 : list.findIndex((s, i) => keyOf(s, i) === openKey);
 
@@ -141,6 +148,19 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
               + New
             </button>
           </div>
+        </div>
+      ) : null}
+
+      {!composerOpen && teamPills.length > 0 ? (
+        <div className="pj-chips" role="group" aria-label="Filter by team">
+          <button type="button" className={'pj-chip' + (team === null ? ' on' : '')} aria-pressed={team === null} onClick={() => setTeam(null)}>
+            All <span className="pj-chip-n">{everything.length}</span>
+          </button>
+          {teamPills.map(([name, n]) => (
+            <button key={name} type="button" className={'pj-chip' + (team === name ? ' on' : '')} aria-pressed={team === name} onClick={() => setTeam(team === name ? null : name)}>
+              {name} <span className="pj-chip-n">{n}</span>
+            </button>
+          ))}
         </div>
       ) : null}
 
@@ -181,9 +201,10 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
             ) : null}
             <div className="sugg-body">
               {dedupedJustPosted.includes(s) ? <div className="sugg-yours-tag">Yours</div> : null}
-              {s.status ? <span className="sugg-status">{s.status}</span> : null}
-              {s.category ? <div className="sugg-cat">{s.category}</div> : null}
-              <div className={`sugg-subject-line${s.status ? ' has-status' : ''}`}>{title}</div>
+              {SHOW_SUGGESTION_STATUS && s.status ? <span className="sugg-status">{s.status}</span> : null}
+              {/* The team is the useful label; the category (often just "Other") only shows when there's no team yet. */}
+              {s.department || s.category ? <div className="sugg-cat">{s.department || s.category}</div> : null}
+              <div className={`sugg-subject-line${SHOW_SUGGESTION_STATUS && s.status ? ' has-status' : ''}`}>{title}</div>
               {preview ? <div className="sugg-text sugg-preview">{preview}</div> : null}
               <div className="sugg-meta-row">
                 <div className="sugg-meta">

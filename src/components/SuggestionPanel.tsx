@@ -2,7 +2,7 @@
 
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fmtProjectDate, suggestionHeadline } from '@/lib/text';
+import { fmtProjectDate, SHOW_SUGGESTION_STATUS, suggestionHeadline } from '@/lib/text';
 import type { Suggestion } from '@/lib/types';
 import VoteControl from './VoteControl';
 
@@ -78,12 +78,10 @@ export default function SuggestionPanel({
     .map((t) => ({ text: t.replace(/^\*\s+/, ''), bullet: /^\*\s+/.test(t) }));
 
   const submitted = fmtProjectDate(s.createdAt);
-  const edited = fmtProjectDate(s.updatedAt);
-  const stageIdx = STAGES.findIndex((x) => x.toLowerCase() === (s.status ?? '').trim().toLowerCase());
+  const stageIdx = SHOW_SUGGESTION_STATUS ? STAGES.findIndex((x) => x.toLowerCase() === (s.status ?? '').trim().toLowerCase()) : -1;
   // Blank values are left out, not shown as "—".
   const rows: { label: string; value: string }[] = [];
   if (s.ref) rows.push({ label: 'Reference', value: s.ref });
-  if (edited) rows.push({ label: 'Last edited', value: edited });
 
   // Portal to <body>: an ancestor with a transform would otherwise anchor position:fixed to itself.
   return createPortal(
@@ -118,12 +116,6 @@ export default function SuggestionPanel({
         <div className="pj-panel-body">
           <h3 className="pj-panel-title">{title}</h3>
 
-          {s.suggestionId ? (
-            <div className="sugg-panel-vote">
-              <VoteControl horizontal score={s.score ?? 0} myVote={s.myVote} busy={votingIds.has(s.suggestionId)} onVote={(dir) => onVote(s, dir)} />
-            </div>
-          ) : null}
-
           <div className="sugg-panel-meta">
             {s.author ? (
               <span className="sugg-author">
@@ -134,8 +126,8 @@ export default function SuggestionPanel({
               </span>
             ) : null}
             {submitted ? <span>{submitted}</span> : null}
-            {s.category ? <span className="sugg-chip">{s.category}</span> : null}
-            {s.status ? <span className="sugg-status">{s.status}</span> : null}
+            {s.department || s.category ? <span className="sugg-chip">{s.department || s.category}</span> : null}
+            {SHOW_SUGGESTION_STATUS && s.status ? <span className="sugg-status">{s.status}</span> : null}
           </div>
 
           {lines.length ? (
@@ -185,14 +177,15 @@ export default function SuggestionPanel({
         </div>
 
         {s.suggestionId ? (
-          <div className="pj-panel-foot">
+          <div className="pj-panel-foot sugg-panel-foot">
+            <VoteControl horizontal score={s.score ?? 0} myVote={s.myVote} busy={votingIds.has(s.suggestionId)} onVote={(dir) => onVote(s, dir)} />
             <a
               className="sugg-corteza-link"
               href={`${CORTEZA_SUGGESTION_RECORD_URL}/${encodeURIComponent(s.suggestionId)}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              View in Corteza ↗
+              View record ↗
             </a>
           </div>
         ) : null}
