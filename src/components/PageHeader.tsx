@@ -93,10 +93,14 @@ export default function PageHeader({ org }: { org: OrgData | null }) {
           </div>
           <div className="org-info">
             <h1>{org.name}</h1>
-            <div className="org-tags">
-              <span className={statusActive ? 'tag tag-amber' : 'tag tag-muted'}>{org.status}</span>
-              {org.jurisdiction ? <span className="tag tag-muted">{org.jurisdiction}</span> : null}
-            </div>
+            {org.status?.trim() || org.jurisdiction?.trim() ? (
+              <div className="org-tags">
+                {org.status?.trim() ? (
+                  <span className={statusActive ? 'tag tag-amber' : 'tag tag-muted'}>{org.status}</span>
+                ) : null}
+                {org.jurisdiction?.trim() ? <span className="tag tag-muted">{org.jurisdiction}</span> : null}
+              </div>
+            ) : null}
             <Description text={org.description ?? null} />
             {org.website ? (
               <a href={org.website} target="_blank" rel="noopener" className="org-website-link">
