@@ -193,6 +193,7 @@ export async function GET(req: NextRequest) {
         department: deptNames.get(r.values.Department) ?? null,
         status: r.values.Status || null,
         ref: r.values.Reference_Number || null,
+        sourceOrgId: /^\d{1,20}$/.test(r.values.Source_Organization ?? '') ? r.values.Source_Organization : null,
         score: Number(r.values.Score) || 0,
         myVote: myVotes.get(r.recordID) ?? null,
         anonymous: !!r.values.Anon_Fingerprint,

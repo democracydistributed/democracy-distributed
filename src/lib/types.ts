@@ -206,6 +206,8 @@ export interface Suggestion {
   updatedAt?: string | null;
   /** Reference number like SUG-01; blank on older records. */
   ref?: string | null;
+  /** The org this suggestion is about (Source Organization), when filed under a different one, e.g. a data request. */
+  sourceOrgId?: string | null;
   /** True for anonymous submissions. The fingerprint itself is never sent. */
   anonymous?: boolean;
   /** Member handle, anon_xxxxxx, or member_xxxx. Null for records with no owner. */

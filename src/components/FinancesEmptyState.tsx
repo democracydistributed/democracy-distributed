@@ -102,10 +102,9 @@ export default function FinancesEmptyState({ orgId, orgName }: Props) {
       const res = await postSuggestion({
         sourceOrgId: orgId,
         subject: `Financial data request: ${name}`,
-        text: `A visitor asked for financial data to be added for ${name}.
-
-Org page: ${window.location.origin}/org/${orgId}
-Org ID: ${orgId}`,
+        // The org itself is saved in Source_Organization (shown as a link in the suggestion panel),
+        // so the text no longer repeats its page address and ID.
+        text: `A visitor asked for financial data to be added for ${name}.`,
         category: 'Other',
       });
       try {

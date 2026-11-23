@@ -402,6 +402,19 @@ html:not(.light) .sub-tile.hero { border-color:color-mix(in srgb, var(--amber) 4
 .sugg-vote-error { margin:0 0 10px; }
 /* Panel footer: the vote on the left, the Corteza link on the right. */
 .pj-panel-foot.sugg-panel-foot { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.sugg-org-link { color:var(--amber-text, var(--amber)); text-decoration:underline; text-underline-offset:3px; }
+.sugg-org-link:hover { text-decoration-thickness:2px; }
+/* Share and View record: two equal-size buttons (same width and height). */
+.sugg-foot-actions { display:grid; grid-template-columns:1fr 1fr; align-items:stretch; gap:10px; }
+.sugg-foot-actions .sugg-corteza-link { box-sizing:border-box; min-height:44px; line-height:1; justify-content:center; white-space:nowrap; }
+button.sugg-share { background:none; cursor:pointer; }
+/* Phones: keep vote + Share + View record on one line. Share is icon-only, buttons are smaller. */
+@media (max-width:767px) {
+  .pj-panel-foot.sugg-panel-foot { flex-wrap:nowrap; }
+  .sugg-foot-actions { grid-template-columns:auto auto; gap:8px; }
+  .sugg-foot-actions .sugg-corteza-link { min-height:40px; padding:0 14px; font-size:12px; }
+  .sugg-share-label { display:none; }
+}
 
 /* ── PROJECTS ─────────────────────────────────────────── */
 .proj-card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px 18px; margin-bottom:12px; }

@@ -1,7 +1,7 @@
 'use client';
 
 import { createPortal } from 'react-dom';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { fmtProjectDate, SHOW_SUGGESTION_STATUS, suggestionHeadline } from '@/lib/text';
 import type { Suggestion } from '@/lib/types';
 import VoteControl from './VoteControl';
@@ -21,6 +21,7 @@ const CORTEZA_SUGGESTION_RECORD_URL = 'https://app.democracydistributed.com/comp
  * Prev/next step through the suggestions in the order the list shows them.
  */
 export default function SuggestionPanel({
+  orgId,
   list,
   index,
   onClose,
@@ -28,6 +29,8 @@ export default function SuggestionPanel({
   onVote,
   votingIds,
 }: {
+  /** The org page this tab is on; the share link points back to it. */
+  orgId: string;
   list: Suggestion[];
   index: number;
   onClose: () => void;
@@ -45,6 +48,36 @@ export default function SuggestionPanel({
   }, [closing, onClose]);
 
   const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Share: the deep link (?tab=suggestions&suggestion=<id>) that opens this panel on load.
+  // On phones and tablets (touch as the main input) it opens the device's native share sheet.
+  // On desktop it just copies the link: the OS sheet there is slow and unfamiliar.
+  const [shareState, setShareState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const shareTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(shareTimer.current), []);
+  const shareLink = async (suggestionId: string, shareTitle: string) => {
+    const url = `${window.location.origin}/org/${encodeURIComponent(orgId)}?tab=suggestions&suggestion=${encodeURIComponent(suggestionId)}`;
+    const data = { title: shareTitle, text: shareTitle, url };
+    const touchFirst = window.matchMedia('(pointer: coarse)').matches;
+    if (touchFirst && typeof navigator.share === 'function' && (!navigator.canShare || navigator.canShare(data))) {
+      try {
+        await navigator.share(data);
+        return;
+      } catch (e) {
+        // Closing the sheet is not an error; any other failure falls through to copying.
+        if ((e as DOMException)?.name === 'AbortError') return;
+      }
+    }
+    let next: 'copied' | 'failed' = 'copied';
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      next = 'failed';
+    }
+    setShareState(next);
+    window.clearTimeout(shareTimer.current);
+    shareTimer.current = window.setTimeout(() => setShareState('idle'), 2000);
+  };
 
   useEffect(() => {
     const prevFocus = document.activeElement as HTMLElement | null;
@@ -75,13 +108,33 @@ export default function SuggestionPanel({
     .split('\n')
     .map((t) => t.trim())
     .filter(Boolean)
+    // Older requests repeated the org's address and ID in the text; the Organization link below replaces both.
+    .filter((t) => !(s.sourceOrgId && /^Org (page|ID):/i.test(t)))
     .map((t) => ({ text: t.replace(/^\*\s+/, ''), bullet: /^\*\s+/.test(t) }));
 
   const submitted = fmtProjectDate(s.createdAt);
   const stageIdx = SHOW_SUGGESTION_STATUS ? STAGES.findIndex((x) => x.toLowerCase() === (s.status ?? '').trim().toLowerCase()) : -1;
   // Blank values are left out, not shown as "—".
-  const rows: { label: string; value: string }[] = [];
+  const rows: { label: string; value: ReactNode }[] = [];
   if (s.ref) rows.push({ label: 'Reference', value: s.ref });
+
+  // The org's name in the text is a link to its page. The name is the one saved in the subject
+  // when the request was made ("Financial data request: <name>"), and the link goes by the org's
+  // ID, so a later rename never breaks it: the link still works, it just shows the old name.
+  const orgName = s.sourceOrgId ? title.replace(/^Financial data request:\s*/i, '').trim() : '';
+  const withOrgLink = (t: string): ReactNode => {
+    const at = orgName && orgName !== title ? t.indexOf(orgName) : -1;
+    if (at < 0 || !s.sourceOrgId) return t;
+    return (
+      <>
+        {t.slice(0, at)}
+        <a className="sugg-org-link" href={`/org/${encodeURIComponent(s.sourceOrgId)}`}>
+          {orgName}
+        </a>
+        {t.slice(at + orgName.length)}
+      </>
+    );
+  };
 
   // Portal to <body>: an ancestor with a transform would otherwise anchor position:fixed to itself.
   return createPortal(
@@ -139,7 +192,7 @@ export default function SuggestionPanel({
                 </div>
               ) : (
                 <p className="sugg-panel-desc" key={i}>
-                  {l.text}
+                  {withOrgLink(l.text)}
                 </p>
               ),
             )
@@ -179,14 +232,29 @@ export default function SuggestionPanel({
         {s.suggestionId ? (
           <div className="pj-panel-foot sugg-panel-foot">
             <VoteControl horizontal score={s.score ?? 0} myVote={s.myVote} busy={votingIds.has(s.suggestionId)} onVote={(dir) => onVote(s, dir)} />
-            <a
-              className="sugg-corteza-link"
-              href={`${CORTEZA_SUGGESTION_RECORD_URL}/${encodeURIComponent(s.suggestionId)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View record ↗
-            </a>
+            <div className="sugg-foot-actions">
+              <button type="button" className="sugg-corteza-link sugg-share" aria-label="Share this suggestion" onClick={() => shareLink(s.suggestionId!, title)} aria-live="polite">
+                {shareState === 'idle' ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+                    <path d="M16 6l-4-4-4 4" />
+                    <path d="M12 2v13" />
+                  </svg>
+                ) : null}
+                {/* On phones the idle label is hidden (icon only) to keep the footer on one line. */}
+                <span className={shareState === 'idle' ? 'sugg-share-label' : undefined}>
+                  {shareState === 'copied' ? 'Link copied ✓' : shareState === 'failed' ? 'Copy failed' : 'Share'}
+                </span>
+              </button>
+              <a
+                className="sugg-corteza-link"
+                href={`${CORTEZA_SUGGESTION_RECORD_URL}/${encodeURIComponent(s.suggestionId)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View record ↗
+              </a>
+            </div>
           </div>
         ) : null}
       </div>

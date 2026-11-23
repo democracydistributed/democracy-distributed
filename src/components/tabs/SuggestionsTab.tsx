@@ -228,6 +228,7 @@ export default function SuggestionsTab({ orgId }: { orgId: string }) {
 
       {openIndex >= 0 ? (
         <SuggestionPanel
+          orgId={orgId}
           list={list}
           index={openIndex}
           onClose={() => setOpenKey(null)}
