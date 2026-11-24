@@ -27,7 +27,7 @@ type Tab = 'finances' | 'suggestions' | 'items' | 'rules' | 'projects' | 'people
 
 const GOV_TABS: { id: Tab; label: string }[] = [
   { id: 'finances', label: 'Finances' },
-  { id: 'items', label: 'Items' },
+  { id: 'items', label: 'Decisions' },
   { id: 'projects', label: 'Projects' },
   { id: 'people', label: 'People' },
 ];
@@ -36,7 +36,7 @@ const GOV_TABS: { id: Tab; label: string }[] = [
 // different order — see Org Page.dc.html in the mockup folder.
 const COMMUNITY_TABS: { id: Tab; label: string }[] = [
   { id: 'suggestions', label: 'Suggestions' },
-  { id: 'items', label: 'Items' },
+  { id: 'items', label: 'Proposals' },
   { id: 'projects', label: 'Projects' },
   { id: 'finances', label: 'Finances' },
   { id: 'rules', label: 'Rules' },
@@ -200,7 +200,7 @@ export default function OrgPage({ orgId, initialOrg, initialSankey, initialError
         ) : null}
 
         {/* ITEMS */}
-        <div className={`tab-pane${activeTab === 'items' ? ' active' : ''}`} role="tabpanel" id="panel-items" aria-labelledby="tab-items">{visited.has('items') ? <ItemsTab orgId={orgId} /> : null}</div>
+        <div className={`tab-pane${activeTab === 'items' ? ' active' : ''}`} role="tabpanel" id="panel-items" aria-labelledby="tab-items">{visited.has('items') ? <ItemsTab orgId={orgId} isCommunity={isCommunity} /> : null}</div>
 
         {/* RULES (Community Group orgs only) */}
         {isCommunity ? (

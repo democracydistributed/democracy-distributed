@@ -19,7 +19,7 @@ const CONTACT_EMAIL = 'democracydistributed@gmail.com';
 type GovTab = 'suggestions' | 'items' | 'projects' | 'finances' | 'rules' | 'people';
 const GOV_TABS: { id: GovTab; label: string }[] = [
   { id: 'suggestions', label: 'Suggestions' },
-  { id: 'items', label: 'Items' },
+  { id: 'items', label: 'Proposals' },
   { id: 'projects', label: 'Projects' },
   { id: 'finances', label: 'Finances' },
   { id: 'rules', label: 'Rules' },
@@ -132,7 +132,7 @@ export default function ContributePage({ govOrgId }: { govOrgId: string | null }
           and are recorded the way any public body&apos;s would be.
         </p>
         <p className={`${styles.sectionIntro} ${styles.introLast}`}>
-          Anyone can post a suggestion. Suggestions become items that members vote on. Approved items become projects with budgets,
+          Anyone can post a suggestion. Suggestions become proposals that members vote on. Approved proposals become projects with budgets,
           and the rules that bind all of it are written down in the open. What follows is the live page.
         </p>
       </div>
@@ -172,7 +172,7 @@ export default function ContributePage({ govOrgId }: { govOrgId: string | null }
             ) : activeTab === 'suggestions' ? (
               <SuggestionsTab orgId={govOrgId} />
             ) : activeTab === 'items' ? (
-              <ItemsTab orgId={govOrgId} />
+              <ItemsTab orgId={govOrgId} isCommunity />
             ) : activeTab === 'projects' ? (
               <ProjectsTab orgId={govOrgId} fmt={fmt} />
             ) : activeTab === 'people' ? (

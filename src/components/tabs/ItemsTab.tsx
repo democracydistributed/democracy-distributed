@@ -9,7 +9,9 @@ import type { Item } from '@/lib/types';
 const PAGE = 25;
 type Sort = 'newest' | 'oldest';
 
-export default function ItemsTab({ orgId }: { orgId: string }) {
+export default function ItemsTab({ orgId, isCommunity = false }: { orgId: string; isCommunity?: boolean }) {
+  // POD (community) orgs call these Proposals; government orgs call them Decisions.
+  const noun = isCommunity ? 'proposal' : 'decision';
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -54,7 +56,7 @@ export default function ItemsTab({ orgId }: { orgId: string }) {
     return (
       <>
         <div className="items-state">
-          <span className="items-state-err">⚠ Failed to load items</span>
+          <span className="items-state-err">⚠ Failed to load {noun}s</span>
           <span className="items-state-sub">{error}</span>
         </div>
       </>
@@ -64,7 +66,7 @@ export default function ItemsTab({ orgId }: { orgId: string }) {
   if (!items) {
     return (
       <>
-        <div className="items-state">Loading items…</div>
+        <div className="items-state">Loading {noun}s…</div>
       </>
     );
   }
@@ -78,7 +80,7 @@ export default function ItemsTab({ orgId }: { orgId: string }) {
         <input
           className="items-search"
           type="search"
-          placeholder="Search items…"
+          placeholder={`Search ${noun}s…`}
           autoComplete="off"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -91,17 +93,17 @@ export default function ItemsTab({ orgId }: { orgId: string }) {
           <span className="items-sort-arrow">▾</span>
         </div>
         <span className="items-count">
-          {list.length} item{list.length !== 1 ? 's' : ''}
+          {list.length} {noun}{list.length !== 1 ? 's' : ''}
         </span>
       </div>
 
       <div id="items-list">
         {list.length === 0 ? (
           query ? (
-            <div className="items-state">No items match your search.</div>
+            <div className="items-state">No {noun}s match your search.</div>
           ) : (
             <div className="items-state">
-              No items on record yet.
+              No {noun}s on record yet.
               <br />
               <a href="/contribute" className="items-state-link">
                 Contribute Data →
